@@ -17,57 +17,23 @@ level = [\r
 ]\r
 make_map(level)\r
 \r
-#w = Whale()\r
+w = Whale()\r
 self.p = Player()\r
 \r
-#bigwhale = npc()\r
-#bigwhale.scaleX = bigwhale.scaleY = 2\r
-#bigwhale.x = bigwhale.y = -700\r
-\r
-struct1 = [(100,-100, 200, 200), (300, -200, 200, 200), (250, -50, 100, 100), \r
-(350, 0, 100, 200), (450, -100, 100, 200), (550, -50, 100, 100), (600, 50, 200, 100),\r
-(700, -50, 200, 100), (750, 50, 100, 100), (600, -150, 200, 100), (750, -200, 100, 200)
-]\r
-struct2 = [(50, -50, 100, 100), (100, -150, 200, 100), (200, -300, 200, 200),\r
-(50, -400, 100, 200), (150, -450, 100, 100), (-50, -500, 100, 200), (200, -550, 200, 100)
-]\r
-\r
-blockgroup(-1300, -700, \"block.png\", struct1)\r
-blockgroup(-500, -700, \"block.png\", struct1)\r
-blockgroup(300, -700, \"block.png\", struct1)\r
-\r
-blockgroup(-1300, 700, \"block.png\", struct1)\r
-blockgroup(-500, 700, \"block.png\", struct1)\r
-blockgroup(300, 700, \"block.png\", struct1)\r
-\r
-blockgroup(1100, 800, \"block.png\", struct2)\r
-blockgroup(1100, 300, \"block.png\", struct2)\r
-blockgroup(1100, -200, \"block.png\", struct2)\r
-\r
-blockgroup(-1200, 500, \"block.png\", struct2)\r
-blockgroup(-1200, 0, \"block.png\", struct2)\r
-blockgroup(-1200, -500, \"block.png\", struct2)\r
-\r
-self.fpslog = int(time.time())\r
-self.fpscount = 0","loop":"self.fpscount += 1\r
-ntime = int(time.time())\r
-\r
-if ntime > self.fpslog:\r
-    self.fpslog = ntime\r
-    print(f\"Frames elapsed in last second: {self.fpscount
-}\")\r
-    self.fpscount = 0"
+bigwhale = Whale()\r
+bigwhale.scaleX = bigwhale.scaleY = 2\r
+bigwhale.x = bigwhale.y = -700","loop":""
 }
 },
 {"Player":{
 "type":"object script","start":"#initialise pos, sprite
 self.x = 0
 self.y = 0
-self.z = 5
-self.sprite = new_sprite(\"debug.png\")
 
-self.persist = True
+self.sprite = new_sprite(\"octopus.png\")
 
+self.scaleX = 0.4
+self.scaleY = 0.4
 
 #velocity values
 self.xv = 0
@@ -75,18 +41,7 @@ self.yv = 0
 self.boostx, self.boosty = 0, 0
 
 self.y_off = 0
-self.x_off = 0
-
-#Store previous values
-self.x0 = 0
-self.y0 = 0
-
-self.spr_obg = psprite()
-self.spr_obg.y = 10
-self.visible = False
-
-self.scaleX = 2
-self.scaleY = 2","loop":"camX, camY = camera_x(), camera_y()
+self.x_off = 0","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
@@ -98,7 +53,7 @@ keys = [key_is_pressed('arrowRight'),
 ]
 
 # Store previous position for movement rotation
-self.x0, self.y0 = self.x, self.y
+x0, y0 = self.x, self.y
 
 # Prevent 0 trig errors
 if not xdist and not ydist:
@@ -167,9 +122,13 @@ if key_is_pressed('s'):
 move_camera((xdist - xdist/1.1) + self.x_off,
             (ydist - ydist/1.1) + self.y_off)
 
+# game.bg.x -= xdist - xdist/1.1 + self.x_off
+# game.bg.y -= ydist - ydist/1.1 + self.y_off
+# game.obj_loader.update_pos((xdist - xdist/1.1 + self.x_off),
+#                             (ydist - ydist/1.1) + self.y_off)
 
 # Rotate in direction of movement
-Dx, Dy = self.x-self.x0, self.y-self.y0
+Dx, Dy = self.x-x0, self.y-y0
 if not Dx and not Dy: Dx = 1
 m = hyp(Dx, Dy)
 Dy = Dy/m
@@ -177,8 +136,6 @@ Dy = Dy/m
 if m > 1:
     a = get_angle(Dy) - 90
     self.angle = a if Dx > 0 else -a
-
-update_spr(self.spr_obg, self.x, self.y, self.angle)
 
 
 
@@ -191,77 +148,23 @@ update_spr(self.spr_obg, self.x, self.y, self.angle)
 },
 {"Background":{
 "type":"object script","start":"#Background start
-#darkbg is 1200x1000
-self.sprite = sprite('darkbg.png')
-self.scaleX = 2
-self.scaleY = 1.5","loop":"#Background loop
+
+self.sprite = sprite('waterBG.png')","loop":"#Background loop
 
 "
 }
 },
-{"Block":{
-"type":"object script","start":"#Block start
-
-","loop":"
-
-# Exit the loop early if far from player
-pdistx = self.x - game.p.x
-pdisty = self.y - game.p.y
-
-
-if abs(pdistx) > 1000 or abs(pdisty) > 600:
-    self.visible = False
-    return
-
-
-self.visible = True
-pl = get_collision(self, \"Player\")
-if pl:
-    p_nf, p_sf, p_wf, p_ef = pl.y0+40, pl.y0-40, pl.x0-40, pl.x0+40
-
-    if p_nf < self.sf or p_sf > self.nf:
-        pl.y = pl.y0
-
-    elif p_ef < self.wf or p_wf >= self.ef:
-        pl.x = pl.x0
-    "
-}
-},
-{"psprite":{
-"type":"object script","start":"#Hitbox start
-self.scaleX = 0.6
-self.scaleY = 0.6
-self.sprite = new_sprite(\"octopus.png\")
-\"\"\"
-self.spr = new_sprite(\"whalesprites.png\", 2, 2)
-self.anim = new_animation(self.spr, 5, 0, 3)
-set_animation(self, self.anim)
-
-self.isleft = False
-\"\"\"","loop":"
-
-'''
-if not 90<=k<=270 and not self.isleft:
-    self.scaleX = -1*self.scaleX
-    self.isleft = True
-'''"
-}
-},
-{"npc":{
-"type":"object script","start":"#Block start
-
-
-self.sprite = sprite('whale.png')
+{"Whale":{
+"type":"object script","start":"self.sprite = sprite('whale.png')
 self.x, self.y = 1500, -420
 self.visible = True
 
-self.frames = 0","loop":"
-try:
+self.frames = 0","loop":"try:
     # Exit the loop early if far from player
     pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
     if pdist > 1700:
-        self.alpha = 0
-
+        if self.visible:
+            self.visible = False
         return
     else:
         if not self.visible:
@@ -269,13 +172,15 @@ try:
 except AttributeError: # Whale created before player in Game start
     pass
 
-
-self.alpha = 1
-pl = get_collision(self, \"Player\")
-if pl:
-    pass
-    "
-
+if self.visible:
+    d = self.frames % 100
+    
+    if 0 <= d < 50:
+        self.y += 0.5
+    if 50 <= d < 100:
+        self.y -= 0.5
+    
+    self.frames += 1"
 }
 },
 {"Tile":{
@@ -315,18 +220,6 @@ if pl:
 {"ground3.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226216.1615868409.ground3.png"
 }
-},
-{"debug.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1615873006.debug.png"
-}
-},
-{"darkbg.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1615919713.darkbg.png"
-}
-},
-{"whalesprites.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1615934963.whalesprites.png"
-}
 }
 ],
 "sound":[
@@ -336,8 +229,8 @@ if pl:
 {"imports.py":{
 "type":"function script","head":"#File for imports to run before everything
 import math
-import random
-import time"
+from collections import deque
+"
 }
 },
 {"quickfuncs.py":{
@@ -375,7 +268,6 @@ def do_move(xdist, ydist):
     
     # Correct velocity speed
     if Vhyp > 6.5: # 6.5
-
         game.p.xv = (game.p.xv/Vhyp)*6.5
         game.p.yv = (game.p.yv/Vhyp)*6.5"
 }
@@ -425,34 +317,6 @@ def make_map(layout):
 ][j
 ]
 ]"
-}
-},
-{"gamecreation.py":{
-"type":"function script","head":"
-def createblock(x, y, w, h, sprname=\"block.png\"):
-    \"\"\"Basic opaque block. Takes args for pos, size, and optional block sprite.\"\"\"
-    #construct block and set args
-    a = Block()
-    a.x = x
-    a.y = y
-    #This works for 40x40 sprite. For other sprites, change divisor accordingly
-    a.scaleX = w/40
-    a.scaleY = h/40
-    a.sprite = new_sprite(sprname)
-    #store these for collision purposes
-    a.wid = w/2
-    a.ht = h/2
-    a.nf = y+a.ht
-    a.sf = y-a.ht
-    a.wf = x-a.wid
-    a.ef = x+a.wid
-
-def blockgroup(x, y, sprname, posl):
-    \"\"\"Creates a group of blocks at a x and y position,
-    given a list  of block constructs. posl is a list of tuples,
-    each of the form (x, y, w, h).\"\"\"
-    for bx, by, bw, bh in posl:
-        createblock(bx+x, by+y, bw, bh, sprname)"
 }
 }
 ]
