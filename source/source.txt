@@ -6,7 +6,7 @@
 #w = Whale()\r
 self.p = Player()\r
 \r
-#bigwhale = Whale()\r
+#bigwhale = npc()\r
 #bigwhale.scaleX = bigwhale.scaleY = 2\r
 #bigwhale.x = bigwhale.y = -700\r
 \r
@@ -33,7 +33,16 @@ blockgroup(1100, -200, \"block.png\", struct2)\r
 blockgroup(-1200, 500, \"block.png\", struct2)\r
 blockgroup(-1200, 0, \"block.png\", struct2)\r
 blockgroup(-1200, -500, \"block.png\", struct2)\r
-","loop":""
+\r
+self.fpslog = int(time.time())\r
+self.fpscount = 0","loop":"self.fpscount += 1\r
+ntime = int(time.time())\r
+\r
+if ntime > self.fpslog:\r
+    self.fpslog = ntime\r
+    print(f\"Frames elapsed in last second: {self.fpscount
+}\")\r
+    self.fpscount = 0"
 }
 },
 {"Player":{
@@ -55,7 +64,14 @@ self.x_off = 0
 
 #Store previous values
 self.x0 = 0
-self.y0 = 0","loop":"camX, camY = camera_x(), camera_y()
+self.y0 = 0
+
+self.spr_obg = psprite()
+self.spr_obg.y = 10
+self.visible = False
+
+self.scaleX = 2
+self.scaleY = 2","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
@@ -147,6 +163,8 @@ if m > 1:
     a = get_angle(Dy) - 90
     self.angle = a if Dx > 0 else -a
 
+update_spr(self.spr_obg, self.x, self.y, self.angle)
+
 
 
 
@@ -166,7 +184,55 @@ self.scaleY = 1.5","loop":"#Background loop
 "
 }
 },
-{"Whale":{
+{"Block":{
+"type":"object script","start":"#Block start
+
+","loop":"
+
+# Exit the loop early if far from player
+pdistx = self.x - game.p.x
+pdisty = self.y - game.p.y
+
+
+if abs(pdistx) > 1000 or abs(pdisty) > 600:
+    self.visible = False
+    return
+
+
+self.visible = True
+pl = get_collision(self, \"Player\")
+if pl:
+    p_nf, p_sf, p_wf, p_ef = pl.y0+40, pl.y0-40, pl.x0-40, pl.x0+40
+
+    if p_nf < self.sf or p_sf > self.nf:
+        pl.y = pl.y0
+
+    elif p_ef < self.wf or p_wf >= self.ef:
+        pl.x = pl.x0
+    "
+}
+},
+{"psprite":{
+"type":"object script","start":"#Hitbox start
+self.scaleX = 0.6
+self.scaleY = 0.6
+self.sprite = new_sprite(\"octopus.png\")
+\"\"\"
+self.spr = new_sprite(\"whalesprites.png\", 2, 2)
+self.anim = new_animation(self.spr, 5, 0, 3)
+set_animation(self, self.anim)
+
+self.isleft = False
+\"\"\"","loop":"
+
+'''
+if not 90<=k<=270 and not self.isleft:
+    self.scaleX = -1*self.scaleX
+    self.isleft = True
+'''"
+}
+},
+{"npc":{
 "type":"object script","start":"#Block start
 
 
@@ -188,32 +254,6 @@ self.alpha = 1
 pl = get_collision(self, \"Player\")
 if pl:
     pass
-    "
-}
-},
-{"Block":{
-"type":"object script","start":"#Block start
-
-","loop":"
-try:
-    # Exit the loop early if far from player
-    pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
-    if pdist > 1700:
-        self.visible = False
-        return
-except AttributeError: # Whale created before player in Game start
-    pass
-
-self.visible = True
-pl = get_collision(self, \"Player\")
-if pl:
-    p_nf, p_sf, p_wf, p_ef = pl.y0+20, pl.y0-20, pl.x0-20, pl.x0+20
-
-    if p_nf < self.sf or p_sf > self.nf:
-        pl.y = pl.y0
-
-    elif p_ef < self.wf or p_wf > self.ef:
-        pl.x = pl.x0
     "
 }
 }
@@ -249,6 +289,10 @@ if pl:
 {"darkbg.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1615919713.darkbg.png"
 }
+},
+{"whalesprites.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1615934963.whalesprites.png"
+}
 }
 ],
 "sound":[
@@ -259,8 +303,7 @@ if pl:
 "type":"function script","head":"#File for imports to run before everything
 import math
 import random
-from collections import deque
-"
+import time"
 }
 },
 {"quickfuncs.py":{
@@ -309,6 +352,12 @@ def do_move(pl, xdist, ydist):
     if Vhyp > 6.5: # 6.5
         pl.xv = (pl.xv/Vhyp)*6.5
         pl.yv = (pl.yv/Vhyp)*6.5
+
+def update_spr(plspr, x, y, angle):
+    plspr.x = x
+    plspr.y = y
+    plspr.angle = angle
+ 
 "
 }
 },
