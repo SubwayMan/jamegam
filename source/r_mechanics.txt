@@ -2,22 +2,17 @@
 "script":[
 {"Game":{
 "type":"game script","start":"self.bg = Background()\r
-self.obj_loader = ObjLoader(2000, Whale())\r
+\r
+w = Whale()\r
 self.p = Player()\r
 \r
-# Just put this after the player so that player is under 1 whale\r
-# But this isn't really a sustainable solution\r
 bigwhale = Whale()\r
 bigwhale.scaleX = bigwhale.scaleY = 2\r
-bigwhale.gameX = bigwhale.gameY = -700\r
-self.obj_loader.objs.append(bigwhale)","loop":""
+bigwhale.x = bigwhale.y = -700","loop":""
 }
 },
 {"Player":{
 "type":"object script","start":"#initialise pos, sprite
-self.gameX = 0
-self.gameY = 0
-
 self.x = 0
 self.y = 0
 
@@ -32,14 +27,19 @@ self.yv = 0
 self.boostx, self.boosty = 0, 0
 
 self.y_off = 0
-self.x_off = 0","loop":"xdist = mouse_x()-self.x
-ydist = mouse_y()-self.y
+self.x_off = 0","loop":"camX, camY = camera_x(), camera_y()
+xdist = (mouse_x()+camX) - self.x
+ydist = (mouse_y()+camY) - self.y
+
+# For arrow key movement
 keys = [key_is_pressed('arrowRight'), 
         key_is_pressed('arrowLeft'), 
         key_is_pressed('arrowUp'),
         key_is_pressed('arrowDown')
 ]
-x0, y0 = self.gameX, self.gameY
+
+# Store previous position for movement rotation
+x0, y0 = self.x, self.y
 
 # Prevent 0 trig errors
 if not xdist and not ydist:
@@ -98,16 +98,13 @@ self.boostx, self.boosty = deter(self.boostx, 0.94), deter(self.boosty, 0.94)
 # Final movement values in x and y
 a, b = (self.xv+self.boostx), (self.yv+self.boosty)
 
-# Keep track of position within the game map
-self.gameX += a
-self.gameY += b
+self.x += a
+self.y += b
 
-p_deltaX = a
-p_deltaY = b
 
 # Distance from zero after move
-xdist = self.x + p_deltaX
-ydist = self.y + p_deltaY
+xdist = self.x - camX
+ydist = self.y - camY
 
 # Control camera offset with WASD
 # Probably not permanent, just a demonstration of how camera can be offset
@@ -120,17 +117,16 @@ if key_is_pressed('w'):
 if key_is_pressed('s'):
     self.y_off = max(self.y_off-1, -16)
 
-# Move player and background, dividing by 1.1 to center player
-# Number close to 1 results in slower centering movement
-self.x = (self.x + p_deltaX)/1.1 - self.x_off
-self.y = (self.y + p_deltaY)/1.1 - self.y_off
-game.bg.x -= xdist - xdist/1.1 + self.x_off
-game.bg.y -= ydist - ydist/1.1 + self.y_off
-game.obj_loader.update_pos((xdist - xdist/1.1 + self.x_off),
-                            (ydist - ydist/1.1) + self.y_off)
+move_camera((xdist - xdist/1.1) + self.x_off,
+            (ydist - ydist/1.1) + self.y_off)
+
+# game.bg.x -= xdist - xdist/1.1 + self.x_off
+# game.bg.y -= ydist - ydist/1.1 + self.y_off
+# game.obj_loader.update_pos((xdist - xdist/1.1 + self.x_off),
+#                             (ydist - ydist/1.1) + self.y_off)
 
 # Rotate in direction of movement
-Dx, Dy = self.gameX-x0, self.gameY-y0
+Dx, Dy = self.x-x0, self.y-y0
 if not Dx and not Dy: Dx = 1
 m = hyp(Dx, Dy)
 Dy = Dy/m
@@ -156,32 +152,19 @@ self.sprite = sprite('waterBG.png')","loop":"#Background loop
 "
 }
 },
-{"objloader":{
-"type":"object script","start":"# Reference to ObjLoader class that created the instance
-self.parent = None","loop":"#ObjLoader loop
-
-self.parent.do_loop()
-
-# p = game.p
-# pX, pY = p.gameX, p.gameY
-
-# for obj in self.objs:
-#     oX, oY = obj.gameX, obj.gameY
-#     dist = getdist(pX, pY, oX, oY)
-#     if dist < self.load_dist:
-#         obj.x = pX-oX
-#         obj.y = pY-oY
-#         obj.visible = True
-#     else:
-#         obj.visible = False"
-}
-},
 {"Whale":{
 "type":"object script","start":"#Block start
+try:
+    # Exit the loop early if far from player
+    pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
+    if pdist > 1700:
+        return
+except AttributeError: # Whale created before player in Game start
+    pass
 
 self.sprite = sprite('whale.png')
-self.gameX, self.gameY = 1500, -420
-self.visible = False
+self.x, self.y = 1500, -420
+self.visible = True
 
 self.frames = 0","loop":"#Block loop
 if self.visible:
@@ -261,40 +244,6 @@ def scale_objs(amount):
     for obj in game.obj_loader.objs:
         obj.scaleX += amount
         obj.scaleY += amount"
-}
-},
-{"ObjLoader.py":{
-"type":"function script","head":"class ObjLoader:
-    def __init__(self, load_dist=2000, *objs):
-        self.objs = list(objs)
-        self.load_dist = 2000
-        self.inst = objloader()
-        self.inst.visible = False
-        self.inst.parent = self
-    
-    def do_loop(self):
-        p = game.p
-        pX, pY = p.gameX, p.gameY
-
-        for obj in self.objs:
-            oX, oY = obj.gameX, obj.gameY
-            dist = get_dist(pX, pY, oX, oY)
-
-            if dist < self.load_dist:
-                if not obj.visible:
-                    obj.x = oX - pX
-                    obj.y = oY - pY
-                    obj.visible = True
-            
-            else:
-                obj.visible = False
-
-    def update_pos(self, Dx, Dy):
-        \"\"\"Move all visible objects\"\"\"
-        for obj in self.objs:
-            if obj.visible:
-                obj.x -= Dx
-                obj.y -= Dy"
 }
 }
 ]
