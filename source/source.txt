@@ -63,22 +63,9 @@ if not xdist and not ydist:
 magn = hyp(xdist, ydist)
 xdist, ydist = xdist/magn, ydist/magn
 
-def do_move():
-    # Increase velocity
-    self.xv += (xdist*0.9)
-    self.yv += (ydist*0.9)
-    
-    # Get total velocity magnetude
-    Vhyp = hyp(self.xv, self.yv)
-    
-    # Correct velocity speed
-    if Vhyp > 6.5: # 6.5
-        self.xv = (self.xv/Vhyp)*6.5
-        self.yv = (self.yv/Vhyp)*6.5
-
 # Move unless mouse is right on top of player
 if mouse_is_pressed('left') and not magn < 25:
-    do_move()
+    do_move(self, xdist, ydist)
 
 # Allow for arrow-key movement
 elif any(keys):
@@ -94,7 +81,7 @@ elif any(keys):
     magn = hyp(xdist, ydist)
     xdist, ydist = xdist/magn, ydist/magn
 
-    do_move()
+    do_move(self, xdist, ydist)
 
 else:
     # \"Water resistance\" deteriorate velocity
@@ -296,7 +283,14 @@ def scale_objs(amount):
 }
 
 
+def do_move(pl, xdist, ydist):
+    # Increase velocity
+    pl.xv += (xdist*0.9)
+    pl.yv += (ydist*0.9)
 
+    # Get total velocity magnetude
+    Vhyp = hyp(pl.xv, pl.yv)
+    
 def make_map(layout):
     for i in range(len(layout)):
         if 'X' in layout[i
