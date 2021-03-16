@@ -2,6 +2,20 @@
 "script":[
 {"Game":{
 "type":"game script","start":"self.bg = Background()\r
+level = [\r
+        '...CCC...',\r
+        '..3W.W3..',\r
+        '...W.W...',\r
+        '...W.W...',\r
+        '...W.W...',\r
+        '...W.W...',\r
+        '...WXW...',\r
+        '...W.W...',\r
+        '.2CC.CC2.',\r
+        '.W.....W.',\r
+        '.1232131.'
+]\r
+make_map(level)\r
 \r
 #w = Whale()\r
 self.p = Player()\r
@@ -54,6 +68,7 @@ self.sprite = new_sprite(\"debug.png\")
 
 self.persist = True
 
+
 #velocity values
 self.xv = 0
 self.yv = 0
@@ -95,8 +110,8 @@ xdist, ydist = xdist/magn, ydist/magn
 
 
 # Move unless mouse is right on top of player
-if mouse_is_pressed('left') and not magn < 25:
-    do_move(self, xdist, ydist)
+if mouse_is_pressed('left') and not magn < 16:
+    do_move(xdist, ydist)
 
 # Allow for arrow-key movement
 elif any(keys):
@@ -112,7 +127,7 @@ elif any(keys):
     magn = hyp(xdist, ydist)
     xdist, ydist = xdist/magn, ydist/magn
 
-    do_move(self, xdist, ydist)
+    do_move(xdist, ydist)
 
 else:
     # \"Water resistance\" deteriorate velocity
@@ -246,15 +261,26 @@ try:
     pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
     if pdist > 1700:
         self.alpha = 0
+
         return
+    else:
+        if not self.visible:
+            self.visible = True
 except AttributeError: # Whale created before player in Game start
     pass
+
 
 self.alpha = 1
 pl = get_collision(self, \"Player\")
 if pl:
     pass
     "
+
+}
+},
+{"Tile":{
+"type":"object script","start":"# Empty (at least for now) class that is used to make tiles\r
+# Sprite gets set anyways","loop":""
 }
 }
 ],
@@ -278,8 +304,16 @@ if pl:
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615766188.spritesheet.png"
 }
 },
-{"block.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1615867297.block.png"
+{"ground1.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226216.1615868393.ground1.png"
+}
+},
+{"ground2.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226216.1615868400.ground2.png"
+}
+},
+{"ground3.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226216.1615868409.ground3.png"
 }
 },
 {"debug.png":{
@@ -331,34 +365,66 @@ def get_dist(x1, y1, x2, y2):
     \"\"\"Return the distance between two points.\"\"\"
     return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
-def scale_objs(amount):
-    game.p.scaleX += amount
-    game.p.scaleY += amount
-    game.bg.scaleX += amount
-    game.bg.scaleY += amount
-    for obj in game.obj_loader.objs:
-        obj.scaleX += amount
-        obj.scaleY += amount
-
-def do_move(pl, xdist, ydist):
+def do_move(xdist, ydist):
     # Increase velocity
-    pl.xv += (xdist*0.9)
-    pl.yv += (ydist*0.9)
+    game.p.xv += (xdist*0.9)
+    game.p.yv += (ydist*0.9)
     
     # Get total velocity magnetude
-    Vhyp = hyp(pl.xv, pl.yv)
+    Vhyp = hyp(game.p.xv, game.p.yv)
     
     # Correct velocity speed
     if Vhyp > 6.5: # 6.5
-        pl.xv = (pl.xv/Vhyp)*6.5
-        pl.yv = (pl.yv/Vhyp)*6.5
 
-def update_spr(plspr, x, y, angle):
-    plspr.x = x
-    plspr.y = y
-    plspr.angle = angle
- 
-"
+        game.p.xv = (game.p.xv/Vhyp)*6.5
+        game.p.yv = (game.p.yv/Vhyp)*6.5"
+}
+},
+{"make_map.py":{
+"type":"function script","head":"tile_map = {
+    'C': sprite('ground1.png'), # placeholder ceiling
+    'W': sprite('ground2.png'), # placeholder wall
+    '1': sprite('ground1.png'),
+    '2': sprite('ground2.png'),
+    '3': sprite('ground3.png'),
+
+}
+
+
+
+def make_map(layout):
+    for i in range(len(layout)):
+        if 'X' in layout[i
+]:
+            origin = (layout[i
+].index('X'), i)
+    
+    for i in range(len(layout)):
+        for j in range(len(layout[i
+])):
+            if layout[i
+][j
+] in '. X':
+                continue
+
+            t = Tile()
+
+            x = abs(100 * (origin[0
+]-j))
+            x *= -1 if j < origin[0
+] else 1
+            t.x = x
+
+            y = abs(100 * (origin[1
+]-i))
+            y *= 1 if i < origin[1
+] else -1
+            t.y = y
+
+            t.sprite = tile_map[layout[i
+][j
+]
+]"
 }
 },
 {"gamecreation.py":{
