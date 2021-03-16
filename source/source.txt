@@ -10,7 +10,9 @@ bigwhale = Whale()\r
 bigwhale.scaleX = bigwhale.scaleY = 2\r
 bigwhale.x = bigwhale.y = -700\r
 \r
-k = createblock(600, 0, 200, 100, \"block.png\")","loop":""
+k = createblock(700, 50, 200, 100, \"block.png\")\r
+l = createblock(850, 100, 100, 200, \"block.png\")\r
+m = createblock(500, 100, 200, 200, \"block.png\")","loop":""
 }
 },
 {"Player":{
@@ -20,8 +22,6 @@ self.y = 0
 
 self.sprite = new_sprite(\"debug.png\")
 
-self.scaleX = 0.6
-self.scaleY = 0.6
 
 #velocity values
 self.xv = 0
@@ -150,7 +150,7 @@ self.sprite = sprite('whale.png')
 self.x, self.y = 1500, -420
 self.visible = True
 
-self.frames = 0","loop":"#Block loop
+self.frames = 0","loop":"
 try:
     # Exit the loop early if far from player
     pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
@@ -161,14 +161,16 @@ except AttributeError: # Whale created before player in Game start
     pass
 
 self.alpha = 1
-d = self.frames % 100
+pl = get_collision(self, \"Player\")
+if pl:
+    p_nf, p_sf, p_wf, p_ef = pl.y0+20, pl.y0-20, pl.x0-20, pl.x0+20
 
-if 0 <= d < 50:
-    self.y += 0.5
-if 50 <= d < 100:
-    self.y -= 0.5
+    if p_nf < self.sf or p_sf > self.nf:
+        pl.y = pl.y0
 
-self.frames += 1"
+    elif p_ef < self.wf or p_wf > self.ef:
+        pl.x = pl.x0
+    "
 }
 },
 {"Block":{
@@ -187,12 +189,12 @@ except AttributeError: # Whale created before player in Game start
 self.alpha = 1
 pl = get_collision(self, \"Player\")
 if pl:
-    p_nf, p_sf, p_wf, p_ef = pl.y0+30, pl.y0-30, pl.x0-30, pl.x0+30
+    p_nf, p_sf, p_wf, p_ef = pl.y0+20, pl.y0-20, pl.x0-20, pl.x0+20
 
-    if p_nf > self.sf or p_sf < self.nf:
+    if p_nf < self.sf or p_sf > self.nf:
         pl.y = pl.y0
-    
-    if p_ef > self.wf or p_wf < self.ef:
+
+    elif p_ef < self.wf or p_wf > self.ef:
         pl.x = pl.x0
     "
 }
