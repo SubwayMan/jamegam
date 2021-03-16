@@ -3,25 +3,47 @@
 {"Game":{
 "type":"game script","start":"self.bg = Background()\r
 \r
-w = Whale()\r
+#w = Whale()\r
 self.p = Player()\r
 \r
-bigwhale = Whale()\r
-bigwhale.scaleX = bigwhale.scaleY = 2\r
-bigwhale.x = bigwhale.y = -700\r
+#bigwhale = Whale()\r
+#bigwhale.scaleX = bigwhale.scaleY = 2\r
+#bigwhale.x = bigwhale.y = -700\r
 \r
-k = createblock(700, 50, 200, 100, \"block.png\")\r
-l = createblock(850, 100, 100, 200, \"block.png\")\r
-m = createblock(500, 100, 200, 200, \"block.png\")","loop":""
+struct1 = [(100,-100, 200, 200), (300, -200, 200, 200), (250, -50, 100, 100), \r
+(350, 0, 100, 200), (450, -100, 100, 200), (550, -50, 100, 100), (600, 50, 200, 100),\r
+(700, -50, 200, 100), (750, 50, 100, 100), (600, -150, 200, 100), (750, -200, 100, 200)
+]\r
+struct2 = [(50, -50, 100, 100), (100, -150, 200, 100), (200, -300, 200, 200),\r
+(50, -400, 100, 200), (150, -450, 100, 100), (-50, -500, 100, 200), (200, -550, 200, 100)
+]\r
+\r
+blockgroup(-1300, -700, \"block.png\", struct1)\r
+blockgroup(-500, -700, \"block.png\", struct1)\r
+blockgroup(300, -700, \"block.png\", struct1)\r
+\r
+blockgroup(-1300, 700, \"block.png\", struct1)\r
+blockgroup(-500, 700, \"block.png\", struct1)\r
+blockgroup(300, 700, \"block.png\", struct1)\r
+\r
+blockgroup(1100, 800, \"block.png\", struct2)\r
+blockgroup(1100, 300, \"block.png\", struct2)\r
+blockgroup(1100, -200, \"block.png\", struct2)\r
+\r
+blockgroup(-1200, 500, \"block.png\", struct2)\r
+blockgroup(-1200, 0, \"block.png\", struct2)\r
+blockgroup(-1200, -500, \"block.png\", struct2)\r
+","loop":""
 }
 },
 {"Player":{
 "type":"object script","start":"#initialise pos, sprite
 self.x = 0
 self.y = 0
-
+self.z = 5
 self.sprite = new_sprite(\"debug.png\")
 
+self.persist = True
 
 #velocity values
 self.xv = 0
@@ -136,8 +158,10 @@ if m > 1:
 },
 {"Background":{
 "type":"object script","start":"#Background start
-
-self.sprite = sprite('waterBG.png')","loop":"#Background loop
+#darkbg is 1200x1000
+self.sprite = sprite('darkbg.png')
+self.scaleX = 2
+self.scaleY = 1.5","loop":"#Background loop
 
 "
 }
@@ -163,13 +187,7 @@ except AttributeError: # Whale created before player in Game start
 self.alpha = 1
 pl = get_collision(self, \"Player\")
 if pl:
-    p_nf, p_sf, p_wf, p_ef = pl.y0+20, pl.y0-20, pl.x0-20, pl.x0+20
-
-    if p_nf < self.sf or p_sf > self.nf:
-        pl.y = pl.y0
-
-    elif p_ef < self.wf or p_wf > self.ef:
-        pl.x = pl.x0
+    pass
     "
 }
 },
@@ -181,12 +199,12 @@ try:
     # Exit the loop early if far from player
     pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
     if pdist > 1700:
-        self.alpha = 0
+        self.visible = False
         return
 except AttributeError: # Whale created before player in Game start
     pass
 
-self.alpha = 1
+self.visible = True
 pl = get_collision(self, \"Player\")
 if pl:
     p_nf, p_sf, p_wf, p_ef = pl.y0+20, pl.y0-20, pl.x0-20, pl.x0+20
@@ -226,6 +244,10 @@ if pl:
 },
 {"debug.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1615873006.debug.png"
+}
+},
+{"darkbg.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1615919713.darkbg.png"
 }
 }
 ],
@@ -292,19 +314,30 @@ def do_move(pl, xdist, ydist):
 },
 {"gamecreation.py":{
 "type":"function script","head":"
-def createblock(x, y, w, h, sprname):
+def createblock(x, y, w, h, sprname=\"block.png\"):
+    \"\"\"Basic opaque block. Takes args for pos, size, and optional block sprite.\"\"\"
+    #construct block and set args
     a = Block()
     a.x = x
     a.y = y
+    #This works for 40x40 sprite. For other sprites, change divisor accordingly
     a.scaleX = w/40
     a.scaleY = h/40
     a.sprite = new_sprite(sprname)
+    #store these for collision purposes
     a.wid = w/2
     a.ht = h/2
     a.nf = y+a.ht
     a.sf = y-a.ht
     a.wf = x-a.wid
-    a.ef = x+a.wid"
+    a.ef = x+a.wid
+
+def blockgroup(x, y, sprname, posl):
+    \"\"\"Creates a group of blocks at a x and y position,
+    given a list  of block constructs. posl is a list of tuples,
+    each of the form (x, y, w, h).\"\"\"
+    for bx, by, bw, bh in posl:
+        createblock(bx+x, by+y, bw, bh, sprname)"
 }
 }
 ]
