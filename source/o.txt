@@ -6,7 +6,12 @@ self.p = Player()\r
 bigwhale = Whale()\r
 bigwhale.scaleX = bigwhale.scaleY = 2\r
 bigwhale.gameX = bigwhale.gameY = -700\r
-self.obj_loader = ObjLoader(2000, Whale(), bigwhale)","loop":""
+self.obj_loader = ObjLoader(2000, Whale(), bigwhale)\r
+\r
+self.camX = 0\r
+self.camY = 0","loop":"self.camX = get_camera_x()\r
+self.camY = get_camera_y()\r
+"
 }
 },
 {"Player":{
@@ -23,13 +28,20 @@ self.scaleY = 0.7
 #velocity values
 self.xv = 0
 self.yv = 0
-self.boostx, self.boosty = 0, 0","loop":"xdist = mouse_x()-self.x
-ydist = mouse_y()-self.y
+self.boostx, self.boosty = 0, 0
+
+#additional velocity values that are meant to be modified externally
+self.modXv = 0
+self.modYv = 0","loop":"xdist = (mouse_x() + game.camX) - self.x
+ydist = (mouse_y() + game.camY) - self.y
+#keycontrols
 keys = [key_is_pressed('arrowRight') or key_is_pressed('d'), 
         key_is_pressed('arrowLeft') or key_is_pressed('a'), 
         key_is_pressed('arrowUp') or key_is_pressed('w'),
         key_is_pressed('arrowDown') or key_is_pressed('s')
 ]
+
+#store position from previous frame
 x0, y0 = self.gameX, self.gameY
 
 # Prevent 0 trig errors
@@ -40,22 +52,9 @@ if not xdist and not ydist:
 magn = hyp(xdist, ydist)
 xdist, ydist = xdist/magn, ydist/magn
 
-def do_move():
-    # Increase velocity
-    self.xv += (xdist*0.9)
-    self.yv += (ydist*0.9)
-    
-    # Get total velocity magnetude
-    Vhyp = hyp(self.xv, self.yv)
-    
-    # Correct velocity speed
-    if Vhyp > 6.5: # 6.5
-        self.xv = (self.xv/Vhyp)*6.5
-        self.yv = (self.yv/Vhyp)*6.5
-
 # Move unless mouse is right on top of player
 if mouse_is_pressed('left') and not magn < 25:
-    do_move()
+    do_move(self, xdist, ydist)
 
 # Allow for arrow-key movement
 elif any(keys):
@@ -71,7 +70,7 @@ elif any(keys):
     magn = hyp(xdist, ydist)
     xdist, ydist = xdist/magn, ydist/magn
 
-    do_move()
+    do_move(self, xdist, ydist)
 
 else:
     # \"Water resistance\" deteriorate velocity
@@ -115,8 +114,8 @@ m = hyp(Dx, Dy)
 Dy = Dy/m
 
 if m > 1:
-    a = get_angle(Dy) - 90
-    self.angle = a if Dx > 0 else -a
+    k = get_angle(Dy) - 90
+    self.angle = k if Dx > 0 else -k
 
 
 
@@ -160,19 +159,20 @@ self.parent.do_loop()
 "type":"object script","start":"#Block start
 
 self.sprite = sprite('whale.png')
-self.gameX, self.gameY = 1500, -420
-self.visible = False
+self.gameX, self.gameY = 700, -200
 
 self.frames = 0","loop":"#Block loop
-if self.visible:
-    d = self.frames % 100
+if not self.visible:
+    return None
     
-    if 0 <= d < 50:
-        self.y += 0.5
-    if 50 <= d < 100:
-        self.y -= 0.5
-    
-    self.frames += 1"
+d = self.frames % 100
+
+if 0 <= d < 50:
+    self.y += 0.5
+if 50 <= d < 100:
+    self.y -= 0.5
+
+self.frames += 1"
 }
 }
 ],
@@ -190,6 +190,10 @@ if self.visible:
 },
 {"whale.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615757396.whale.png"
+}
+},
+{"texture0.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1615849695.texture0.png"
 }
 }
 ],
@@ -213,7 +217,7 @@ def hyp(s, c) -> int:
     return math.sqrt((s**2)+(c**2))
 
 def get_angle(y) -> float:
-    \"\"\"Return angle of right angle triangle.
+    \"\"\"Return angle of right angle triangle from y value.
     
     Assumes hypotenuse is 1
     \"\"\"
@@ -227,7 +231,21 @@ def deter(val, k) -> int:
 
 def get_dist(x1, y1, x2, y2):
     \"\"\"Return the distance between two points.\"\"\"
-    return math.sqrt((x2-x1)**2 + (y2-y1)**2)"
+    return math.sqrt((x2-x1)**2 + (y2-y1)**2)
+
+def do_move(pl, xdist, ydist):
+    \"\"\"Given a player and appropriate distances, update velocity.\"\"\"
+    # Increase velocity
+    pl.xv += (xdist*0.9)
+    pl.yv += (ydist*0.9)
+    
+    # Get total velocity magnitude
+    Vhyp = hyp(pl.xv, pl.yv)
+    
+    # Correct velocity speed
+    if Vhyp > 6.5: # 6.5
+        pl.xv = (pl.xv/Vhyp)*6.5
+        pl.yv = (pl.yv/Vhyp)*6.5"
 }
 },
 {"ObjLoader.py":{
