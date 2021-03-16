@@ -18,8 +18,8 @@ self.y = 0
 
 self.sprite = new_sprite(\"octopus.png\")
 
-self.scaleX = 0.7
-self.scaleY = 0.7
+self.scaleX = 0.56
+self.scaleY = 0.56
 
 #velocity values
 self.xv = 0
@@ -49,22 +49,10 @@ if not xdist and not ydist:
 magn = hyp(xdist, ydist)
 xdist, ydist = xdist/magn, ydist/magn
 
-def do_move():
-    # Increase velocity
-    self.xv += (xdist*0.9)
-    self.yv += (ydist*0.9)
-    
-    # Get total velocity magnetude
-    Vhyp = hyp(self.xv, self.yv)
-    
-    # Correct velocity speed
-    if Vhyp > 6.5: # 6.5
-        self.xv = (self.xv/Vhyp)*6.5
-        self.yv = (self.yv/Vhyp)*6.5
 
 # Move unless mouse is right on top of player
 if mouse_is_pressed('left') and not magn < 25:
-    do_move()
+    do_move(self, xdist, ydist)
 
 # Allow for arrow-key movement
 elif any(keys):
@@ -80,7 +68,7 @@ elif any(keys):
     magn = hyp(xdist, ydist)
     xdist, ydist = xdist/magn, ydist/magn
 
-    do_move()
+    do_move(self, xdist, ydist)
 
 else:
     # \"Water resistance\" deteriorate velocity
@@ -198,6 +186,10 @@ if self.visible:
 {"spritesheet.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615766188.spritesheet.png"
 }
+},
+{"block.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1615867297.block.png"
+}
 }
 ],
 "sound":[
@@ -243,7 +235,21 @@ def scale_objs(amount):
     game.bg.scaleY += amount
     for obj in game.obj_loader.objs:
         obj.scaleX += amount
-        obj.scaleY += amount"
+        obj.scaleY += amount
+
+def do_move(pl, xdist, ydist):
+    # Increase velocity
+    pl.xv += (xdist*0.9)
+    pl.yv += (ydist*0.9)
+    
+    # Get total velocity magnetude
+    Vhyp = hyp(pl.xv, pl.yv)
+    
+    # Correct velocity speed
+    if Vhyp > 6.5: # 6.5
+        pl.xv = (pl.xv/Vhyp)*6.5
+        pl.yv = (pl.yv/Vhyp)*6.5
+"
 }
 }
 ]
