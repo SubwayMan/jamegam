@@ -32,8 +32,8 @@ self.y = 0
 
 self.sprite = new_sprite(\"octopus.png\")
 
-self.scaleX = 0.7
-self.scaleY = 0.7
+self.scaleX = 0.4
+self.scaleY = 0.4
 
 #velocity values
 self.xv = 0
@@ -63,9 +63,10 @@ if not xdist and not ydist:
 magn = hyp(xdist, ydist)
 xdist, ydist = xdist/magn, ydist/magn
 
+
 # Move unless mouse is right on top of player
-if mouse_is_pressed('left') and not magn < 25:
-    do_move(self, xdist, ydist)
+if mouse_is_pressed('left') and not magn < 16:
+    do_move(xdist, ydist)
 
 # Allow for arrow-key movement
 elif any(keys):
@@ -81,7 +82,7 @@ elif any(keys):
     magn = hyp(xdist, ydist)
     xdist, ydist = xdist/magn, ydist/magn
 
-    do_move(self, xdist, ydist)
+    do_move(xdist, ydist)
 
 else:
     # \"Water resistance\" deteriorate velocity
@@ -154,10 +155,7 @@ self.sprite = sprite('waterBG.png')","loop":"#Background loop
 }
 },
 {"Whale":{
-"type":"object script","start":"#Block start
-
-
-self.sprite = sprite('whale.png')
+"type":"object script","start":"self.sprite = sprite('whale.png')
 self.x, self.y = 1500, -420
 self.visible = True
 
@@ -174,7 +172,6 @@ self.frames = 0","loop":"try:
 except AttributeError: # Whale created before player in Game start
     pass
 
-#Block loop
 if self.visible:
     d = self.frames % 100
     
@@ -187,9 +184,8 @@ if self.visible:
 }
 },
 {"Tile":{
-"type":"object script","start":"","loop":"#Tile loop
-
-"
+"type":"object script","start":"# Empty (at least for now) class that is used to make tiles\r
+# Sprite gets set anyways","loop":""
 }
 }
 ],
@@ -262,14 +258,18 @@ def get_dist(x1, y1, x2, y2):
     \"\"\"Return the distance between two points.\"\"\"
     return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
-def scale_objs(amount):
-    game.p.scaleX += amount
-    game.p.scaleY += amount
-    game.bg.scaleX += amount
-    game.bg.scaleY += amount
-    for obj in game.obj_loader.objs:
-        obj.scaleX += amount
-        obj.scaleY += amount"
+def do_move(xdist, ydist):
+    # Increase velocity
+    game.p.xv += (xdist*0.9)
+    game.p.yv += (ydist*0.9)
+    
+    # Get total velocity magnetude
+    Vhyp = hyp(game.p.xv, game.p.yv)
+    
+    # Correct velocity speed
+    if Vhyp > 6.5: # 6.5
+        game.p.xv = (game.p.xv/Vhyp)*6.5
+        game.p.yv = (game.p.yv/Vhyp)*6.5"
 }
 },
 {"make_map.py":{
@@ -283,14 +283,7 @@ def scale_objs(amount):
 }
 
 
-def do_move(pl, xdist, ydist):
-    # Increase velocity
-    pl.xv += (xdist*0.9)
-    pl.yv += (ydist*0.9)
 
-    # Get total velocity magnetude
-    Vhyp = hyp(pl.xv, pl.yv)
-    
 def make_map(layout):
     for i in range(len(layout)):
         if 'X' in layout[i
