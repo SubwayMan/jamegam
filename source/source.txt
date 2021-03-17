@@ -353,7 +353,17 @@ lvlmap = [
 
 ]
 
-make_map(lvlmap)","loop":"#Starting_Room loop
+make_map(lvlmap)
+
+make_dark_gradient(2000, -450, 500, 400, 10)
+
+# dark_fade = Tile()
+# dark_fade.sprite = sprite('black40x40.png')
+# #dark_fade.alpha = 0.5
+# dark_fade.x = 2000
+# dark_fade.y = -450
+# dark_fade.scaleX = (25/2)
+# dark_fade.scaleY = 10","loop":"#Starting_Room loop
 
 "
 }
@@ -491,6 +501,18 @@ make_map(lvlmap)","loop":"#Starting_Room loop
 },
 {"debug.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
+}
+},
+{"dark_gradient.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616016762.dark_gradient.png"
+}
+},
+{"white_to_black_grad.jpg":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616017103.white_to_black_grad.jpg"
+}
+},
+{"black40x40.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616018445.black40x40.png"
 }
 }
 ],
@@ -682,6 +704,34 @@ def make_particle(x, y, xv, yv, spr, proc):
     inst.wb = proc.x - proc.w
     inst.angle = angle_helper(xv, yv)
 "
+}
+},
+{"make_dark_gradient.py":{
+"type":"function script","head":"def make_dark_gradient(x, y, w, h, levels, direction=True, vert=False):
+    \"\"\"Make a fade to black gradient centered around x, y of width
+    w and height h.
+    
+    Arg \"levels\" specifies the number of steps to divide the gradient into
+    Arg \"direction\" is True if top/left should be the lightest part
+    Arg \"vert\" is True if gradient should be vertical
+    \"\"\"
+    
+    width = w/levels if not vert else w
+    height = h/levels if vert else h
+
+    for i in range(levels):
+        t = Tile()
+        t.sprite = sprite('black40x40.png')
+        t.scaleX = (width/40)
+        t.scaleY = (height/40)
+        
+        if vert:
+            t.x = x 
+            t.y = (y + (h/2)) - (height/2) + (height * i)
+        else:
+            t.x = (x - (w/2) + (width/2)) + (width * i)
+            t.y = y
+        t.alpha = (1/levels) * i if direction else 1 - ((1/levels) * i)"
 }
 }
 ]
