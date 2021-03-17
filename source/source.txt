@@ -231,7 +231,9 @@ if abs(pdistx) > 2200 or abs(pdisty) > 1600:
     return
 
 
-self.visible = True
+if self.debug:
+    self.visible = True
+
 pl = get_collision(self, \"Player\")
 if pl:
     p_nf, p_sf, p_wf, p_ef = pl.y0+40, pl.y0-40, pl.x0-40, pl.x0+40
@@ -241,9 +243,10 @@ if pl:
 
     elif p_ef < self.wf or p_wf >= self.ef:
         pl.x = pl.x0
+    
+    # \"friction\" slowdown while colliding
     pl.xv = deter(pl.xv, 0.84)
-    pl.yv = deter(pl.yv, 0.84)
-    "
+    pl.yv = deter(pl.yv, 0.84)"
 }
 },
 {"Psprite":{
@@ -276,15 +279,20 @@ self.persistent = True","loop":"#Psprite loop
 {"Starting_Room":{
 "type":"room script","start":"#Starting_Room start
 
-game.bg = Background()
-game.bg.sprite = sprite('gradient1.png')
+# game.bg = Background()
+# game.bg.sprite = sprite('gradient1.png')
 
 colliders = [
-    (0, -400, 95, 900)
+    (0, -400, 95, 900),
+    (1050, 0, 2200, 95),
+    (1250, -800, 2600, 95),
+    (2100, -200, 95, 500),
+    (2350, -500, 350, 95),
 
 ]
 
-blockgroup(-300, 200, colliders, True)
+# From top left
+blockgroup(-300, 200, colliders)
 
 lvlmap = [
     '.CCCCCCCCCCCCCCCCCCCC',
@@ -295,7 +303,7 @@ lvlmap = [
     'L....................TCCCC',
     'L........................',
     'L........................',
-    '.323133222313231132313132'
+    '.3231332223132311323131321'
 
 ]
 
@@ -389,6 +397,10 @@ make_map(lvlmap)","loop":"#Starting_Room loop
 {"Background1":[
 {"gradient1.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615953211.gradient1.png"
+}
+},
+{"pixel_bg_stage1.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615960001.pixel_bg_stage1.png"
 }
 }
 ]
@@ -540,12 +552,16 @@ def createblock(x, y, w, h, debug=False):
     a.x = x
     a.y = y
     #This works for 40x40 sprite. For other sprites, change divisor accordingly
+    a.sprite = new_sprite('debug.png') # For debugging
     a.scaleX = w/40
     a.scaleY = h/40
     
-    if debug:
-        a.sprite = new_sprite('debug.png') # For debugging
-    
+    if not debug:
+        a.visible = False
+        a.debug = False
+    else:
+        a.debug = True
+
     #store these for collision purposes
     a.wid = w/2
     a.ht = h/2
@@ -553,6 +569,8 @@ def createblock(x, y, w, h, debug=False):
     a.sf = y-a.ht
     a.wf = x-a.wid
     a.ef = x+a.wid
+    
+    return a
 
 def blockgroup(x, y, posl, debug=False):
     \"\"\"Creates a group of blocks at a x and y position,
