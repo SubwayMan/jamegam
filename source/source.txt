@@ -4,15 +4,15 @@
 "type":"game script","start":"self.bg = Background()\r
 level = [\r
         '...CCC...',\r
-        '..3W.W3..',\r
-        '...W.W...',\r
-        '...W.W...',\r
-        '...W.W...',\r
-        '...W.W...',\r
-        '...WXW...',\r
-        '...W.W...',\r
+        '..3L.R3..',\r
+        '...L.R...',\r
+        '...L.R...',\r
+        '...L.R...',\r
+        '...L.R...',\r
+        '...LXR...',\r
+        '...L.R...',\r
         '.2CC.CC2.',\r
-        '.W.....W.',\r
+        '.L.....R.',\r
         '.1232131.'
 ]\r
 make_map(level)\r
@@ -27,7 +27,9 @@ bigwhale.x = bigwhale.y = -700\r
 self.fpslog = int(time.time())\r
 self.fpscount = 0\r
 \r
-createblock(400, 400, 200, 200, \"debug.png\")","loop":"self.fpscount += 1\r
+createblock(400, 400, 200, 200)\r
+\r
+set_room('Starting_Room')","loop":"self.fpscount += 1\r
 ntime = int(time.time())\r
 \r
 if ntime > self.fpslog:\r
@@ -41,7 +43,7 @@ if ntime > self.fpslog:\r
 "type":"object script","start":"# initialise pos, sprite
 self.x = 0
 self.y = 0
-self.z = 5
+#self.z = 1000
 self.sprite = new_sprite(\"debug.png\")
 
 self.persistent = True
@@ -224,7 +226,7 @@ pdistx = self.x - game.p.x
 pdisty = self.y - game.p.y
 
 
-if abs(pdistx) > 1000 or abs(pdisty) > 600:
+if abs(pdistx) > 2200 or abs(pdisty) > 1600:
     self.visible = False
     return
 
@@ -239,15 +241,23 @@ if pl:
 
     elif p_ef < self.wf or p_wf >= self.ef:
         pl.x = pl.x0
+    pl.xv = deter(pl.xv, 0.84)
+    pl.yv = deter(pl.yv, 0.84)
     "
 }
 },
 {"Psprite":{
 "type":"object script","start":"#Hitbox start
-self.scaleX = 0.6
-self.scaleY = 0.6
+self.z = 1000
+self.scaleX = 1
+self.scaleY = 1
+
 self.sprite = new_sprite(\"octopus.png\")
-","loop":"#Psprite loop
+spritesheet = sprite('dynamic_squid.png', 4, 4)
+self.anim = animation(spritesheet, 8, 0, 12)
+set_animation(self, self.anim)
+
+self.persistent = True","loop":"#Psprite loop
 
 "
 }
@@ -266,7 +276,30 @@ self.sprite = new_sprite(\"octopus.png\")
 {"Starting_Room":{
 "type":"room script","start":"#Starting_Room start
 
-","loop":"#Starting_Room loop
+game.bg = Background()
+game.bg.sprite = sprite('gradient1.png')
+
+colliders = [
+    (0, -400, 95, 900)
+
+]
+
+blockgroup(-300, 200, colliders, True)
+
+lvlmap = [
+    '.CCCCCCCCCCCCCCCCCCCC',
+    'L....................R',
+    'L..X.................R',
+    'L....................R',
+    'L....................R',
+    'L....................TCCCC',
+    'L........................',
+    'L........................',
+    '.323133222313231132313132'
+
+]
+
+make_map(lvlmap)","loop":"#Starting_Room loop
 
 "
 }
@@ -291,17 +324,33 @@ self.sprite = new_sprite(\"octopus.png\")
 }
 ],
 "texture":[
-{"Tiles":[
+{"tempTiles":[
 {"ground1.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226216.1615868393.ground1.png"
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954594.ground1.png"
 }
 },
 {"ground2.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226216.1615868400.ground2.png"
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954601.ground2.png"
 }
 },
 {"ground3.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226216.1615868409.ground3.png"
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954609.ground3.png"
+}
+},
+{"wall_right.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954627.wall_right.png"
+}
+},
+{"wall_left.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954929.wall_left.png"
+}
+},
+{"ciel.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954637.ciel.png"
+}
+},
+{"topright_inside.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615955449.topright_inside.png"
 }
 }
 ]
@@ -325,15 +374,54 @@ self.sprite = new_sprite(\"octopus.png\")
 {"octopus.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615621603.octopus.png"
 }
+},
+{"dynamic_squid.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615957753.dynamic_squid.png"
+}
+}
+]
+},
+{"Stage1":[
+{"Tiles1":[
+
+]
+},
+{"Background1":[
+{"gradient1.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615953211.gradient1.png"
+}
+}
+]
+}
+]
+},
+{"Stage2":[
+{"Tiles2":[
+
+]
+},
+{"Background2":[
+{"waterBG.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615667719.waterBG.png"
+}
+}
+]
+}
+]
+},
+{"Stage3":[
+{"Tiles3":[
+
+]
+},
+{"Background3":[
+
+]
 }
 ]
 },
 {"debug.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
-}
-},
-{"waterBG.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615667719.waterBG.png"
 }
 }
 ],
@@ -396,11 +484,13 @@ def update_spr(plspr, x, y, angle):
 },
 {"make_map.py":{
 "type":"function script","head":"tile_map = {
-    'C': sprite('ground1.png'), # placeholder ceiling
-    'W': sprite('ground2.png'), # placeholder wall
+    'C': sprite('ciel.png'), # placeholder ceiling
+    'L': sprite('wall_left.png'),
+    'R': sprite('wall_right.png'),
     '1': sprite('ground1.png'),
     '2': sprite('ground2.png'),
     '3': sprite('ground3.png'),
+    'T': sprite('topright_inside.png')
 
 }
 
@@ -443,7 +533,7 @@ def make_map(layout):
 },
 {"gamecreation.py":{
 "type":"function script","head":"
-def createblock(x, y, w, h, sprname=\"block.png\"):
+def createblock(x, y, w, h, debug=False):
     \"\"\"Basic opaque block. Takes args for pos, size, and optional block sprite.\"\"\"
     #construct block and set args
     a = Block()
@@ -452,7 +542,10 @@ def createblock(x, y, w, h, sprname=\"block.png\"):
     #This works for 40x40 sprite. For other sprites, change divisor accordingly
     a.scaleX = w/40
     a.scaleY = h/40
-    a.sprite = new_sprite(sprname)
+    
+    if debug:
+        a.sprite = new_sprite('debug.png') # For debugging
+    
     #store these for collision purposes
     a.wid = w/2
     a.ht = h/2
@@ -461,12 +554,12 @@ def createblock(x, y, w, h, sprname=\"block.png\"):
     a.wf = x-a.wid
     a.ef = x+a.wid
 
-def blockgroup(x, y, sprname, posl):
+def blockgroup(x, y, posl, debug=False):
     \"\"\"Creates a group of blocks at a x and y position,
     given a list  of block constructs. posl is a list of tuples,
     each of the form (x, y, w, h).\"\"\"
     for bx, by, bw, bh in posl:
-        createblock(bx+x, by+y, bw, bh, sprname)"
+        createblock(bx+x, by+y, bw, bh, debug)"
 }
 }
 ]
