@@ -47,7 +47,6 @@ if ntime > self.fpslog:\r
 "type":"object script","start":"# initialise pos, sprite
 self.x = 0
 self.y = 0
-#self.z = 1000
 self.sprite = new_sprite(\"debug.png\")
 
 self.persistent = True
@@ -161,8 +160,29 @@ if key_is_pressed('w'):
 if key_is_pressed('s'):
     self.y_off = max(self.y_off-1, -16)
 
-move_camera((xdist - xdist/1.1) + self.x_off,
-            (ydist - ydist/1.1) + self.y_off)
+
+new_camX = camX + (xdist - xdist/1.1) + self.x_off
+if new_camX < game.cam_limit_x[0
+]:
+    new_camX = game.cam_limit_x[0
+]
+elif new_camX > game.cam_limit_x[1
+]:
+    new_camX = game.cam_limit_x[1
+]
+
+new_camY = camY + (ydist - ydist/1.1) + self.y_off
+if new_camY > game.cam_limit_y[0
+]:
+    new_camY = game.cam_limit_y[0
+]
+elif new_camY < game.cam_limit_y[1
+]:
+    new_camY = game.cam_limit_y[1
+]
+
+set_camera(new_camX, new_camY)
+            
 
 
 # rotate in direction of movement
@@ -355,15 +375,10 @@ lvlmap = [
 
 make_map(lvlmap)
 
-make_dark_gradient(2000, -450, 500, 400, 10)
+make_dark_gradient(2000, -450, 500, 400, 20)
 
-# dark_fade = Tile()
-# dark_fade.sprite = sprite('black40x40.png')
-# #dark_fade.alpha = 0.5
-# dark_fade.x = 2000
-# dark_fade.y = -450
-# dark_fade.scaleX = (25/2)
-# dark_fade.scaleY = 10","loop":"#Starting_Room loop
+game.cam_limit_x = (290, 1560)
+game.cam_limit_y = (-110, -290)","loop":"#Starting_Room loop
 
 "
 }
@@ -419,6 +434,10 @@ make_dark_gradient(2000, -450, 500, 400, 10)
 },
 {"topright_inside.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615955449.topright_inside.png"
+}
+},
+{"corner_tl.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616022380.corner_tl.png"
 }
 }
 ]
@@ -596,7 +615,7 @@ def angle_helper(Dx, Dy) -> int:
     '1': sprite('ground1.png'),
     '2': sprite('ground2.png'),
     '3': sprite('ground3.png'),
-    'T': sprite('topright_inside.png')
+    'T': sprite('topright_inside.png'),
 
 }
 
@@ -707,13 +726,14 @@ def make_particle(x, y, xv, yv, spr, proc):
 }
 },
 {"make_dark_gradient.py":{
-"type":"function script","head":"def make_dark_gradient(x, y, w, h, levels, direction=True, vert=False):
+"type":"function script","head":"def make_dark_gradient(x, y, w, h, levels, direction=True, vert=False, over=True):
     \"\"\"Make a fade to black gradient centered around x, y of width
     w and height h.
     
     Arg \"levels\" specifies the number of steps to divide the gradient into
     Arg \"direction\" is True if top/left should be the lightest part
     Arg \"vert\" is True if gradient should be vertical
+    Arg \"over\" decides if the gradient should go over the player
     \"\"\"
     
     width = w/levels if not vert else w
@@ -727,11 +747,13 @@ def make_particle(x, y, xv, yv, spr, proc):
         
         if vert:
             t.x = x 
-            t.y = (y + (h/2)) - (height/2) + (height * i)
+            t.y = (y + (h/2)) - (height/2) - (height * i)
         else:
             t.x = (x - (w/2) + (width/2)) + (width * i)
             t.y = y
-        t.alpha = (1/levels) * i if direction else 1 - ((1/levels) * i)"
+        t.alpha = (1/(levels-1)) * i if direction else 1 - ((1/(levels-1)) * i)
+        
+        if over: t.z = 1001"
 }
 }
 ]
