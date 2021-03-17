@@ -21,9 +21,8 @@ w = Whale()\r
 self.p = Player()\r
 \r
 bigwhale = Whale()\r
-bigwhale.scaleX = bigwhale.scaleY = 2\r
+bigwhale.scaleX = bigwhale.scaleY = 3.5\r
 bigwhale.x = bigwhale.y = -700\r
-\r
 \r
 self.fpslog = int(time.time())\r
 self.fpscount = 0\r
@@ -39,15 +38,15 @@ if ntime > self.fpslog:\r
 }
 },
 {"Player":{
-"type":"object script","start":"#initialise pos, sprite
+"type":"object script","start":"# initialise pos, sprite
 self.x = 0
 self.y = 0
 self.z = 5
 self.sprite = new_sprite(\"debug.png\")
 
-self.persist = True
+self.persistent = True
 
-#velocity values
+# velocity values
 self.xv = 0
 self.yv = 0
 self.boostx, self.boosty = 0, 0
@@ -55,12 +54,13 @@ self.boostx, self.boosty = 0, 0
 self.y_off = 0
 self.x_off = 0
 
-#Store previous values
+# store previous values
 self.x0 = 0
 self.y0 = 0
 
 self.spr_obg = Psprite()
-self.spr_obg.y = 10
+
+# remove for hitbox debug
 self.visible = False
 
 self.scaleX = 2
@@ -68,30 +68,30 @@ self.scaleY = 2","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
-# For arrow key movement
+# for arrow key movement
 keys = [key_is_pressed('arrowRight'), 
         key_is_pressed('arrowLeft'), 
         key_is_pressed('arrowUp'),
         key_is_pressed('arrowDown')
 ]
 
-# Store previous position for movement rotation
+# store previous position for movement rotation
 self.x0, self.y0 = self.x, self.y
 
-# Prevent 0 trig errors
+# prevent 0 trig errors
 if not xdist and not ydist:
     xdist = 1
 
-# Get hypotenuse and adjust x & y for hyp of length 1
+# get hypotenuse and adjust x & y for hyp of length 1
 magn = hyp(xdist, ydist)
 xdist, ydist = xdist/magn, ydist/magn
 
 
-# Move unless mouse is right on top of player
+# move unless mouse is right on top of player
 if mouse_is_pressed('left') and not magn < 25:
     do_move(self, xdist, ydist)
 
-# Allow for arrow-key movement
+# allow for arrow-key movement
 elif any(keys):
     xdist=ydist=0
     if keys[0
@@ -108,31 +108,31 @@ elif any(keys):
     do_move(self, xdist, ydist)
 
 else:
-    # \"Water resistance\" deteriorate velocity
+    # \"water resistance\" deteriorate velocity
     self.xv = deter(self.xv, 0.95)
     self.yv = deter(self.yv, 0.95)
     
-# Dash
+# dash
 if key_was_pressed(' ') or mouse_was_pressed('right'):
     self.boostx = xdist*13
     self.boosty = ydist*13
 
-# Deteriorate boost velocity
+# deteriorate boost velocity
 self.boostx, self.boosty = deter(self.boostx, 0.94), deter(self.boosty, 0.94)
 
-# Final movement values in x and y
+# final movement values in x and y
 a, b = (self.xv+self.boostx), (self.yv+self.boosty)
 
 self.x += a
 self.y += b
 
 
-# Distance from zero after move
+# distance from zero after move
 xdist = self.x - camX
 ydist = self.y - camY
 
-# Control camera offset with WASD
-# Probably not permanent, just a demonstration of how camera can be offset
+# control camera offset with WASD
+# probably not permanent, just a demonstration of how camera can be offset
 if key_is_pressed('d'):
     self.x_off = min(self.x_off+1, 18)
 if key_is_pressed('a'):
@@ -146,7 +146,7 @@ move_camera((xdist - xdist/1.1) + self.x_off,
             (ydist - ydist/1.1) + self.y_off)
 
 
-# Rotate in direction of movement
+# rotate in direction of movement
 Dx, Dy = self.x-self.x0, self.y-self.y0
 if not Dx and not Dy: Dx = 1
 m = hyp(Dx, Dy)
@@ -176,7 +176,13 @@ self.sprite = sprite('waterBG.png')","loop":"#Background loop
 }
 },
 {"Whale":{
-"type":"object script","start":"self.sprite = sprite('whale.png')
+"type":"object script","start":"sprite_sheet = sprite('whalesheet_gap.png', 1, 4)
+self.anim = animation(sprite_sheet, 4, 0, 3)
+set_animation(self, self.anim)
+self.scaleX = self.scaleY = 2
+
+#self.sprite = sprite('whale.png')
+
 self.x, self.y = 1500, -420
 self.visible = True
 
@@ -248,25 +254,44 @@ self.sprite = new_sprite(\"octopus.png\")
 }
 ],
 "room":[
+{"Menu":{
+"type":"room script","start":"#Menu start
 
+","loop":"#Menu loop
+
+"
+}
+},
+{"Stage1":[
+{"Starting_Room":{
+"type":"room script","start":"#Starting_Room start
+
+","loop":"#Starting_Room loop
+
+"
+}
+},
+{"Room1":{
+"type":"room script","start":"#Room1 start
+
+","loop":"#Room1 loop
+
+"
+}
+}
+]
+},
+{"Stage3":[
+
+]
+},
+{"Stage2":[
+
+]
+}
 ],
 "texture":[
-{"octopus.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615621603.octopus.png"
-}
-},
-{"waterBG.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615667719.waterBG.png"
-}
-},
-{"whale.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615757396.whale.png"
-}
-},
-{"spritesheet.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615766188.spritesheet.png"
-}
-},
+{"Tiles":[
 {"ground1.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226216.1615868393.ground1.png"
 }
@@ -278,9 +303,37 @@ self.sprite = new_sprite(\"octopus.png\")
 {"ground3.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226216.1615868409.ground3.png"
 }
+}
+]
+},
+{"NPCs":[
+{"whalesheet.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615951193.whalesheet.png"
+}
+},
+{"whalesheet_gap.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615951543.whalesheet_gap.png"
+}
+},
+{"whale.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615757396.whale.png"
+}
+}
+]
+},
+{"Player":[
+{"octopus.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615621603.octopus.png"
+}
+}
+]
 },
 {"debug.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
+}
+},
+{"waterBG.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615667719.waterBG.png"
 }
 }
 ],
