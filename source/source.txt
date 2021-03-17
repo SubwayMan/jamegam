@@ -22,18 +22,30 @@ self.p = Player()\r
 \r
 bigwhale = Whale()\r
 bigwhale.scaleX = bigwhale.scaleY = 2\r
-bigwhale.x = bigwhale.y = -700","loop":""
+bigwhale.x = bigwhale.y = -700\r
+\r
+\r
+self.fpslog = int(time.time())\r
+self.fpscount = 0\r
+\r
+createblock(400, 400, 200, 200, \"debug.png\")","loop":"self.fpscount += 1\r
+ntime = int(time.time())\r
+\r
+if ntime > self.fpslog:\r
+    self.fpslog = ntime\r
+    print(f\"Frames elapsed in last second: {self.fpscount
+}\")\r
+    self.fpscount = 0"
 }
 },
 {"Player":{
 "type":"object script","start":"#initialise pos, sprite
 self.x = 0
 self.y = 0
+self.z = 5
+self.sprite = new_sprite(\"debug.png\")
 
-self.sprite = new_sprite(\"octopus.png\")
-
-self.scaleX = 0.4
-self.scaleY = 0.4
+self.persist = True
 
 #velocity values
 self.xv = 0
@@ -41,7 +53,18 @@ self.yv = 0
 self.boostx, self.boosty = 0, 0
 
 self.y_off = 0
-self.x_off = 0","loop":"camX, camY = camera_x(), camera_y()
+self.x_off = 0
+
+#Store previous values
+self.x0 = 0
+self.y0 = 0
+
+self.spr_obg = Psprite()
+self.spr_obg.y = 10
+self.visible = False
+
+self.scaleX = 2
+self.scaleY = 2","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
@@ -53,7 +76,7 @@ keys = [key_is_pressed('arrowRight'),
 ]
 
 # Store previous position for movement rotation
-x0, y0 = self.x, self.y
+self.x0, self.y0 = self.x, self.y
 
 # Prevent 0 trig errors
 if not xdist and not ydist:
@@ -65,8 +88,8 @@ xdist, ydist = xdist/magn, ydist/magn
 
 
 # Move unless mouse is right on top of player
-if mouse_is_pressed('left') and not magn < 16:
-    do_move(xdist, ydist)
+if mouse_is_pressed('left') and not magn < 25:
+    do_move(self, xdist, ydist)
 
 # Allow for arrow-key movement
 elif any(keys):
@@ -82,7 +105,7 @@ elif any(keys):
     magn = hyp(xdist, ydist)
     xdist, ydist = xdist/magn, ydist/magn
 
-    do_move(xdist, ydist)
+    do_move(self, xdist, ydist)
 
 else:
     # \"Water resistance\" deteriorate velocity
@@ -122,13 +145,9 @@ if key_is_pressed('s'):
 move_camera((xdist - xdist/1.1) + self.x_off,
             (ydist - ydist/1.1) + self.y_off)
 
-# game.bg.x -= xdist - xdist/1.1 + self.x_off
-# game.bg.y -= ydist - ydist/1.1 + self.y_off
-# game.obj_loader.update_pos((xdist - xdist/1.1 + self.x_off),
-#                             (ydist - ydist/1.1) + self.y_off)
 
 # Rotate in direction of movement
-Dx, Dy = self.x-x0, self.y-y0
+Dx, Dy = self.x-self.x0, self.y-self.y0
 if not Dx and not Dy: Dx = 1
 m = hyp(Dx, Dy)
 Dy = Dy/m
@@ -136,6 +155,8 @@ Dy = Dy/m
 if m > 1:
     a = get_angle(Dy) - 90
     self.angle = a if Dx > 0 else -a
+
+update_spr(self.spr_obg, self.x, self.y, self.angle)
 
 
 
@@ -187,6 +208,43 @@ if self.visible:
 "type":"object script","start":"# Empty (at least for now) class that is used to make tiles\r
 # Sprite gets set anyways","loop":""
 }
+},
+{"Block":{
+"type":"object script","start":"#Block start
+
+","loop":"
+# Exit the loop early if far from player
+pdistx = self.x - game.p.x
+pdisty = self.y - game.p.y
+
+
+if abs(pdistx) > 1000 or abs(pdisty) > 600:
+    self.visible = False
+    return
+
+
+self.visible = True
+pl = get_collision(self, \"Player\")
+if pl:
+    p_nf, p_sf, p_wf, p_ef = pl.y0+40, pl.y0-40, pl.x0-40, pl.x0+40
+
+    if p_nf < self.sf or p_sf > self.nf:
+        pl.y = pl.y0
+
+    elif p_ef < self.wf or p_wf >= self.ef:
+        pl.x = pl.x0
+    "
+}
+},
+{"Psprite":{
+"type":"object script","start":"#Hitbox start
+self.scaleX = 0.6
+self.scaleY = 0.6
+self.sprite = new_sprite(\"octopus.png\")
+","loop":"#Psprite loop
+
+"
+}
 }
 ],
 "room":[
@@ -220,6 +278,10 @@ if self.visible:
 {"ground3.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226216.1615868409.ground3.png"
 }
+},
+{"debug.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
+}
 }
 ],
 "sound":[
@@ -229,7 +291,9 @@ if self.visible:
 {"imports.py":{
 "type":"function script","head":"#File for imports to run before everything
 import math
-from collections import deque
+import time
+import random
+
 "
 }
 },
@@ -258,18 +322,23 @@ def get_dist(x1, y1, x2, y2):
     \"\"\"Return the distance between two points.\"\"\"
     return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
-def do_move(xdist, ydist):
+def do_move(pl, xdist, ydist):
     # Increase velocity
-    game.p.xv += (xdist*0.9)
-    game.p.yv += (ydist*0.9)
+    pl.xv += (xdist*0.9)
+    pl.yv += (ydist*0.9)
     
     # Get total velocity magnetude
-    Vhyp = hyp(game.p.xv, game.p.yv)
+    Vhyp = hyp(pl.xv, pl.yv)
     
     # Correct velocity speed
     if Vhyp > 6.5: # 6.5
-        game.p.xv = (game.p.xv/Vhyp)*6.5
-        game.p.yv = (game.p.yv/Vhyp)*6.5"
+        pl.xv = (pl.xv/Vhyp)*6.5
+        pl.yv = (pl.yv/Vhyp)*6.5
+
+def update_spr(plspr, x, y, angle):
+    plspr.x = x
+    plspr.y = y
+    plspr.angle = angle"
 }
 },
 {"make_map.py":{
@@ -317,6 +386,34 @@ def make_map(layout):
 ][j
 ]
 ]"
+}
+},
+{"gamecreation.py":{
+"type":"function script","head":"
+def createblock(x, y, w, h, sprname=\"block.png\"):
+    \"\"\"Basic opaque block. Takes args for pos, size, and optional block sprite.\"\"\"
+    #construct block and set args
+    a = Block()
+    a.x = x
+    a.y = y
+    #This works for 40x40 sprite. For other sprites, change divisor accordingly
+    a.scaleX = w/40
+    a.scaleY = h/40
+    a.sprite = new_sprite(sprname)
+    #store these for collision purposes
+    a.wid = w/2
+    a.ht = h/2
+    a.nf = y+a.ht
+    a.sf = y-a.ht
+    a.wf = x-a.wid
+    a.ef = x+a.wid
+
+def blockgroup(x, y, sprname, posl):
+    \"\"\"Creates a group of blocks at a x and y position,
+    given a list  of block constructs. posl is a list of tuples,
+    each of the form (x, y, w, h).\"\"\"
+    for bx, by, bw, bh in posl:
+        createblock(bx+x, by+y, bw, bh, sprname)"
 }
 }
 ]
