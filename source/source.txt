@@ -33,7 +33,9 @@ createblock(400, 400, 200, 200)\r
 set_room('Starting_Room')\r
 \r
 make_current(0, 0, 200, 200, 5, 2)\r
-make_current(500, -500, 400, 400, 0, 9)","loop":"self.fpscount += 1\r
+make_current(500, -500, 400, 400, 0, 9)\r
+make_booster(500, 0, 225)\r
+make_booster(0, -500, -45)","loop":"self.fpscount += 1\r
 ntime = int(time.time())\r
 \r
 if ntime > self.fpslog:\r
@@ -43,10 +45,47 @@ if ntime > self.fpslog:\r
     self.fpscount = 0"
 }
 },
+{"Whale":{
+"type":"object script","start":"sprite_sheet = sprite('whalesheet_gap.png', 1, 4)
+self.anim = animation(sprite_sheet, 4, 0, 3)
+set_animation(self, self.anim)
+self.scaleX = self.scaleY = 2
+
+#self.sprite = sprite('whale.png')
+
+self.x, self.y = 1500, -420
+self.visible = True
+
+self.frames = 0","loop":"try:
+    # Exit the loop early if far from player
+    pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
+    if pdist > 1700:
+        if self.visible:
+            self.visible = False
+        return
+    else:
+        if not self.visible:
+            self.visible = True
+except AttributeError: # Whale created before player in Game start
+    pass
+
+if self.visible:
+    d = self.frames % 100
+    
+    if 0 <= d < 50:
+        self.y += 0.5
+    if 50 <= d < 100:
+        self.y -= 0.5
+    
+    self.frames += 1"
+}
+},
+{"gameplay":[
 {"Player":{
 "type":"object script","start":"# initialise pos, sprite
 self.x = 0
 self.y = 0
+#self.z = 1000
 self.sprite = new_sprite(\"debug.png\")
 
 self.persistent = True
@@ -74,7 +113,9 @@ self.scaleY = 2
 self.xMOD = 0
 self.yMOD = 0
 self.xext = 0
-self.yext = 0","loop":"camX, camY = camera_x(), camera_y()
+self.yext = 0
+
+self.dash_cool = int(time.time())","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
@@ -124,9 +165,11 @@ else:
     self.yv = deter(self.yv, 0.95)
     
 # dash
-if key_was_pressed(' ') or mouse_was_pressed('right'):
-    self.boostx = xdist*13
-    self.boosty = ydist*13
+fw = int(time.time())
+if ((key_was_pressed(' ') or mouse_was_pressed('right')) and fw>self.dash_cool):
+    self.boostx = xdist*16
+    self.boosty = ydist*16
+    self.dash_cool = fw
 
 #for external movement modifiers(boosters, jelly)
 self.xext = (self.xMOD if abs(self.xMOD)>abs(self.xext) else self.xext)
@@ -160,29 +203,8 @@ if key_is_pressed('w'):
 if key_is_pressed('s'):
     self.y_off = max(self.y_off-1, -16)
 
-
-new_camX = camX + (xdist - xdist/1.1) + self.x_off
-if new_camX < game.cam_limit_x[0
-]:
-    new_camX = game.cam_limit_x[0
-]
-elif new_camX > game.cam_limit_x[1
-]:
-    new_camX = game.cam_limit_x[1
-]
-
-new_camY = camY + (ydist - ydist/1.1) + self.y_off
-if new_camY > game.cam_limit_y[0
-]:
-    new_camY = game.cam_limit_y[0
-]
-elif new_camY < game.cam_limit_y[1
-]:
-    new_camY = game.cam_limit_y[1
-]
-
-set_camera(new_camX, new_camY)
-            
+move_camera((xdist - xdist/1.1) + self.x_off,
+            (ydist - ydist/1.1) + self.y_off)
 
 
 # rotate in direction of movement
@@ -200,54 +222,6 @@ update_spr(self.spr_obg, self.x, self.y, self.angle)
 
 # Empty lines because I don't like it when code 
 # is at the bottom of the screen"
-}
-},
-{"Background":{
-"type":"object script","start":"#Background start
-
-self.sprite = sprite('waterBG.png')","loop":"#Background loop
-
-"
-}
-},
-{"Whale":{
-"type":"object script","start":"sprite_sheet = sprite('whalesheet_gap.png', 1, 4)
-self.anim = animation(sprite_sheet, 4, 0, 3)
-set_animation(self, self.anim)
-self.scaleX = self.scaleY = 2
-
-#self.sprite = sprite('whale.png')
-
-self.x, self.y = 1500, -420
-self.visible = True
-
-self.frames = 0","loop":"try:
-    # Exit the loop early if far from player
-    pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
-    if pdist > 1700:
-        if self.visible:
-            self.visible = False
-        return
-    else:
-        if not self.visible:
-            self.visible = True
-except AttributeError: # Whale created before player in Game start
-    pass
-
-if self.visible:
-    d = self.frames % 100
-    
-    if 0 <= d < 50:
-        self.y += 0.5
-    if 50 <= d < 100:
-        self.y -= 0.5
-    
-    self.frames += 1"
-}
-},
-{"Tile":{
-"type":"object script","start":"# Empty (at least for now) class that is used to make tiles\r
-# Sprite gets set anyways","loop":""
 }
 },
 {"Block":{
@@ -283,19 +257,20 @@ if pl:
     pl.yv = deter(pl.yv, 0.84)"
 }
 },
-{"Psprite":{
-"type":"object script","start":"#Hitbox start
-self.z = 1000
-self.scaleX = 1
-self.scaleY = 1
+{"Booster":{
+"type":"object script","start":"#Booster start
+self.sprite = new_sprite(\"booster.png\")
+self.scaleX = 1.5
+self.scaleY = 1.5","loop":"#Booster loop
 
-self.sprite = new_sprite(\"octopus.png\")
-spritesheet = sprite('dynamic_squid.png', 4, 4)
-self.anim = animation(spritesheet, 10, 0, 12)
-set_animation(self, self.anim)
-
-self.persistent = True","loop":"#Psprite loop
-
+k = get_collision(self, \"Player\")
+if k:
+    k.xv = 0
+    k.yv = 0
+    k.boostx = 0
+    k.boosty = 0
+    k.xMOD += self.force * math.cos(math.radians(self.angle+90))
+    k.yMOD += self.force * math.sin(math.radians(self.angle+90))
 "
 }
 },
@@ -319,6 +294,30 @@ if k:
 
 "
 }
+}
+]
+},
+{"Art":[
+{"Psprite":{
+"type":"object script","start":"#Hitbox start
+self.z = 1000
+self.scaleX = 1
+self.scaleY = 1
+
+self.sprite = new_sprite(\"octopus.png\")
+spritesheet = sprite('dynamic_squid.png', 4, 4)
+self.anim = animation(spritesheet, 10, 0, 12)
+set_animation(self, self.anim)
+
+self.persistent = True","loop":"#Psprite loop
+
+"
+}
+},
+{"Tile":{
+"type":"object script","start":"# Empty (at least for now) class that is used to make tiles\r
+# Sprite gets set anyways","loop":""
+}
 },
 {"Particle":{
 "type":"object script","start":"
@@ -330,6 +329,16 @@ self.x += self.xv
 self.y += self.yv
 "
 }
+},
+{"Background":{
+"type":"object script","start":"#Background start
+
+self.sprite = sprite('waterBG.png')","loop":"#Background loop
+
+"
+}
+}
+]
 }
 ],
 "room":[
@@ -375,10 +384,15 @@ lvlmap = [
 
 make_map(lvlmap)
 
-make_dark_gradient(2000, -450, 500, 400, 20)
+make_dark_gradient(2000, -450, 500, 400, 10)
 
-game.cam_limit_x = (290, 1560)
-game.cam_limit_y = (-110, -290)","loop":"#Starting_Room loop
+# dark_fade = Tile()
+# dark_fade.sprite = sprite('black40x40.png')
+# #dark_fade.alpha = 0.5
+# dark_fade.x = 2000
+# dark_fade.y = -450
+# dark_fade.scaleX = (25/2)
+# dark_fade.scaleY = 10","loop":"#Starting_Room loop
 
 "
 }
@@ -393,11 +407,11 @@ game.cam_limit_y = (-110, -290)","loop":"#Starting_Room loop
 }
 ]
 },
-{"Stage3":[
+{"Stage2":[
 
 ]
 },
-{"Stage2":[
+{"Stage3":[
 
 ]
 }
@@ -434,10 +448,6 @@ game.cam_limit_y = (-110, -290)","loop":"#Starting_Room loop
 },
 {"topright_inside.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615955449.topright_inside.png"
-}
-},
-{"corner_tl.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616022380.corner_tl.png"
 }
 }
 ]
@@ -508,6 +518,13 @@ game.cam_limit_y = (-110, -290)","loop":"#Starting_Room loop
 {"Background3":[
 
 ]
+}
+]
+},
+{"Gameplay_elements":[
+{"booster.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616022757.booster.png"
+}
 }
 ]
 },
@@ -615,7 +632,7 @@ def angle_helper(Dx, Dy) -> int:
     '1': sprite('ground1.png'),
     '2': sprite('ground2.png'),
     '3': sprite('ground3.png'),
-    'T': sprite('topright_inside.png'),
+    'T': sprite('topright_inside.png')
 
 }
 
@@ -722,18 +739,29 @@ def make_particle(x, y, xv, yv, spr, proc):
     inst.eb = proc.x + proc.w
     inst.wb = proc.x - proc.w
     inst.angle = angle_helper(xv, yv)
+
+def make_booster(x, y, angle, force=30):
+    \"\"\"A booster that launches you at a certain angle when touched.
+    Force is given a default value, as for the sake of gameplay, faster boosters should
+    be indicated as such to the player.\"\"\"
+    inst = Booster()
+    inst.x = x
+    inst.y = y
+    inst.angle = angle
+    inst.force = force
+
+
 "
 }
 },
 {"make_dark_gradient.py":{
-"type":"function script","head":"def make_dark_gradient(x, y, w, h, levels, direction=True, vert=False, over=True):
+"type":"function script","head":"def make_dark_gradient(x, y, w, h, levels, direction=True, vert=False):
     \"\"\"Make a fade to black gradient centered around x, y of width
     w and height h.
     
     Arg \"levels\" specifies the number of steps to divide the gradient into
     Arg \"direction\" is True if top/left should be the lightest part
     Arg \"vert\" is True if gradient should be vertical
-    Arg \"over\" decides if the gradient should go over the player
     \"\"\"
     
     width = w/levels if not vert else w
@@ -747,13 +775,11 @@ def make_particle(x, y, xv, yv, spr, proc):
         
         if vert:
             t.x = x 
-            t.y = (y + (h/2)) - (height/2) - (height * i)
+            t.y = (y + (h/2)) - (height/2) + (height * i)
         else:
             t.x = (x - (w/2) + (width/2)) + (width * i)
             t.y = y
-        t.alpha = (1/(levels-1)) * i if direction else 1 - ((1/(levels-1)) * i)
-        
-        if over: t.z = 1001"
+        t.alpha = (1/levels) * i if direction else 1 - ((1/levels) * i)"
 }
 }
 ]
