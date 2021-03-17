@@ -35,7 +35,8 @@ set_room('Starting_Room')\r
 make_current(0, 0, 200, 200, 5, 2)\r
 make_current(500, -500, 400, 400, 0, 9)\r
 make_booster(500, 0, 225)\r
-make_booster(0, -500, -45)","loop":"self.fpscount += 1\r
+make_booster(0, -500, -45)\r
+","loop":"self.fpscount += 1\r
 ntime = int(time.time())\r
 \r
 if ntime > self.fpslog:\r
@@ -203,8 +204,29 @@ if key_is_pressed('w'):
 if key_is_pressed('s'):
     self.y_off = max(self.y_off-1, -16)
 
-move_camera((xdist - xdist/1.1) + self.x_off,
-            (ydist - ydist/1.1) + self.y_off)
+new_camX = camX + (xdist - xdist/1.1) + self.x_off
+
+if new_camX < game.cam_limit_x[0
+]:
+    new_camX = game.cam_limit_x[0
+]
+elif new_camX > game.cam_limit_x[1
+]:
+    new_camX = game.cam_limit_x[1
+]
+
+new_camY = camY + (ydist - ydist/1.1) + self.y_off
+if new_camY > game.cam_limit_y[0
+]:
+    new_camY = game.cam_limit_y[0
+]
+elif new_camY < game.cam_limit_y[1
+]:
+    new_camY = game.cam_limit_y[1
+]
+
+set_camera(new_camX, new_camY)
+
 
 
 # rotate in direction of movement
@@ -639,6 +661,10 @@ def angle_helper(Dx, Dy) -> int:
 
 
 def make_map(layout):
+
+    game.cam_limit_x = (290, 1560)
+    game.cam_limit_y = (-110, -290)
+
     for i in range(len(layout)):
         if 'X' in layout[i
 ]:
@@ -755,13 +781,14 @@ def make_booster(x, y, angle, force=30):
 }
 },
 {"make_dark_gradient.py":{
-"type":"function script","head":"def make_dark_gradient(x, y, w, h, levels, direction=True, vert=False):
+"type":"function script","head":"def make_dark_gradient(x, y, w, h, levels, direction=True, vert=False, over=True):
     \"\"\"Make a fade to black gradient centered around x, y of width
     w and height h.
     
     Arg \"levels\" specifies the number of steps to divide the gradient into
     Arg \"direction\" is True if top/left should be the lightest part
     Arg \"vert\" is True if gradient should be vertical
+    Arg \"over\" decides if the gradient should go over the player
     \"\"\"
     
     width = w/levels if not vert else w
@@ -779,7 +806,10 @@ def make_booster(x, y, angle, force=30):
         else:
             t.x = (x - (w/2) + (width/2)) + (width * i)
             t.y = y
-        t.alpha = (1/levels) * i if direction else 1 - ((1/levels) * i)"
+
+        t.alpha = (1/(levels-1)) * i if direction else 1 - ((1/(levels-1)) * i)
+
+        if over: t.z = 1001"
 }
 }
 ]
