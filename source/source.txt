@@ -15,6 +15,7 @@ level = [\r
         '.L.....R.',\r
         '.1232131.'
 ]\r
+self.debug = False\r
 make_map(level)\r
 \r
 w = Whale()\r
@@ -29,7 +30,10 @@ self.fpscount = 0\r
 \r
 createblock(400, 400, 200, 200)\r
 \r
-set_room('Starting_Room')","loop":"self.fpscount += 1\r
+set_room('Starting_Room')\r
+\r
+make_current(0, 0, 200, 200, 5, 2)\r
+make_current(500, -500, 400, 400, 0, 9)","loop":"self.fpscount += 1\r
 ntime = int(time.time())\r
 \r
 if ntime > self.fpslog:\r
@@ -66,9 +70,15 @@ self.spr_obg = Psprite()
 self.visible = False
 
 self.scaleX = 2
-self.scaleY = 2","loop":"camX, camY = camera_x(), camera_y()
+self.scaleY = 2
+
+self.xMOD = 0
+self.yMOD = 0
+self.xext = 0
+self.yext = 0","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
+
 
 # for arrow key movement
 keys = [key_is_pressed('arrowRight'), 
@@ -119,15 +129,22 @@ if key_was_pressed(' ') or mouse_was_pressed('right'):
     self.boostx = xdist*13
     self.boosty = ydist*13
 
+#for external movement modifiers(boosters, jelly)
+self.xext = (self.xMOD if abs(self.xMOD)>abs(self.xext) else self.xext)
+self.yext = (self.yMOD if abs(self.yMOD)>abs(self.yext) else self.yext)
+
 # deteriorate boost velocity
 self.boostx, self.boosty = deter(self.boostx, 0.94), deter(self.boosty, 0.94)
+#deteriorate external modif
+self.xext, self.yext = deter(self.xext, 0.96), deter(self.yext, 0.94)
 
 # final movement values in x and y
-a, b = (self.xv+self.boostx), (self.yv+self.boosty)
+a, b = (self.xv+self.boostx+self.xext), (self.yv+self.boosty+self.yext)
 
 self.x += a
 self.y += b
 
+self.xMOD, self.yMOD = 0, 0
 
 # distance from zero after move
 xdist = self.x - camX
@@ -150,13 +167,9 @@ move_camera((xdist - xdist/1.1) + self.x_off,
 
 # rotate in direction of movement
 Dx, Dy = self.x-self.x0, self.y-self.y0
-if not Dx and not Dy: Dx = 1
-m = hyp(Dx, Dy)
-Dy = Dy/m
-
-if m > 1:
-    a = get_angle(Dy) - 90
-    self.angle = a if Dx > 0 else -a
+k0 = angle_helper(Dx, Dy)
+if k0 != -361:
+    self.angle = k0
 
 update_spr(self.spr_obg, self.x, self.y, self.angle)
 
@@ -220,7 +233,8 @@ if self.visible:
 {"Block":{
 "type":"object script","start":"#Block start
 
-","loop":"
+if not game.debug:
+    self.alpha = 0","loop":"
 # Exit the loop early if far from player
 pdistx = self.x - game.p.x
 pdisty = self.y - game.p.y
@@ -254,11 +268,43 @@ self.scaleY = 1
 
 self.sprite = new_sprite(\"octopus.png\")
 spritesheet = sprite('dynamic_squid.png', 4, 4)
-self.anim = animation(spritesheet, 8, 0, 12)
+self.anim = animation(spritesheet, 10, 0, 12)
 set_animation(self, self.anim)
 
 self.persistent = True","loop":"#Psprite loop
 
+"
+}
+},
+{"Current":{
+"type":"object script","start":"self.sprite = new_sprite(\"debug.png\")
+self.alpha = 0
+self.c = 0","loop":"#Current loop
+
+if not self.c%60:
+    for i in range(self.dense):
+        fx = random.randrange(self.x-self.w, self.x+self.w)
+        fy = random.randrange(self.y-self.h, self.y+self.h)
+        make_particle(fx, fy, self.xa, self.ya, \"current_particle.png\", self)
+
+self.c += 1
+
+k = get_collision(self, \"Player\")
+if k:
+    k.xMOD += self.xa
+    k.yMOD += self.ya
+
+"
+}
+},
+{"Particle":{
+"type":"object script","start":"
+","loop":"#Particle loop
+if not (self.nb>=self.y>=self.sb) or not (self.wb<=self.x<=self.eb):
+    destroy(self)
+
+self.x += self.xv
+self.y += self.yv
 "
 }
 }
@@ -341,6 +387,10 @@ make_map(lvlmap)","loop":"#Starting_Room loop
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954627.wall_right.png"
 }
 },
+{"greenblock.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615959692.greenblock.png"
+}
+},
 {"wall_left.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954929.wall_left.png"
 }
@@ -420,6 +470,13 @@ make_map(lvlmap)","loop":"#Starting_Room loop
 }
 ]
 },
+{"Misc":[
+{"current_particle.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616010007.current_particle.png"
+}
+}
+]
+},
 {"debug.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
 }
@@ -479,7 +536,22 @@ def do_move(pl, xdist, ydist):
 def update_spr(plspr, x, y, angle):
     plspr.x = x
     plspr.y = y
-    plspr.angle = angle"
+    plspr.angle = angle
+
+def angle_helper(Dx, Dy) -> int:
+    \"\"\"This function returns the angle for an object moving in a specific direction.\"\"\"
+    if not Dx and not Dy: Dx = 1
+    m = hyp(Dx, Dy)
+    Dy = Dy/m
+
+    if m > 1:
+        a = get_angle(Dy) - 90
+        return a if Dx > 0 else -a
+    
+    return -361
+
+    
+"
 }
 },
 {"make_map.py":{
@@ -559,7 +631,39 @@ def blockgroup(x, y, posl, debug=False):
     given a list  of block constructs. posl is a list of tuples,
     each of the form (x, y, w, h).\"\"\"
     for bx, by, bw, bh in posl:
-        createblock(bx+x, by+y, bw, bh, debug)"
+        createblock(bx+x, by+y, bw, bh, debug)
+
+def make_current(x, y, w, h, xa, ya):
+    \"\"\"Create a current block, which takes arguments for
+    position, size, and acceleration values.\"\"\"
+    inst = Current()
+    inst.x = x
+    inst.y = y
+    inst.scaleX = w/40
+    inst.scaleY = h/40
+    inst.xa = xa
+    inst.ya = ya
+
+    inst.w = w/2
+    inst.h = h/2
+    inst.dense = (w*h)//6000
+    
+def make_particle(x, y, xv, yv, spr, proc):
+    \"\"\"Create a particle with a linear velocity. 
+    Pass in a parent process that will kill the particle later.\"\"\"
+    inst =  Particle()
+    inst.x = x
+    inst.y = y
+    inst.sprite = new_sprite(spr)
+    inst.xv = xv
+    inst.yv = yv
+    inst.parent = proc
+    inst.nb = proc.y + proc.h
+    inst.sb = proc.y - proc.h
+    inst.eb = proc.x + proc.w
+    inst.wb = proc.x - proc.w
+    inst.angle = angle_helper(xv, yv)
+"
 }
 }
 ]
