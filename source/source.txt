@@ -3,6 +3,7 @@
 {"Game":{
 "type":"game script","start":"# current time\r
 self.t = time_ms()\r
+self.debug = False\r
 \r
 self.bg = Background()\r
 level = [\r
@@ -18,7 +19,7 @@ level = [\r
         '.L.....R.',\r
         '.1232131.'
 ]\r
-self.debug = False\r
+        \r
 make_map(level)\r
 \r
 w = Whale()\r
@@ -44,7 +45,8 @@ self.cam_limit_y = (504, -504)\r
 TextBox('Welcome to the demo room', 1500)\r
 \r
 # comment this out to see demo room\r
-# set_room('Starting_Room')","loop":"self.t = time_ms()\r
+set_room('Starting_Room')\r
+#set_room('Room1')","loop":"self.t = time_ms()\r
 \r
 self.fpscount += 1\r
 ntime = int(self.t/1000)\r
@@ -204,9 +206,7 @@ update_spr(self.spr_obg, self.x, self.y, self.angle)
 {"gameplay":[
 {"Block":{
 "type":"object script","start":"#Block start
-
-if not game.debug:
-    self.alpha = 0","loop":"
+","loop":"
 # Exit the loop early if far from player
 pdistx = self.x - game.p.x
 pdisty = self.y - game.p.y
@@ -216,9 +216,7 @@ if abs(pdistx) > 2200 or abs(pdisty) > 1600:
     self.visible = False
     return
 
-
-if self.debug:
-    self.visible = True
+self.visible = game.debug
 
 pl = get_collision(self, \"Player\")
 if pl:
@@ -282,6 +280,14 @@ self.sprite = sprite('text_box.png')
 self.parent = None","loop":"#TextBox loop
 
 self.parent.do_loop()"
+}
+},
+{"travelgate_inst":{
+"type":"object script","start":"#travel_gate start
+
+","loop":"#travel_gate loop
+
+"
 }
 }
 ]
@@ -378,20 +384,11 @@ if self.visible:
 {"Starting_Room":{
 "type":"room script","start":"#Starting_Room start
 
-# game.bg = Background()
-# game.bg.sprite = sprite('gradient1.png')
+self.roomid = '1-0'
 
-colliders = [
-    (0, -400, 95, 900),
-    (1050, 0, 2200, 95),
-    (1250, -800, 2600, 95),
-    (2100, -200, 95, 500),
-    (2350, -500, 350, 95),
+game.bg = Background()
+game.bg.sprite = sprite('gradient1.png')
 
-]
-
-# From top left
-blockgroup(-300, 200, colliders)
 
 lvlmap = [
     '.CCCCCCCCCCCCCCCCCCCC',
@@ -408,17 +405,57 @@ lvlmap = [
 
 make_map(lvlmap)
 
+game.cam_limit_x = (290, 1610)
+game.cam_limit_y = (-110, -290)
+
+# Make colliders
+colliders = [
+    (0, -400, 95, 900),
+    (1050, 0, 2200, 95),
+    (1250, -800, 2600, 95),
+    (2100, -200, 95, 500),
+    (2350, -500, 350, 95),
+
+]
+
+# From top left
+blockgroup(-300, 200, colliders)
+
 make_dark_gradient(2000, -450, 500, 400, 20)
-game.cam_limit_x = (290, 1560)
-game.cam_limit_y = (-110, -290)","loop":"#Starting_Room loop
+
+#self.gate = TravelGate()","loop":"#Starting_Room loop
 
 "
 }
 },
 {"Room1":{
-"type":"room script","start":"#Room1 start
+"type":"room script","start":"
 
-","loop":"#Room1 loop
+lvlmap = [
+    '     CCCCCCCCCCCC.',
+    'CCCCC............R',
+    '......X..........R',
+    '.................R',
+    '31223............R',
+    '     L............CCCCCCC.',
+    '     .3132311............R',
+    '             L...........R',
+    '             L............CCCCC',
+    '             L.................',
+    '             L.................',
+    '             L............33122',
+    '             .3312231....R      ',
+    '                     L...R      ',
+    '                     L...R      ',
+    '                     L...R      ',
+    '                     L...R      ',
+
+]
+
+make_map(lvlmap)
+
+game.cam_limit_x = (10, 1810)
+game.cam_limit_y = (-110, -1090)","loop":"#Room1 loop
 
 "
 }
@@ -694,7 +731,7 @@ def make_map(layout):
 },
 {"gamecreation.py":{
 "type":"function script","head":"
-def createblock(x, y, w, h, debug=False):
+def createblock(x, y, w, h):
     \"\"\"Basic opaque block. Takes args for pos, size, and optional block sprite.\"\"\"
     #construct block and set args
     a = Block()
@@ -705,11 +742,7 @@ def createblock(x, y, w, h, debug=False):
     a.scaleX = w/40
     a.scaleY = h/40
     
-    if not debug:
-        a.visible = False
-        a.debug = False
-    else:
-        a.debug = True
+    a.visible = game.debug
 
     #store these for collision purposes
     a.wid = w/2
@@ -721,12 +754,12 @@ def createblock(x, y, w, h, debug=False):
     
     return a
 
-def blockgroup(x, y, posl, debug=False):
+def blockgroup(x, y, posl):
     \"\"\"Creates a group of blocks at a x and y position,
     given a list  of block constructs. posl is a list of tuples,
     each of the form (x, y, w, h).\"\"\"
     for bx, by, bw, bh in posl:
-        createblock(bx+x, by+y, bw, bh, debug)
+        createblock(bx+x, by+y, bw, bh)
 
 def make_current(x, y, w, h, xa, ya):
     \"\"\"Create a current block, which takes arguments for
@@ -789,7 +822,7 @@ def make_booster(x, y, angle, force=30):
 
     for i in range(levels):
         t = Tile()
-        t.sprite = sprite('black40x40.png')
+        t.sprite = sprite('debug.png') if game.debug else sprite('black40x40.png')
         t.scaleX = (width/40)
         t.scaleY = (height/40)
         
@@ -803,6 +836,24 @@ def make_booster(x, y, angle, force=30):
         t.alpha = (1/(levels-1)) * i if direction else 1 - ((1/(levels-1)) * i)
 
         if over: t.z = 1001"
+}
+},
+{"Classes":[
+{"TravelGate.py":{
+"type":"function script","head":"class TravelGate:
+    def __init__(self, x, y, w, h, roomid, dest):
+        self.inst = travelgate_inst()
+        self.inst.x = x
+        self.inst.y = y
+        
+        self.inst.sprite = sprite('debug.png') if game.debug else sprite('black40x40.png')
+        self.inst.scaleX = w/40
+        self.inst.scaleY = h/40
+
+        self.dest = dest
+
+    def do_loop(self):
+        pass"
 }
 },
 {"TextBox.py":{
@@ -853,6 +904,8 @@ def make_booster(x, y, angle, force=30):
                 destroy(self.text)
                 game.text_box = None"
 }
+}
+]
 }
 ]
 }
