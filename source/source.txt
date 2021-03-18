@@ -37,6 +37,7 @@ make_current(0, 0, 200, 200, 5, 2)\r
 make_current(500, -500, 400, 400, 0, 9)\r
 make_booster(500, 0, 225)\r
 make_booster(0, -500, -45)\r
+make_bumper(-250, 500)\r
 \r
 self.cam_limit_x = (-1310, 1310)\r
 self.cam_limit_y = (504, -504)\r
@@ -91,7 +92,8 @@ self.yMOD = 0
 self.xext = 0
 self.yext = 0
 
-self.dash_cool = game.t","loop":"camX, camY = camera_x(), camera_y()
+self.dash_cool = game.t
+self.damage_cool = game.t","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
@@ -243,12 +245,24 @@ self.scaleY = 1.5","loop":"#Booster loop
 
 k = get_collision(self, \"Player\")
 if k:
-    k.xv = 0
-    k.yv = 0
-    k.boostx = 0
-    k.boosty = 0
-    k.xMOD += self.force * math.cos(math.radians(self.angle+90))
-    k.yMOD += self.force * math.sin(math.radians(self.angle+90))
+    boost(k, self.force, self.angle)
+"
+}
+},
+{"Bumper":{
+"type":"object script","start":"#Bumper start
+self.sprite = new_sprite(\"bumper.png\")
+self.fl = False
+self.scaleX = 1.5
+self.scaleY = 1.5","loop":"#Bumper loop
+k = get_collision(self, \"Player\")
+if k and not self.fl:
+    boost(k, self.force, k.angle-180)
+    self.fl = True
+
+if not k:
+    self.fl = False
+
 "
 }
 },
@@ -322,7 +336,9 @@ self.y += self.yv
 {"Background":{
 "type":"object script","start":"#Background start
 
-self.sprite = sprite('waterBG.png')","loop":"#Background loop
+self.sprite = sprite('pixel_bg_stage1.png')
+self.scaleX = 0.6
+self.scaleY = 0.6","loop":"#Background loop
 
 "
 }
@@ -540,6 +556,10 @@ game.cam_limit_y = (-110, -290)","loop":"#Starting_Room loop
 ]
 },
 {"Gameplay_elements":[
+{"bumper.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616106674.bumper.png"
+}
+},
 {"booster.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616022757.booster.png"
 }
@@ -636,6 +656,14 @@ def angle_helper(Dx, Dy) -> int:
 
 def time_ms():
     return round(time.time() * 1000)
+
+def boost(pl, force, angle):
+    pl.xv = 0
+    pl.yv = 0
+    pl.boostx = 0
+    pl.boosty = 0
+    pl.xMOD += force * math.cos(math.radians(angle+90))
+    pl.yMOD += force * math.sin(math.radians(angle+90))
 
 
 
@@ -767,6 +795,14 @@ def make_booster(x, y, angle, force=30):
     inst.x = x
     inst.y = y
     inst.angle = angle
+    inst.force = force
+
+def make_bumper(x, y, force=30):
+    \"\"\"A bumper that always sends you in the opposite direction 
+    from when you last bumped into it.\"\"\"
+    inst = Bumper()
+    inst.x = x
+    inst.y = y
     inst.force = force
 
 
