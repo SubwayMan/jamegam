@@ -1,7 +1,10 @@
 {"assets":{
 "script":[
 {"Game":{
-"type":"game script","start":"self.bg = Background()\r
+"type":"game script","start":"# current time\r
+self.t = time_ms()\r
+\r
+self.bg = Background()\r
 level = [\r
         '...CCC...',\r
         '..3L.R3..',\r
@@ -25,19 +28,26 @@ bigwhale = Whale()\r
 bigwhale.scaleX = bigwhale.scaleY = 3.5\r
 bigwhale.x = bigwhale.y = -700\r
 \r
-self.fpslog = int(time.time())\r
+self.fpslog = int(self.t/1000)\r
 self.fpscount = 0\r
 \r
-createblock(400, 400, 200, 200)\r
-\r
-set_room('Starting_Room')\r
+createblock(0, 600, 300, 95)\r
 \r
 make_current(0, 0, 200, 200, 5, 2)\r
 make_current(500, -500, 400, 400, 0, 9)\r
 make_booster(500, 0, 225)\r
 make_booster(0, -500, -45)\r
-","loop":"self.fpscount += 1\r
-ntime = int(time.time())\r
+\r
+self.cam_limit_x = (-1310, 1310)\r
+self.cam_limit_y = (504, -504)\r
+\r
+TextBox('Welcome to the demo room', 1500)\r
+\r
+# comment this out to see demo room\r
+# set_room('Starting_Room')","loop":"self.t = time_ms()\r
+\r
+self.fpscount += 1\r
+ntime = int(self.t/1000)\r
 \r
 if ntime > self.fpslog:\r
     self.fpslog = ntime\r
@@ -46,42 +56,6 @@ if ntime > self.fpslog:\r
     self.fpscount = 0"
 }
 },
-{"Whale":{
-"type":"object script","start":"sprite_sheet = sprite('whalesheet_gap.png', 1, 4)
-self.anim = animation(sprite_sheet, 4, 0, 3)
-set_animation(self, self.anim)
-self.scaleX = self.scaleY = 2
-
-#self.sprite = sprite('whale.png')
-
-self.x, self.y = 1500, -420
-self.visible = True
-
-self.frames = 0","loop":"try:
-    # Exit the loop early if far from player
-    pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
-    if pdist > 1700:
-        if self.visible:
-            self.visible = False
-        return
-    else:
-        if not self.visible:
-            self.visible = True
-except AttributeError: # Whale created before player in Game start
-    pass
-
-if self.visible:
-    d = self.frames % 100
-    
-    if 0 <= d < 50:
-        self.y += 0.5
-    if 50 <= d < 100:
-        self.y -= 0.5
-    
-    self.frames += 1"
-}
-},
-{"gameplay":[
 {"Player":{
 "type":"object script","start":"# initialise pos, sprite
 self.x = 0
@@ -96,6 +70,7 @@ self.xv = 0
 self.yv = 0
 self.boostx, self.boosty = 0, 0
 
+# For camera offset
 self.y_off = 0
 self.x_off = 0
 
@@ -116,7 +91,7 @@ self.yMOD = 0
 self.xext = 0
 self.yext = 0
 
-self.dash_cool = int(time.time())","loop":"camX, camY = camera_x(), camera_y()
+self.dash_cool = game.t","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
@@ -166,11 +141,10 @@ else:
     self.yv = deter(self.yv, 0.95)
     
 # dash
-fw = int(time.time())
-if ((key_was_pressed(' ') or mouse_was_pressed('right')) and fw>self.dash_cool):
+if ((key_was_pressed(' ') or mouse_was_pressed('right')) and game.t > self.dash_cool):
     self.boostx = xdist*16
     self.boosty = ydist*16
-    self.dash_cool = fw
+    self.dash_cool = game.t + 420
 
 #for external movement modifiers(boosters, jelly)
 self.xext = (self.xMOD if abs(self.xMOD)>abs(self.xext) else self.xext)
@@ -189,44 +163,25 @@ self.y += b
 
 self.xMOD, self.yMOD = 0, 0
 
+
 # distance from zero after move
 xdist = self.x - camX
 ydist = self.y - camY
 
-# control camera offset with WASD
-# probably not permanent, just a demonstration of how camera can be offset
-if key_is_pressed('d'):
-    self.x_off = min(self.x_off+1, 18)
-if key_is_pressed('a'):
-    self.x_off = max(self.x_off-1, -18)
-if key_is_pressed('w'):
-    self.y_off = min(self.y_off+1, 16)
-if key_is_pressed('s'):
-    self.y_off = max(self.y_off-1, -16)
-
+# really ugly code to update camera position
+# either moves camera with delay following player or caps
+# at set limits
 new_camX = camX + (xdist - xdist/1.1) + self.x_off
-
-if new_camX < game.cam_limit_x[0
-]:
-    new_camX = game.cam_limit_x[0
-]
-elif new_camX > game.cam_limit_x[1
-]:
-    new_camX = game.cam_limit_x[1
-]
+new_camX = min(max(new_camX, game.cam_limit_x[0
+]), game.cam_limit_x[1
+])
 
 new_camY = camY + (ydist - ydist/1.1) + self.y_off
-if new_camY > game.cam_limit_y[0
-]:
-    new_camY = game.cam_limit_y[0
-]
-elif new_camY < game.cam_limit_y[1
-]:
-    new_camY = game.cam_limit_y[1
-]
+new_camY = max(min(new_camY, game.cam_limit_y[0
+]), game.cam_limit_y[1
+])
 
 set_camera(new_camX, new_camY)
-
 
 
 # rotate in direction of movement
@@ -246,6 +201,7 @@ update_spr(self.spr_obg, self.x, self.y, self.angle)
 # is at the bottom of the screen"
 }
 },
+{"gameplay":[
 {"Block":{
 "type":"object script","start":"#Block start
 
@@ -316,6 +272,17 @@ if k:
 
 "
 }
+},
+{"textbox_inst":{
+"type":"object script","start":"#TextBox start
+
+self.sprite = sprite('text_box.png')
+
+# TextBox class that created instance
+self.parent = None","loop":"#TextBox loop
+
+self.parent.do_loop()"
+}
 }
 ]
 },
@@ -361,6 +328,41 @@ self.sprite = sprite('waterBG.png')","loop":"#Background loop
 }
 }
 ]
+},
+{"Whale":{
+"type":"object script","start":"sprite_sheet = sprite('whalesheet_gap.png', 1, 4)
+self.anim = animation(sprite_sheet, 4, 0, 3)
+set_animation(self, self.anim)
+self.scaleX = self.scaleY = 2
+
+#self.sprite = sprite('whale.png')
+
+self.x, self.y = 1500, -420
+self.visible = True
+
+self.frames = 0","loop":"try:
+    # Exit the loop early if far from player
+    pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
+    if pdist > 1700:
+        if self.visible:
+            self.visible = False
+        return
+    else:
+        if not self.visible:
+            self.visible = True
+except AttributeError: # Whale created before player in Game start
+    pass
+
+if self.visible:
+    d = self.frames % 100
+    
+    if 0 <= d < 50:
+        self.y += 0.5
+    if 50 <= d < 100:
+        self.y -= 0.5
+    
+    self.frames += 1"
+}
 }
 ],
 "room":[
@@ -406,15 +408,9 @@ lvlmap = [
 
 make_map(lvlmap)
 
-make_dark_gradient(2000, -450, 500, 400, 10)
-
-# dark_fade = Tile()
-# dark_fade.sprite = sprite('black40x40.png')
-# #dark_fade.alpha = 0.5
-# dark_fade.x = 2000
-# dark_fade.y = -450
-# dark_fade.scaleX = (25/2)
-# dark_fade.scaleY = 10","loop":"#Starting_Room loop
+make_dark_gradient(2000, -450, 500, 400, 20)
+game.cam_limit_x = (290, 1560)
+game.cam_limit_y = (-110, -290)","loop":"#Starting_Room loop
 
 "
 }
@@ -561,16 +557,12 @@ make_dark_gradient(2000, -450, 500, 400, 10)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
 }
 },
-{"dark_gradient.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616016762.dark_gradient.png"
-}
-},
-{"white_to_black_grad.jpg":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616017103.white_to_black_grad.jpg"
-}
-},
 {"black40x40.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616018445.black40x40.png"
+}
+},
+{"text_box.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616039356.text_box.png"
 }
 }
 ],
@@ -642,6 +634,11 @@ def angle_helper(Dx, Dy) -> int:
     
     return -361
 
+def time_ms():
+    return round(time.time() * 1000)
+
+
+
     
 "
 }
@@ -661,10 +658,6 @@ def angle_helper(Dx, Dy) -> int:
 
 
 def make_map(layout):
-
-    game.cam_limit_x = (290, 1560)
-    game.cam_limit_y = (-110, -290)
-
     for i in range(len(layout)):
         if 'X' in layout[i
 ]:
@@ -810,6 +803,55 @@ def make_booster(x, y, angle, force=30):
         t.alpha = (1/(levels-1)) * i if direction else 1 - ((1/(levels-1)) * i)
 
         if over: t.z = 1001"
+}
+},
+{"TextBox.py":{
+"type":"function script","head":"class TextBox:
+    def __init__(self, msg, duration):
+        \"\"\"Create a textbox with msg text that last for a 
+        minimum of duration ms.\"\"\"\"
+
+        # clear any current text box
+        try:
+            destroy(game.text_box)
+        # no text box currently up
+        except AttributeError:
+            pass
+
+        self.inst = textbox_inst()
+        self.inst.parent = self
+        self.inst.x = camera_x()
+        self.inst.y = camera_y() - 200
+        
+        self.text = text(msg, self.inst.x - 450, self.inst.y + 40)
+        self.text.color = '#ffffff'
+        self.text.fontsize = 70
+        self.text.fontFamily = 'courier new'
+
+        self.close_time = game.t + duration
+    
+    def do_loop(self):
+        self.inst.x = camera_x()
+        self.inst.y = camera_y() - 200
+
+        self.text.x = self.inst.x - 450
+        self.text.y = self.inst.y + 40
+
+        if game.t > self.close_time:
+            keys = (
+                mouse_is_pressed('left'),
+                mouse_is_pressed('right'),
+                key_is_pressed('arrowRight'),
+                key_is_pressed('arrowLeft'),
+                key_is_pressed('arrowDown'),
+                key_is_pressed('arrowUp'),
+                key_is_pressed(' ')
+            )
+
+            if any(keys):
+                destroy(self.inst)
+                destroy(self.text)
+                game.text_box = None"
 }
 }
 ]
