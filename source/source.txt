@@ -5,49 +5,15 @@
 self.t = time_ms()\r
 self.debug = False\r
 \r
-self.bg = Background()\r
-level = [\r
-        '...CCC...',\r
-        '..3L.R3..',\r
-        '...L.R...',\r
-        '...L.R...',\r
-        '...L.R...',\r
-        '...L.R...',\r
-        '...LXR...',\r
-        '...L.R...',\r
-        '.2CC.CC2.',\r
-        '.L.....R.',\r
-        '.1232131.'
-]\r
-        \r
-make_map(level)\r
-\r
-w = Whale()\r
-self.p = Player()\r
-\r
-bigwhale = Whale()\r
-bigwhale.scaleX = bigwhale.scaleY = 3.5\r
-bigwhale.x = bigwhale.y = -700\r
-\r
+self.travelid = None\r
 self.fpslog = int(self.t/1000)\r
 self.fpscount = 0\r
 \r
-createblock(0, 600, 300, 95)\r
+self.p = Player()\r
 \r
-make_current(0, 0, 200, 200, 5, 2)\r
-make_current(500, -500, 400, 400, 0, 9)\r
-make_booster(500, 0, 225)\r
-make_booster(0, -500, -45)\r
-make_bumper(-250, 500)\r
-\r
-self.cam_limit_x = (-1310, 1310)\r
-self.cam_limit_y = (504, -504)\r
-\r
-TextBox('Welcome to the demo room', 1500)\r
-\r
-# comment this out to see demo room\r
-set_room('Starting_Room')\r
-#set_room('Room1')","loop":"self.t = time_ms()\r
+#set_room('Demo_Room')\r
+#set_room('Starting_Room')\r
+set_room('Room1')","loop":"self.t = time_ms()\r
 \r
 self.fpscount += 1\r
 ntime = int(self.t/1000)\r
@@ -299,9 +265,11 @@ self.parent.do_loop()"
 {"travelgate_inst":{
 "type":"object script","start":"#travel_gate start
 
-","loop":"#travel_gate loop
+# reference to TravelGate class that created instance
+self.parent = None","loop":"#travel_gate loop
 
-"
+if get_collision(self, 'Player'):
+    self.parent.travel()"
 }
 }
 ]
@@ -388,6 +356,48 @@ if self.visible:
 }
 ],
 "room":[
+{"Demo_Room":{
+"type":"room script","start":"#Demo_Room start
+
+game.bg = Background()
+level = [
+        '...CCC...',
+        '..BL.RB..',
+        '...L.R...',
+        '...L.R...',
+        '...L.R...',
+        '...L.R...',
+        '...LXR...',
+        '...L.R...',
+        '.VCC.CCV.',
+        '.L.....R.',
+        '.VBNBNNV.'
+]
+        
+make_map(level)
+
+w = Whale()
+
+bigwhale = Whale()
+bigwhale.scaleX = bigwhale.scaleY = 3.5
+bigwhale.x = bigwhale.y = -700
+
+createblock(0, 600, 300, 95)
+
+make_current(0, 0, 200, 200, 5, 2)
+make_current(500, -500, 400, 400, 0, 9)
+make_booster(500, 0, 225)
+make_booster(0, -500, -45)
+make_bumper(-250, 500)
+
+game.cam_limit_x = (-1310, 1310)
+game.cam_limit_y = (504, -504)
+
+TextBox('Welcome to the demo room', 1500)","loop":"#Demo_Room loop
+
+"
+}
+},
 {"Menu":{
 "type":"room script","start":"#Menu start
 
@@ -402,20 +412,20 @@ if self.visible:
 
 self.roomid = '1-0'
 
-game.bg = Background()
-game.bg.sprite = sprite('gradient1.png')
+# game.bg = Background()
+# game.bg.sprite = sprite('gradient1.png')
 
 
 lvlmap = [
-    '.CCCCCCCCCCCCCCCCCCCC',
+    '7CCCCCCCCCCCCCCCCCCCC6',
     'L....................R',
     'L..X.................R',
     'L....................R',
     'L....................R',
-    'L....................TCCCC',
-    'L........................',
-    'L........................',
-    '.3231332223132311323131321'
+    'L....................2CCCC',
+    'L.........................',
+    'L.........................',
+    '5VBNVBNNVNBBNVNVNBNBNVBNVN'
 
 ]
 
@@ -429,8 +439,8 @@ colliders = [
     (0, -400, 95, 900),
     (1050, 0, 2200, 95),
     (1250, -800, 2600, 95),
-    (2100, -200, 95, 500),
-    (2350, -500, 350, 95),
+    (2100, -250, 95, 600),
+    (2300, -500, 450, 95),
 
 ]
 
@@ -439,28 +449,33 @@ blockgroup(-300, 200, colliders)
 
 make_dark_gradient(2000, -450, 500, 400, 20)
 
-#self.gate = TravelGate()","loop":"#Starting_Room loop
+self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')","loop":"#Starting_Room loop
 
 "
 }
 },
 {"Room1":{
-"type":"room script","start":"
+"type":"room script","start":"self.roomid = '1-1'
+
+if game.travelid == '1-0':
+    game.p.x = -350
+    game.p.y = -50
+    set_camera(game.p.x, game.p.y)
 
 lvlmap = [
-    '     CCCCCCCCCCCC.',
-    'CCCCC............R',
+    '     7CCCCCCCCCCC6',
+    'CCCCC3...........R',
     '......X..........R',
     '.................R',
-    '31223............R',
-    '     L............CCCCCCC.',
-    '     .3132311............R',
+    'NVBBV1...........R',
+    '     L.........O.2CCCCCCC6',
+    '     5VNNBNVV1...........R',
     '             L...........R',
-    '             L............CCCCC',
+    '             L...........2CCCCC',
     '             L.................',
     '             L.................',
-    '             L............33122',
-    '             .3312231....R      ',
+    '             L...........0VNBVB',
+    '             5VNNBNVB1...R      ',
     '                     L...R      ',
     '                     L...R      ',
     '                     L...R      ',
@@ -471,7 +486,33 @@ lvlmap = [
 make_map(lvlmap)
 
 game.cam_limit_x = (10, 1810)
-game.cam_limit_y = (-110, -1090)","loop":"#Room1 loop
+game.cam_limit_y = (-110, -1090)
+
+colliders = [
+    (-350, 100, 600, 95),
+    (-360, -200, 590, 95),
+    (500, 200, 1300, 95),
+    (-100, -310, 95, 290),
+    (295, -400, 890, 95),
+    (1100, -40, 95, 595)
+
+]
+blockgroup(0, 0, colliders)
+
+colliders = [
+    (605, 0, 890, 95),
+    (-200, -405, 95, 690),
+    (1000, -140, 95, 395),
+    (190, -700, 895, 95),
+    (1260, -300, 595, 95),
+    (1260, -600, 595, 95),
+    (600, -910, 95, 495),
+    (1000, -860, 95, 595)
+
+]
+blockgroup(900, -300, colliders)
+
+make_dark_gradient()","loop":"#Room1 loop
 
 "
 }
@@ -498,27 +539,55 @@ game.cam_limit_y = (-110, -1090)","loop":"#Room1 loop
 }
 },
 {"ground3.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954609.ground3.png"
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616115967.ground3.png"
+}
+},
+{"ciel.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616116213.ciel.png"
+}
+},
+{"wall_left.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616115833.wall_left.png"
 }
 },
 {"wall_right.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954627.wall_right.png"
 }
 },
+{"in_corner_tl.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616112361.in_corner_tl.png"
+}
+},
+{"in_corner_tr.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616112366.in_corner_tr.png"
+}
+},
+{"in_corner_bl.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616112369.in_corner_bl.png"
+}
+},
+{"in_corner_br.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616112375.in_corner_br.png"
+}
+},
+{"out_corner_tl.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616116555.out_corner_tl.png"
+}
+},
+{"out_corner_tr.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616116613.out_corner_tr.png"
+}
+},
+{"out_corner_bl.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616116633.out_corner_bl.png"
+}
+},
+{"out_corner_br.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616116652.out_corner_br.png"
+}
+},
 {"greenblock.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615959692.greenblock.png"
-}
-},
-{"wall_left.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954929.wall_left.png"
-}
-},
-{"ciel.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954637.ciel.png"
-}
-},
-{"topright_inside.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615955449.topright_inside.png"
 }
 }
 ]
@@ -598,7 +667,7 @@ game.cam_limit_y = (-110, -1090)","loop":"#Room1 loop
 }
 },
 {"booster.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616022757.booster.png"
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616112191.booster.png"
 }
 }
 ]
@@ -713,10 +782,17 @@ def boost(pl, force, angle):
     'C': sprite('ciel.png'), # placeholder ceiling
     'L': sprite('wall_left.png'),
     'R': sprite('wall_right.png'),
-    '1': sprite('ground1.png'),
-    '2': sprite('ground2.png'),
-    '3': sprite('ground3.png'),
-    'T': sprite('topright_inside.png')
+    'V': sprite('ground1.png'),
+    'B': sprite('ground2.png'),
+    'N': sprite('ground3.png'),
+    '0': sprite('in_corner_tl.png'),
+    '1': sprite('in_corner_tr.png'),
+    '2': sprite('in_corner_bl.png'),
+    '3': sprite('in_corner_br.png'),
+    '4': sprite('out_corner_tl.png'),
+    '5': sprite('out_corner_tr.png'),
+    '6': sprite('out_corner_bl.png'),
+    '7': sprite('out_corner_br.png'),
 
 }
 
@@ -735,6 +811,14 @@ def make_map(layout):
             if layout[i
 ][j
 ] in '. X':
+                continue
+            elif layout[i
+][j
+] not in tile_map.keys():
+                print(f'Unrecognised \"{layout[i
+][j
+]
+} in level map.')
                 continue
 
             t = Tile()
@@ -879,17 +963,21 @@ def make_bumper(x, y, force=30):
 "type":"function script","head":"class TravelGate:
     def __init__(self, x, y, w, h, roomid, dest):
         self.inst = travelgate_inst()
+        self.inst.parent = self
         self.inst.x = x
         self.inst.y = y
         
         self.inst.sprite = sprite('debug.png') if game.debug else sprite('black40x40.png')
+        self.inst.visible = game.debug
         self.inst.scaleX = w/40
         self.inst.scaleY = h/40
 
+        self.roomid = roomid
         self.dest = dest
 
-    def do_loop(self):
-        pass"
+    def travel(self):
+        game.travelid = self.roomid
+        set_room(self.dest)"
 }
 },
 {"TextBox.py":{
