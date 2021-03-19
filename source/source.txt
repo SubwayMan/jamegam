@@ -408,9 +408,16 @@ TextBox('Welcome to the demo room', 1500)","loop":"#Demo_Room loop
 },
 {"Stage1":[
 {"Starting_Room":{
-"type":"room script","start":"#Starting_Room start
+"type":"room script","start":"self.roomid = '1-0'
+game.cam_limit_x = (290, 1610)
+game.cam_limit_y = (-110, -290)
 
-self.roomid = '1-0'
+if game.travelid == '1-1':
+    smooth_tp(1900, -450)
+    # game.p.x = 1900
+    # game.p.y = -450
+    # set_camera(1900, -450)
+
 
 # game.bg = Background()
 # game.bg.sprite = sprite('gradient1.png')
@@ -431,8 +438,6 @@ lvlmap = [
 
 make_map(lvlmap)
 
-game.cam_limit_x = (290, 1610)
-game.cam_limit_y = (-110, -290)
 
 # Make colliders
 colliders = [
@@ -456,11 +461,14 @@ self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')","loop":"#Star
 },
 {"Room1":{
 "type":"room script","start":"self.roomid = '1-1'
+game.cam_limit_x = (10, 1810)
+game.cam_limit_y = (-110, -1090)
 
 if game.travelid == '1-0':
-    game.p.x = -350
-    game.p.y = -50
-    set_camera(game.p.x, game.p.y)
+    smooth_tp(-350, 50)
+    # game.p.x = -350
+    # game.p.y = -50
+    # set_camera(game.p.x, game.p.y)
 
 lvlmap = [
     '     7CCCCCCCCCCC6',
@@ -485,8 +493,6 @@ lvlmap = [
 
 make_map(lvlmap)
 
-game.cam_limit_x = (10, 1810)
-game.cam_limit_y = (-110, -1090)
 
 colliders = [
     (-350, 100, 600, 95),
@@ -512,7 +518,18 @@ colliders = [
 ]
 blockgroup(900, -300, colliders)
 
-make_dark_gradient()","loop":"#Room1 loop
+make_dark_gradient(-350, -50, 600, 400, 20, direction=False)
+TravelGate(-560, -50, 60, 400, self.roomid, 'Starting_Room')
+
+make_dark_gradient(1700, -1200, 500, 500, 20, vert=True)
+
+make_dark_gradient(2150, -750, 600, 400, 20)
+
+
+# Empty lines for scroll glitch
+
+
+","loop":"#Room1 loop
 
 "
 }
@@ -771,9 +788,25 @@ def boost(pl, force, angle):
     pl.xMOD += force * math.cos(math.radians(angle+90))
     pl.yMOD += force * math.sin(math.radians(angle+90))
 
+def smooth_tp(x, y):
+    \"\"\"Teleport the player to x and y and manage camera movement\"\"\"
+
+    offset_x = game.p.x - camera_x()
+    offset_y = game.p.y - camera_y()
+    game.p.x = x
+    game.p.y = y
+
+    new_camX = x + offset_x
+    new_camY = y + offset_y
+    new_camX = min(max(new_camX, game.cam_limit_x[0
+]), game.cam_limit_x[1
+])
+    new_camY = max(min(new_camY, game.cam_limit_y[0
+]), game.cam_limit_y[1
+])
+    set_camera(new_camX, new_camY)
 
 
-    
 "
 }
 },
@@ -948,7 +981,7 @@ def make_bumper(x, y, force=30):
         
         if vert:
             t.x = x 
-            t.y = (y + (h/2)) - (height/2) + (height * i)
+            t.y = ((y + (h/2)) - (height/2)) - (height * i)
         else:
             t.x = (x - (w/2) + (width/2)) + (width * i)
             t.y = y
