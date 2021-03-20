@@ -31,7 +31,9 @@ self.x = 0
 self.y = 0
 #self.z = 1000
 self.sprite = new_sprite(\"debug.png\")
-
+self.scaleX = 1.3
+self.scaleY = 1.3
+self.rad = self.scaleX*20
 self.persistent = True
 
 # velocity values
@@ -52,8 +54,6 @@ self.spr_obj = Psprite()
 # remove for hitbox debug
 self.visible = False
 
-self.scaleX = 2
-self.scaleY = 2
 
 self.xMOD = 0
 self.yMOD = 0
@@ -198,7 +198,7 @@ self.visible = game.debug
 
 pl = get_collision(self, \"Player\")
 if pl:
-    p_nf, p_sf, p_wf, p_ef = pl.y0+40, pl.y0-40, pl.x0-40, pl.x0+40
+    p_nf, p_sf, p_wf, p_ef = pl.y0+pl.rad, pl.y0-pl.rad, pl.x0-pl.rad, pl.x0+pl.rad
 
     if p_nf < self.sf or p_sf > self.nf:
         pl.y = pl.y0
@@ -285,6 +285,38 @@ if l:
     damage(1)"
 }
 },
+{"Hurtbox":{
+"type":"object script","start":"#General purpose Hurtbox object
+
+
+","loop":"#Hurtbox loop
+k = get_collis(self, \"Player\")
+
+if k:
+    damage(self.dmg)
+    boost(k, 10, k.angle-180)
+"
+}
+},
+{"Angelfish":{
+"type":"object script","start":"
+scale = 4
+
+self.sprite = new_sprite(\"Angelfish.png\")
+self.light = Slate()
+self.light.sprite = new_sprite(\"Angelfish_light.png\")
+self.scaleX = scale
+self.scaleY = scale
+transform(self.light, self.x, self.y, scale, scale)
+self.alpha = 0","loop":"#Opacity uppon approach
+if hyp((self.x-game.p.x), (self.y-game.p.y)) < 300:
+    self.alpha = min(1, self.alpha+0.1)
+else:
+    self.alpha = max(0, self.alpha-0.1)
+
+transform(self.light, self.x, self.y)"
+}
+},
 {"travelgate_inst":{
 "type":"object script","start":"#travel_gate start
 
@@ -303,7 +335,7 @@ if get_collision(self, 'Player'):
 self.z = 1000
 self.scaleX = 1
 self.scaleY = 1
-
+#self.alpha = 0.6
 self.sprite = new_sprite(\"octopus.png\")
 spritesheet = sprite('dynamic_squid.png', 4, 4)
 self.anim = animation(spritesheet, 10, 0, 12)
@@ -328,6 +360,10 @@ if not (self.nb>=self.y>=self.sb) or not (self.wb<=self.x<=self.eb):
 self.x += self.xv
 self.y += self.yv
 "
+}
+},
+{"Slate":{
+"type":"object script","start":"#A blank object that can be used in any way by any other object.","loop":""
 }
 },
 {"Background":{
@@ -534,6 +570,7 @@ make_spike(150, 110, \"N\", 1)
 make_spike(200, 110, \"N\", 1)
 make_booster(0, -300, -90)
 make_booster(875, -300, 225)
+make_angelf(1375, -800)
 colliders = [
     (605, 0, 890, 95),
     (-200, -405, 95, 690),
@@ -735,6 +772,17 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 }
 ]
 },
+{"Enemies":[
+{"Angelfish.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616224550.Angelfish.png"
+}
+},
+{"Angelfish_light.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616224562.Angelfish_light.png"
+}
+}
+]
+},
 {"debug.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
 }
@@ -852,6 +900,12 @@ def damage(st):
         game.p.dmgF = False
         game.p.damage_cool = game.t + 600
 
+def transform(obj, x, y, scaleX=None, scaleY=None):
+    \"\"\"Simple transform helper for working with slates.\"\"\"
+    obj.x = x
+    obj.y = y
+    if scaleX: obj.scaleX = scaleX
+    if scaleY: obj.scaleY = scaleY
 
 
 "
@@ -1001,6 +1055,22 @@ def make_bumper(x, y, force=30):
     inst.x = x
     inst.y = y
     inst.force = force
+
+def make_angelf(x, y, AI=True):
+    \"\"\"Create an angelfish.\"\"\"
+    inst = Angelfish()
+    inst.x = x
+    inst.y = y
+    
+def make_hurtbox(x, y, w, h, dmg):
+    inst = Hurtbox()
+    inst.x = x
+    inst.y = y
+    inst.sprite = new_sprite(\"debug.png\")
+    inst.alpha = 0
+    inst.scaleX = w/40
+    inst.scaleY = h/40
+    inst.dmg = dmg
 
 
 "
