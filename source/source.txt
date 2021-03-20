@@ -11,8 +11,8 @@ self.fpscount = 0\r
 \r
 self.p = Player()\r
 \r
-#set_room('Demo_Room')\r
-set_room('Starting_Room')\r
+set_room('Demo_Room')\r
+#set_room('Starting_Room')\r
 #set_room('Room1')","loop":"self.t = time_ms()\r
 \r
 self.fpscount += 1\r
@@ -29,7 +29,7 @@ if ntime > self.fpslog:\r
 "type":"object script","start":"# initialise pos, sprite
 self.x = 0
 self.y = 0
-#self.z = 1000
+self.z = 1001
 self.sprite = new_sprite(\"debug.png\")
 
 self.persistent = True
@@ -50,7 +50,7 @@ self.y0 = 0
 self.spr_obj = Psprite()
 
 # remove for hitbox debug
-self.visible = False
+self.visible = game.debug
 
 self.scaleX = 2
 self.scaleY = 2
@@ -213,7 +213,23 @@ if pl:
 },
 {"Booster":{
 "type":"object script","start":"#Booster start
-self.sprite = new_sprite(\"booster.png\")
+spritesheet = sprite(\"booster_new.png\", 4, 3)
+self.anim = animation(spritesheet, 15, 0, 10)
+set_animation(self, self.anim)
+
+filterConfig = {
+    \"threshold\": 0.7,
+    \"bloomScale\" : 2,
+    \"brightness\" : 0.4,
+    \"blur\" : 2,
+    \"quality\" : 10,
+
+}
+
+advBloom = new_adv_bloom_filter(filterConfig)
+add_filter(self, advBloom)
+
+
 self.scaleX = 1.5
 self.scaleY = 1.5","loop":"#Booster loop
 
@@ -524,12 +540,11 @@ colliders = [
 
 ]
 blockgroup(0, 0, colliders)
-make_current(500, 20, 600, 400, 0, -8)
-make_spike(50, 110, \"N\", 1)
-make_spike(100, 110, \"N\", 1)
-make_spike(150, 110, \"N\", 1)
-make_spike(200, 110, \"N\", 1)
-make_booster(0, -300, -90)
+
+make_spike(50, 118, \"N\", 1)
+make_spike(100, 118, \"N\", 1)
+make_spike(150, 118, \"N\", 1)
+make_spike(200, 118, \"N\", 1)
 
 colliders = [
     (605, 0, 890, 95),
@@ -712,7 +727,7 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 }
 },
 {"booster.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616112191.booster.png"
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616209254.booster.png"
 }
 },
 {"Spike1.png":{
@@ -742,6 +757,10 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 },
 {"text_box.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616039356.text_box.png"
+}
+},
+{"booster_new.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616268793.booster_new.png"
 }
 }
 ],
