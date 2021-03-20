@@ -47,7 +47,7 @@ self.x_off = 0
 self.x0 = 0
 self.y0 = 0
 
-self.spr_obg = Psprite()
+self.spr_obj = Psprite()
 
 # remove for hitbox debug
 self.visible = False
@@ -61,10 +61,20 @@ self.xext = 0
 self.yext = 0
 
 self.dash_cool = game.t
-self.damage_cool = game.t","loop":"camX, camY = camera_x(), camera_y()
+self.damage_cool = game.t
+self.dmgF = True
+self.hp = 5","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
+#damage invincibility management
+if self.damage_cool < game.t and not self.dmgF:
+    self.dmgF = True
+    self.spr_obj.alpha = 1
+   
+#death check
+if self.hp < 0:
+    pass
 
 # for arrow key movement
 keys = [key_is_pressed('arrowRight'), 
@@ -160,7 +170,7 @@ k0 = angle_helper(Dx, Dy)
 if k0 != -361:
     self.angle = k0
 
-update_spr(self.spr_obg, self.x, self.y, self.angle)
+update_spr(self.spr_obj, self.x, self.y, self.angle)
 
 
 
@@ -260,6 +270,16 @@ self.sprite = sprite('text_box.png')
 self.parent = None","loop":"#TextBox loop
 
 self.parent.do_loop()"
+}
+},
+{"Spike":{
+"type":"object script","start":"#Spike start
+self.sprite = new_sprite(\"Spike1.png\")
+","loop":"#Spike loop
+l = get_collision(self, \"Player\")
+if l:
+    boost(l, 8, l.angle-180)
+    damage(1)"
 }
 },
 {"travelgate_inst":{
@@ -476,7 +496,7 @@ lvlmap = [
     '......X..........R',
     '.................R',
     'NVBBV1...........R',
-    '     L.........O.2CCCCCCC6',
+    '     L...........2CCCCCCC6',
     '     5VNNBNVV1...........R',
     '             L...........R',
     '             L...........2CCCCC',
@@ -504,6 +524,12 @@ colliders = [
 
 ]
 blockgroup(0, 0, colliders)
+make_current(500, 20, 600, 400, 0, -8)
+make_spike(50, 110, \"N\", 1)
+make_spike(100, 110, \"N\", 1)
+make_spike(150, 110, \"N\", 1)
+make_spike(200, 110, \"N\", 1)
+make_booster(0, -300, -90)
 
 colliders = [
     (605, 0, 890, 95),
@@ -517,6 +543,8 @@ colliders = [
 
 ]
 blockgroup(900, -300, colliders)
+
+
 
 make_dark_gradient(-350, -50, 600, 400, 20, direction=False)
 TravelGate(-560, -50, 60, 400, self.roomid, 'Starting_Room')
@@ -686,6 +714,14 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 {"booster.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616112191.booster.png"
 }
+},
+{"Spike1.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616188359.Spike1.png"
+}
+},
+{"Spike2.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616188331.Spike2.png"
+}
 }
 ]
 },
@@ -722,7 +758,7 @@ import random
 "
 }
 },
-{"quickfuncs.py":{
+{"gamefuncs.py":{
 "type":"function script","head":"#A collection of helper functions/enums.
 
 
@@ -805,6 +841,14 @@ def smooth_tp(x, y):
 ]), game.cam_limit_y[1
 ])
     set_camera(new_camX, new_camY)
+
+def damage(st):
+    if game.p.dmgF:
+        game.p.hp -= st
+        game.p.spr_obj.alpha = 0.6
+        game.p.dmgF = False
+        game.p.damage_cool = game.t + 600
+
 
 
 "
@@ -1060,6 +1104,27 @@ def make_bumper(x, y, force=30):
                 destroy(self.inst)
                 destroy(self.text)
                 game.text_box = None"
+}
+},
+{"Enemies.py":{
+"type":"function script","head":"d_to_angle = {
+    \"N\": 0,
+    \"W\": 90,
+    \"S\": 180,
+    \"E\": 270
+
+}
+
+def make_spike(x, y, point_d, scale=1):
+    \"\"\"Make a spike at specified coords as well as a direction
+    (N, S, E, W). Also takes optional arg for scale.\"\"\"
+    inst = Spike()
+    inst.x = x
+    inst.y = y
+    inst.angle = d_to_angle[point_d
+]
+    inst.scaleX *= scale
+    inst.scaleY *= scale"
 }
 }
 ]
