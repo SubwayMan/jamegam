@@ -12,8 +12,8 @@ self.fpscount = 0\r
 self.p = Player()\r
 \r
 #set_room('Demo_Room')\r
-#set_room('Starting_Room')\r
-set_room('Room1')","loop":"self.t = time_ms()\r
+set_room('Starting_Room')\r
+#set_room('Room1')","loop":"self.t = time_ms()\r
 \r
 self.fpscount += 1\r
 ntime = int(self.t/1000)\r
@@ -465,7 +465,7 @@ game.cam_limit_x = (10, 1810)
 game.cam_limit_y = (-110, -1090)
 
 if game.travelid == '1-0':
-    smooth_tp(-350, 50)
+    smooth_tp(-350, -50)
     # game.p.x = -350
     # game.p.y = -50
     # set_camera(game.p.x, game.p.y)
@@ -789,7 +789,7 @@ def boost(pl, force, angle):
     pl.yMOD += force * math.sin(math.radians(angle+90))
 
 def smooth_tp(x, y):
-    \"\"\"Teleport the player to x and y and manage camera movement\"\"\"
+    \"\"\"Teleport the player to x and y and manage camera movement.\"\"\"
 
     offset_x = game.p.x - camera_x()
     offset_y = game.p.y - camera_y()
