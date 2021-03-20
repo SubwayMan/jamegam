@@ -213,9 +213,12 @@ if pl:
 },
 {"Booster":{
 "type":"object script","start":"#Booster start
-self.sprite = new_sprite(\"booster.png\")
-self.scaleX = 1.5
-self.scaleY = 1.5","loop":"#Booster loop
+sheet = new_sprite(\"booster.png\", 5, 5)
+
+self.scaleX = 0.75
+self.scaleY = 0.75
+self.anim = new_animation(sheet, 30, 0, 24)
+set_animation(self, self.anim)","loop":"#Booster loop
 
 k = get_collision(self, \"Player\")
 if k:
@@ -530,7 +533,7 @@ make_spike(100, 110, \"N\", 1)
 make_spike(150, 110, \"N\", 1)
 make_spike(200, 110, \"N\", 1)
 make_booster(0, -300, -90)
-
+make_booster(875, -300, 225)
 colliders = [
     (605, 0, 890, 95),
     (-200, -405, 95, 690),
@@ -712,7 +715,7 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 }
 },
 {"booster.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616112191.booster.png"
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616202423.booster.png"
 }
 },
 {"Spike1.png":{
