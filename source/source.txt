@@ -617,7 +617,9 @@ TextBox('Welcome to the demo room', 1500)","loop":"#Demo_Room loop
 },
 {"Stage1":[
 {"Starting_Room":{
-"type":"room script","start":"self.roomid = '1-0'
+"type":"room script","start":"game.npcs.clear()
+
+self.roomid = '1-0'
 game.cam_limit_x = (290, 1610)
 game.cam_limit_y = (-110, -290)
 
@@ -665,7 +667,9 @@ self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')","loop":"#Star
 }
 },
 {"Room1":{
-"type":"room script","start":"self.roomid = '1-1'
+"type":"room script","start":"game.npcs.clear()
+
+self.roomid = '1-1'
 game.cam_limit_x = (10, 1810)
 game.cam_limit_y = (-110, -1090)
 
