@@ -214,7 +214,17 @@ if pl:
     
     # \"friction\" slowdown while colliding
     pl.xv = deter(pl.xv, 0.84)
-    pl.yv = deter(pl.yv, 0.84)"
+    pl.yv = deter(pl.yv, 0.84)
+
+al = get_collision(self, \"Anglerfish\")
+if al:
+    a_nf, a_sf, a_wf, a_ef = al.y0+40, al.y0-40, al.x0-40, al.x0+40
+
+    if a_nf < self.sf or a_sf > self.nf:
+        al.y = al.y0
+
+    elif a_ef < self.wf or a_wf >= self.ef:
+        al.x = al.x0"
 }
 },
 {"Booster":{
@@ -350,9 +360,12 @@ self.h = make_hurtbox(self.x+30, self.y, 20, 20, 2)
 self.h.parent = self
 self.h.func = lambda s, pl: boost(pl, 10, s.parent.angle-90)","loop":"if self.disabled:
     return
+self.x0 = self.x
+self.y0 = self.y
 
 dx = game.p.x - self.x 
 dy = game.p.y - self.y
+
 
 
 #Opacity uppon approach
