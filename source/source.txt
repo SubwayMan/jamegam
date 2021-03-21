@@ -13,6 +13,8 @@ self.fpslog = int(self.t/1000)\r
 self.fpscount = 0\r
 \r
 self.prog = ProgTracker()\r
+self.npcs = [
+]\r
 self.p = Player()\r
 \r
 # set_room('Demo_Room')\r
@@ -316,7 +318,7 @@ if k and k.dmgF:
 }
 },
 {"Anglerfish":{
-"type":"object script","start":"scale = 1
+"type":"object script","start":"self.scale = 1
 
 self.sprite = new_sprite(\"Anglerfish.png\")
 
@@ -334,10 +336,10 @@ advBloom = new_adv_bloom_filter(filterConfig)
 add_filter(self.light, advBloom)
 
 
-self.scaleX = scale
-self.scaleY = scale
+self.scaleX = self.scale
+self.scaleY = self.scale
 
-transform(self.light, self.x, self.y, scale, scale)
+transform(self.light, self.x, self.y, self.scale, self.scale)
 self.alpha = 0
 self.disabled = False
 
@@ -361,9 +363,9 @@ if hyp(dx, dy) < 250:
     self.x += dx*mod
     self.y += dy*mod
     if dx < 0:
-        self.scaleY = -4
+        self.scaleY = -self.scale
     else:
-        self.scaleY = 4
+        self.scaleY = self.scale
 else:
     self.alpha = max(0, self.alpha-0.1)
 
@@ -384,22 +386,6 @@ self.parent = None","loop":"#travel_gate loop
 
 if get_collision(self, 'Player'):
     self.parent.travel()"
-}
-},
-{"SimpleNPC":{
-"type":"object script","start":"# set by constructor \"make_simple(type_, x, y, scale, msg)\"\"
-self.msg = ''","loop":"pX, pY = game.p.x, game.p.y
-
-if get_dist(self.x, self.y, pX, pY) < 80:
-    s = Slate()
-
-    s.sprite = sprite('pressE.png')
-    if not game.prog.interact:
-        s.sprite = sprite('pressE_full.png')
-        game.prog.interact = True
-    s.x = self.x - 50
-    s.y = self.y + 10
-"
 }
 }
 ]
@@ -461,7 +447,9 @@ self.scaleX = self.scaleY = 2
 #self.sprite = sprite('whale.png')
 
 self.x, self.y = 1500, -420
-self.visible = True","loop":"try:
+self.visible = True
+
+self.msg = 'Hi! I\\'m a whale!'","loop":"try:
     # Exit the loop early if far from player
     pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
     if pdist > 1700:
@@ -480,7 +468,20 @@ if self.visible:
     if 0 <= d < 50:
         self.y += 0.5
     if 50 <= d < 100:
-        self.y -= 0.5"
+        self.y -= 0.5
+
+pX, pY = game.p.x, game.p.y
+
+if get_dist(self.x, self.y, pX, pY) < 80:
+    s = Slate()
+
+    s.sprite = sprite('pressE.png')
+    if not game.prog.interact:
+        s.sprite = sprite('pressE_full.png')
+        game.prog.interact = True
+    s.x = self.x - 50
+    s.y = self.y + 10
+"
 }
 }
 ],
@@ -1246,25 +1247,6 @@ def make_hurtbox(x, y, w, h, dmg, boost_f=None):
                 destroy(self.inst)
                 destroy(self.text)
                 game.text_box = None"
-}
-},
-{"NPC.py":{
-"type":"function script","head":"def make_simple(type_, x, y, scale, msg):
-    npc = eval(type_ + '()')
-    npc.x = x
-    npc.y = y
-    npc.scaleX = npc.scaleY = scale
-    npc.msg = msg
-    return npc
-
-class simple_NPC:
-    def __init__(self, x, y, scale, type_, line):
-        self.inst = eval(type_ + '()')
-        self.inst.x = x
-        self.inst.y = y
-        self.inst.scaleX = self.inst.scaleY = scale
-
-        self.line = line"
 }
 },
 {"Enemies.py":{
