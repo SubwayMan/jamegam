@@ -7,6 +7,7 @@ self.t = time_ms()\r
 self.c = 0\r
 \r
 self.debug = False\r
+\r
 self.travelid = None\r
 self.fpslog = int(self.t/1000)\r
 self.fpscount = 0\r
@@ -291,26 +292,21 @@ self.parent.do_loop()"
 self.sprite = new_sprite(\"Spike1.png\")
 ","loop":"#Spike loop
 l = get_collision(self, \"Player\")
-if l and l.dmgF:
+if l:
     boost(l, 8, l.angle-180)
     damage(1)"
 }
 },
 {"Hurtbox":{
-"type":"object script","start":"self.sprite = new_sprite(\"debug.png\")
-self.alpha = 0
+"type":"object script","start":"#General purpose Hurtbox object
 
-#Func holds a function that describes player movement after hurtbox collision.
-#Can be redefined externally.
-self.func = lambda a, l: boost(l, 10, l.angle-180)
 
-if game.debug:
-    self.alpha = 0.8","loop":"#Hurtbox loop
-k = get_collision(self, \"Player\")
+","loop":"#Hurtbox loop
+k = get_collis(self, \"Player\")
 
-if k and k.dmgF:
+if k:
     damage(self.dmg)
-    self.func(self, k)
+    boost(k, 10, k.angle-180)
 "
 }
 },
@@ -337,42 +333,13 @@ self.scaleX = scale
 self.scaleY = scale
 
 transform(self.light, self.x, self.y, scale, scale)
-self.alpha = 0
-self.disabled = False
-
-self.x0 = 0
-self.y0 = 0
-
-self.h = make_hurtbox(self.x+30, self.y, 20, 20, 2)
-self.h.parent = self
-self.h.func = lambda s, pl: boost(pl, 10, s.parent.angle-90)","loop":"if self.disabled:
-    return
-
-dx = game.p.x - self.x 
-dy = game.p.y - self.y
-
-
-#Opacity uppon approach
-if hyp(dx, dy) < 250:
+self.alpha = 0","loop":"#Opacity uppon approach
+if hyp((self.x-game.p.x), (self.y-game.p.y)) < 150:
     self.alpha = min(1, self.alpha+0.1)
-    self.angle = angle_helper(dx, dy) + 90
-    mod = 2/hyp(dx, dy)    
-    self.x += dx*mod
-    self.y += dy*mod
-    if dx < 0:
-        self.scaleY = -4
-    else:
-        self.scaleY = 4
 else:
     self.alpha = max(0, self.alpha-0.1)
 
-transform(self.light, self.x, self.y)
-self.light.angle = self.angle
-self.light.scaleY = self.scaleY
-
-hitbox_rotate(self.h, self, self.angle, 30)
-
-"
+transform(self.light, self.x, self.y)"
 }
 },
 {"travelgate_inst":{
@@ -630,6 +597,7 @@ colliders = [
 
 ]
 blockgroup(0, 0, colliders)
+
 # from (900, -300)
 colliders = [
     (1250, -150, 595, 395),
@@ -831,19 +799,15 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 ]
 },
 {"Enemies":[
+{"Anglerfish_light.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616275209.Anglerfish_light.png"
+}
+},
+{"Anglerfish.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616275637.Anglerfish.png"
+}
+}
 ]
-},
-{"debug.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
-}
-},
-{"black40x40.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616018445.black40x40.png"
-}
-},
-{"text_box.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616039356.text_box.png"
-}
 },
 {"Tutorial":[
 {"pressE_full.png":{
@@ -970,11 +934,6 @@ def transform(obj, x, y, scaleX=None, scaleY=None):
     obj.y = y
     if scaleX: obj.scaleX = scaleX
     if scaleY: obj.scaleY = scaleY
-
-def hitbox_rotate(obj, orig, obj_0, rad):
-    \"\"\"For rotating objects around a point.\"\"\"
-    obj.x = (math.cos(math.radians(obj_0)) * rad) + orig.x
-    obj.y = (math.sin(math.radians(obj_0)) * rad) + orig.y
 
 
 "
@@ -1131,17 +1090,15 @@ def make_anglerf(x, y, AI=True):
     inst.x = x
     inst.y = y
     
-def make_hurtbox(x, y, w, h, dmg, boost_f=None):
+def make_hurtbox(x, y, w, h, dmg):
     inst = Hurtbox()
     inst.x = x
     inst.y = y
-    
+    inst.sprite = new_sprite(\"debug.png\")
+    inst.alpha = 0
     inst.scaleX = w/40
     inst.scaleY = h/40
     inst.dmg = dmg
-    if boost_f != None:
-        inst.func = boost_f
-    return inst
 
 
 "
