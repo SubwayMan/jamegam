@@ -7,7 +7,7 @@ self.t = time_ms()\r
 self.c = 0\r
 \r
 self.debug = False\r
-self.showgrid = True\r
+self.showgrid = False\r
 #create guides\r
 if self.showgrid:\r
     for i in range(-20, 21):\r
@@ -30,6 +30,7 @@ self.npcs = [
 ]\r
 self.p = Player()\r
 self.bg = Background()\r
+self.bg.persistent = True\r
 # set_room('Demo_Room')\r
 # set_room('Starting_Room')\r
 set_room('Room1')","loop":"self.t = time_ms()\r
@@ -191,7 +192,9 @@ if k0 != -361:
 
 update_spr(self.spr_obj, self.x, self.y, self.angle)
 
-
+#slightly shift background
+game.bg.x += (Dx*0.4)
+game.bg.y += (Dy*0.4)
 
 
 
@@ -495,7 +498,8 @@ self.y += self.yv
 {"Background":{
 "type":"object script","start":"#Background start
 
-self.sprite = sprite('pixel_bg_stage1.png')
+self.x = 0
+self.y = 0
 self.scaleX = 0.6
 self.scaleY = 0.6","loop":"#Background loop
 
@@ -657,19 +661,19 @@ if game.travelid == '1-0':
     smooth_tp(-350, -50)
 
 lvlmap = [
-    '     7CCCCCCCCCCC6',
+    '~~~~~7CCCCCCCCCCC6',
     'CCCCC3...........R',
     '......X..........R',
-    '.................R',
-    'NVBBV1...........R',
-    '     L......... .2CCCCOCC6',
-    '     5VNNBNVV1...........R',
-    '             L...........R',
-    '             L...........2CCCCC',
-    '             L.................',
-    '             L.................',
-    '             L...........0VNBVB',
-    '             5VNNBNVB1...R      ',
+    '.................R...O',
+    'NVBBV1...........O.=',
+    '~~~~~L......... .2Co=.o.C6',
+    '~~~~~5...................R',
+    '~~~~~L...................R',
+    '~~~~~L...................2CCCCC',
+    '     L.........................',
+    '     L.........................',
+    '     L...................0VNBVB',
+    '     oooooooo5VNNBNVB1...R      ',
     '                     L...R      ',
     '                     L...R      ',
     '                     L...R      ',
@@ -678,13 +682,17 @@ lvlmap = [
 ]
 
 make_map(lvlmap)
+game.bg.sprite = new_sprite(\"Cave_Background.png\")
+game.bg.x, game.bg.y = -100, -300
+game.bg.scaleX = 2
+game.bg.scaleY = 1.5
 
 # from (0, 0)
 colliders = [
     (-350, 100, 600, 95),
-    (-350, -300, 595, 295),
+    (-350, -700, 595, 1095),
     (500, 200, 1300, 95),
-    (300, -700, 895, 695),
+    (300, -1300, 895, 695),
     (1500, -50, 895, 595),
 
 ]
@@ -823,6 +831,10 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615953211.gradient1.png"
 }
 },
+{"Cave_Background.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616362233.Cave_Background.png"
+}
+},
 {"pixel_bg_stage1.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615960001.pixel_bg_stage1.png"
 }
@@ -922,6 +934,18 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 },
 {"temptext.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616350974.temptext.png"
+}
+},
+{"temptext4.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361465.temptext4.png"
+}
+},
+{"temptext2.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361483.temptext2.png"
+}
+},
+{"temptext3.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361495.temptext3.png"
 }
 }
 ],
@@ -1060,6 +1084,7 @@ def hitbox_rotate(obj, orig, obj_0, rad):
     '5': (sprite('out_corner_tr.png'), ),
     '6': (sprite('out_corner_bl.png'), ),
     '7': (sprite('out_corner_br.png'), ),
+    \"~\": (sprite(\"black40x40.png\"), 2.5, 2.5, 0, 0),
     \"O\": (sprite(\"temptext.png\"), 1.25, 1.25, 50, 50),
     \"o\": (sprite(\"temptext4.png\"), 1.25, 1.25, 0, 0),
     \"=\": (sprite(\"temptext2.png\"), 1.25, 1.25, 50, 0),
@@ -1067,13 +1092,6 @@ def hitbox_rotate(obj, orig, obj_0, rad):
 
 }
 
-block_map = {
-    \"O\": (200, 200),
-    \"o\": (100, 100),
-    \"=\": (200, 100),
-    \"-\": (100, 200)
-
-}
 
 def make_map(layout):
     for i in range(len(layout)):
