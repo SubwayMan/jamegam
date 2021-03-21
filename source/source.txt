@@ -7,6 +7,19 @@ self.t = time_ms()\r
 self.c = 0\r
 \r
 self.debug = False\r
+self.showgrid = False\r
+#create guides\r
+if self.showgrid:\r
+    for i in range(-20, 21):\r
+        for j in range(-10, 11):\r
+            temp = Slate()\r
+            temp.x = i*100\r
+            temp.y = j*100\r
+            temp.sprite = new_sprite(\"Guide.png\")\r
+            temp.persistent = True\r
+            temp.scaleX = 0.6\r
+            temp.scaleY = 0.6\r
+            temp.z = 150\r
 \r
 self.travelid = None\r
 self.fpslog = int(self.t/1000)\r
@@ -17,7 +30,8 @@ self.npcs = [
 ]\r
 self.e = False\r
 self.p = Player()\r
-\r
+self.bg = Background()\r
+self.bg.persistent = True\r
 # set_room('Demo_Room')\r
 # set_room('Starting_Room')\r
 set_room('Room1')","loop":"self.t = time_ms()\r
@@ -196,6 +210,10 @@ if game.npcs:
         for o in game.npcs:
             if o.e_popup:
                 o.e_popup = False
+
+#slightly shift background
+game.bg.x += (Dx*0.4)
+game.bg.y += (Dy*0.4)
 
 
 
@@ -499,7 +517,8 @@ self.y += self.yv
 {"Background":{
 "type":"object script","start":"#Background start
 
-self.sprite = sprite('pixel_bg_stage1.png')
+self.x = 0
+self.y = 0
 self.scaleX = 0.6
 self.scaleY = 0.6","loop":"#Background loop
 
@@ -654,19 +673,19 @@ if game.travelid == '1-0':
     smooth_tp(-350, -50)
 
 lvlmap = [
-    '     7CCCCCCCCCCC6',
+    '~~~~~7CCCCCCCCCCC6',
     'CCCCC3...........R',
     '......X..........R',
-    '.................R',
-    'NVBBV1...........R',
-    '     L......... .2CCCCCCC6',
-    '     5VNNBNVV1...........R',
-    '             L...........R',
-    '             L...........2CCCCC',
-    '             L.................',
-    '             L.................',
-    '             L...........0VNBVB',
-    '             5VNNBNVB1...R      ',
+    '.................R...O',
+    'NVBBV1...........O.=',
+    '~~~~~L......... .2Co=.o.C6',
+    '~~~~~5...................R',
+    '~~~~~L...................R',
+    '~~~~~L...................2CCCCC',
+    '     L.........................',
+    '     L.........................',
+    '     L...................0VNBVB',
+    '     oooooooo5VNNBNVB1...R      ',
     '                     L...R      ',
     '                     L...R      ',
     '                     L...R      ',
@@ -675,13 +694,17 @@ lvlmap = [
 ]
 
 make_map(lvlmap)
+game.bg.sprite = new_sprite(\"Cave_Background.png\")
+game.bg.x, game.bg.y = -100, -300
+game.bg.scaleX = 2
+game.bg.scaleY = 1.5
 
 # from (0, 0)
 colliders = [
     (-350, 100, 600, 95),
-    (-350, -300, 595, 295),
+    (-350, -700, 595, 1095),
     (500, 200, 1300, 95),
-    (300, -700, 895, 695),
+    (300, -1300, 895, 695),
     (1500, -50, 895, 595),
 
 ]
@@ -822,6 +845,10 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615953211.gradient1.png"
 }
 },
+{"Cave_Background.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616362233.Cave_Background.png"
+}
+},
 {"pixel_bg_stage1.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615960001.pixel_bg_stage1.png"
 }
@@ -917,6 +944,26 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 },
 {"jelly.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616347498.jelly.png"
+}
+},
+{"Guide.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616348073.Guide.png"
+}
+},
+{"temptext.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616350974.temptext.png"
+}
+},
+{"temptext4.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361465.temptext4.png"
+}
+},
+{"temptext2.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361483.temptext2.png"
+}
+},
+{"temptext3.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361495.temptext3.png"
 }
 }
 ],
@@ -1063,23 +1110,27 @@ def create_msg(obj):
 },
 {"make_map.py":{
 "type":"function script","head":"tile_map = {
-    'C': sprite('ciel.png'), # placeholder ceiling
-    'L': sprite('wall_left.png'),
-    'R': sprite('wall_right.png'),
-    'V': sprite('ground1.png'),
-    'B': sprite('ground2.png'),
-    'N': sprite('ground3.png'),
-    '0': sprite('in_corner_tl.png'),
-    '1': sprite('in_corner_tr.png'),
-    '2': sprite('in_corner_bl.png'),
-    '3': sprite('in_corner_br.png'),
-    '4': sprite('out_corner_tl.png'),
-    '5': sprite('out_corner_tr.png'),
-    '6': sprite('out_corner_bl.png'),
-    '7': sprite('out_corner_br.png'),
+    'C': (sprite('ciel.png'), ), # placeholder ceiling
+    'L': (sprite('wall_left.png'), ),
+    'R': (sprite('wall_right.png'), ),
+    'V': (sprite('ground1.png'), ),
+    'B': (sprite('ground2.png'), ),
+    'N': (sprite('ground3.png'), ),
+    '0': (sprite('in_corner_tl.png'), ),
+    '1': (sprite('in_corner_tr.png'), ),
+    '2': (sprite('in_corner_bl.png'), ),
+    '3': (sprite('in_corner_br.png'), ),
+    '4': (sprite('out_corner_tl.png'), ),
+    '5': (sprite('out_corner_tr.png'), ),
+    '6': (sprite('out_corner_bl.png'), ),
+    '7': (sprite('out_corner_br.png'), ),
+    \"~\": (sprite(\"black40x40.png\"), 2.5, 2.5, 0, 0),
+    \"O\": (sprite(\"temptext.png\"), 1.25, 1.25, 50, 50),
+    \"o\": (sprite(\"temptext4.png\"), 1.25, 1.25, 0, 0),
+    \"=\": (sprite(\"temptext2.png\"), 1.25, 1.25, 50, 0),
+    \"-\": (sprite(\"temptext3.png\"), 1.25, 1.25, 0, 50)
 
 }
-
 
 
 def make_map(layout):
@@ -1092,13 +1143,12 @@ def make_map(layout):
     for i in range(len(layout)):
         for j in range(len(layout[i
 ])):
-            if layout[i
+            key = layout[i
 ][j
-] in '. X':
+]
+            if key in '. X':
                 continue
-            elif layout[i
-][j
-] not in tile_map.keys():
+            elif key not in tile_map.keys():
                 print(f'Unrecognised \"{layout[i
 ][j
 ]
@@ -1107,22 +1157,32 @@ def make_map(layout):
 
             t = Tile()
 
-            x = abs(100 * (origin[0
-]-j))
-            x *= -1 if j < origin[0
-] else 1
-            t.x = x
-
-            y = abs(100 * (origin[1
-]-i))
-            y *= 1 if i < origin[1
-] else -1
-            t.y = y
-
-            t.sprite = tile_map[layout[i
-][j
+            t.x = 100 * (j - origin[0
+])
+            t.y = 100 * (origin[1
+] - i)
+            if len(tile_map[key
+]) == 1:
+                t.sprite = tile_map[key
+][0
 ]
-]"
+            else:
+                spr, scX, scY, x_off, y_off = tile_map[key
+]
+                t.sprite = spr
+                t.scaleX = scX
+                t.scaleY = scY
+                t.x += x_off
+                t.y -= y_off
+                t.z = 100
+
+
+
+
+
+
+
+"
 }
 },
 {"gamecreation.py":{
@@ -1239,8 +1299,8 @@ def make_jelly(x, y, angle, scale=1):
     inst.bounce_h.angle = angle
     inst.bounce_h.scaleX *= scale
     inst.bounce_h.scaleY *= scale    
-    inst.hbox = make_hurtbox(x, y+15, 40*scale, 30*scale, 1)
-    hitbox_rotate(inst.hbox, inst, angle-90, 15)
+    inst.hbox = make_hurtbox(x, y+20, 40*scale, 30*scale, 1)
+    hitbox_rotate(inst.hbox, inst, angle-90, 20)
     inst.hbox.angle = angle
 
 "
