@@ -15,6 +15,7 @@ self.fpscount = 0\r
 self.prog = ProgTracker()\r
 self.npcs = [
 ]\r
+self.e = False\r
 self.p = Player()\r
 \r
 # set_room('Demo_Room')\r
@@ -56,11 +57,11 @@ self.x_off = 0
 self.x0 = 0
 self.y0 = 0
 
+# sprite that user normally sees
 self.spr_obj = Psprite()
 
-# remove for hitbox debug
+# for debug mode
 self.visible = game.debug
-
 
 self.xMOD = 0
 self.yMOD = 0
@@ -74,12 +75,12 @@ self.hp = 5","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
-#damage invincibility management
+# damage invincibility management
 if self.damage_cool < game.t and not self.dmgF:
     self.dmgF = True
     self.spr_obj.alpha = 1
    
-#death check
+# death check
 if self.hp < 0:
     pass
 
@@ -178,7 +179,23 @@ if k0 != -361:
 
 update_spr(self.spr_obj, self.x, self.y, self.angle)
 
-
+if game.npcs:
+    npc_dists = [get_dist(o.x, o.y, self.x, self.y) for o in game.npcs
+]
+    near = min(npc_dists)
+    if near < 150:
+        n = game.npcs[npc_dists.index(near)
+]
+        if not n.e_popup:
+            create_e(n)
+        if key_was_pressed('e'):
+            create_msg(n)
+    else:
+        if game.e:
+            destroy(game.e)
+        for o in game.npcs:
+            if o.e_popup:
+                o.e_popup = False
 
 
 
@@ -369,7 +386,7 @@ dy = game.p.y - self.y
 
 
 #Opacity uppon approach
-if hyp(dx, dy) < 250:
+if hyp(dx, dy) < 200:
     self.alpha = min(1, self.alpha+0.1)
     self.angle = angle_helper(dx, dy) + 90
     mod = 2/hyp(dx, dy)    
@@ -392,12 +409,12 @@ hitbox_rotate(self.h, self, self.angle, 30)
 }
 },
 {"Jellyfish":{
-"type":"object script","start":"
-spritesheet = new_sprite(\"Jelly.png\", 1, 8)
+"type":"object script","start":"spritesheet = new_sprite(\"jelly.png\", 1, 8)
 self.anim = animation(spritesheet, 4, 0, 7)
 set_animation(self, self.anim)
-self.scaleX = 4
-self.scaleY = 4
+self.scaleX = 0.5
+self.scaleY = 0.5
+
 #bounce cap
 self.bounce_h = Jellycap()
 self.bounce_h.scaleX = 1.3
@@ -495,9 +512,9 @@ self.scaleY = 0.6","loop":"#Background loop
 "type":"object script","start":"sprite_sheet = sprite('whalesheet_gap.png', 1, 4)
 self.anim = animation(sprite_sheet, 4, 0, 3)
 set_animation(self, self.anim)
-self.scaleX = self.scaleY = 2
 
-#self.sprite = sprite('whale.png')
+self.scaleX = self.scaleY = 2
+self.e_offset = 100
 
 self.x, self.y = 1500, -420
 self.visible = True
@@ -524,13 +541,6 @@ if self.visible:
         self.y -= 0.5
 
 pX, pY = game.p.x, game.p.y
-
-if get_dist(self.x, self.y, pX, pY) < 80:
-    s = Slate()
-
-    s.sprite = sprite('pressE.png')
-    s.x = self.x - 50
-    s.y = self.y + 10
 "
 }
 }
@@ -692,7 +702,9 @@ make_spike(100, 115, \"N\", 1)
 make_spike(150, 115, \"N\", 1)
 make_spike(200, 115, \"N\", 1)
 make_anglerf(900, -800)
-make_jelly(1400, -700, 45)
+make_jelly(900, 50, 45)
+
+make_simple_npc(1500, -700, 'Whale', 'Nothing, for now')
 
 
 make_dark_gradient(-350, -50, 600, 400, 20, direction=False)
@@ -889,6 +901,10 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 ]
 },
 {"Tutorial":[
+{"newE.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616348829.newE.png"
+}
+},
 {"pressE.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616288773.pressE.png"
 }
@@ -899,8 +915,8 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
 }
 },
-{"Jelly.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616305942.Jelly.png"
+{"jelly.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616347498.jelly.png"
 }
 }
 ],
@@ -1018,6 +1034,28 @@ def hitbox_rotate(obj, orig, obj_0, rad):
     \"\"\"For rotating objects around a point.\"\"\"
     obj.x = (math.cos(math.radians(obj_0)) * rad) + orig.x
     obj.y = (math.sin(math.radians(obj_0)) * rad) + orig.y
+
+def create_e(obj):
+    # clear any current \"E\"s
+    try:
+        destroy(game.e)
+    # no text box currently up
+    except AttributeError:
+        pass
+    game.e = Slate()
+    game.e.sprite = sprite('newE.png')
+    game.e.scaleX = game.e.scaleY = 0.3
+    game.e.x = obj.x
+    game.e.y = obj.y + obj.e_offset
+    obj.e_popup = True
+
+def create_msg(obj):
+    try:
+        destroy(game.e)
+    # no text box currently up
+    except AttributeError:
+        pass
+    TextBox(obj.msg, obj.msg_duration)
 
 
 "
@@ -1199,7 +1237,9 @@ def make_jelly(x, y, angle, scale=1):
     inst.bounce_h.x = x + math.cos(math.radians(angle+90))*20
     inst.bounce_h.y = y + math.sin(math.radians(angle+90))*20
     inst.bounce_h.angle = angle
-    inst.hbox = make_hurtbox(x, y+15, 40, 30, 1)
+    inst.bounce_h.scaleX *= scale
+    inst.bounce_h.scaleY *= scale    
+    inst.hbox = make_hurtbox(x, y+15, 40*scale, 30*scale, 1)
     hitbox_rotate(inst.hbox, inst, angle-90, 15)
     inst.hbox.angle = angle
 
@@ -1267,22 +1307,23 @@ def make_jelly(x, y, angle, scale=1):
         \"\"\"Create a textbox with msg text that last for a 
         minimum of duration ms.\"\"\"\"
 
-        # clear any current text box
-        try:
-            destroy(game.text_box)
-        # no text box currently up
-        except AttributeError:
-            pass
+        try: # clear possible current text box
+            game.text_box.destroy()
+        except Exception as e: # no text box currently up
+            print('Exception caught:', e)
 
         self.inst = textbox_inst()
         self.inst.parent = self
         self.inst.x = camera_x()
         self.inst.y = camera_y() - 200
+        game.text_box = self
         
         self.text = text(msg, self.inst.x - 450, self.inst.y + 40)
         self.text.color = '#ffffff'
         self.text.fontsize = 70
         self.text.fontFamily = 'courier new'
+        self.inst.z = 1002
+        self.text.z = 1002
 
         self.close_time = game.t + duration
     
@@ -1305,9 +1346,15 @@ def make_jelly(x, y, angle, scale=1):
             )
 
             if any(keys):
-                destroy(self.inst)
-                destroy(self.text)
-                game.text_box = None"
+                self.destroy()
+        
+    def destroy(self):
+        destroy(self.inst)
+        destroy(self.text)
+    
+
+
+"
 }
 },
 {"Enemies.py":{
@@ -1329,6 +1376,33 @@ def make_spike(x, y, point_d, scale=1):
 ]
     inst.scaleX *= scale
     inst.scaleY *= scale"
+}
+},
+{"NPC.py":{
+"type":"function script","head":"
+def make_simple_npc(x, y, type_, msg, scale=1):
+    \"\"\"Create a simple npc with only one line.\"\"\"
+
+    type_map = {
+        'Whale': Whale
+    
+}
+
+    n = type_map[type_
+]()
+    n.x = x
+    n.y = y
+    n.scaleX *= scale
+    n.scaleY *= scale
+    n.e_offset *= scale
+    n.msg = msg
+    n.msg_duration = 1200
+    
+    # flag for if \"e to interact\" popup is up
+    n.e_popup = False
+
+    game.npcs.append(n)
+    return n"
 }
 },
 {"ProgTracker.py":{
