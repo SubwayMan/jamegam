@@ -3,6 +3,9 @@
 {"Game":{
 "type":"game script","start":"# current time\r
 self.t = time_ms()\r
+# general purpose frame counter\r
+self.c = 0\r
+\r
 self.debug = False\r
 \r
 self.travelid = None\r
@@ -11,9 +14,10 @@ self.fpscount = 0\r
 \r
 self.p = Player()\r
 \r
-set_room('Demo_Room')\r
-#set_room('Starting_Room')\r
-#set_room('Room1')","loop":"self.t = time_ms()\r
+# set_room('Demo_Room')\r
+# set_room('Starting_Room')\r
+set_room('Room1')","loop":"self.t = time_ms()\r
+self.c += 1\r
 \r
 self.fpscount += 1\r
 ntime = int(self.t/1000)\r
@@ -144,13 +148,12 @@ self.y += b
 self.xMOD, self.yMOD = 0, 0
 
 
-# distance from zero after move
+# distance from camera after move
 xdist = self.x - camX
 ydist = self.y - camY
 
-# really ugly code to update camera position
-# either moves camera with delay following player or caps
-# at set limits
+# update camera position either moves camera with delay
+# following player or caps at set limits
 new_camX = camX + (xdist - xdist/1.1) + self.x_off
 new_camX = min(max(new_camX, game.cam_limit_x[0
 ]), game.cam_limit_x[1
@@ -230,8 +233,8 @@ advBloom = new_adv_bloom_filter(filterConfig)
 add_filter(self, advBloom)
 
 
-self.scaleX = 1.5
-self.scaleY = 1.5","loop":"#Booster loop
+self.scaleX = 1
+self.scaleY = 1","loop":"#Booster loop
 
 k = get_collision(self, \"Player\")
 if k:
@@ -258,23 +261,18 @@ if not k:
 },
 {"Current":{
 "type":"object script","start":"self.sprite = new_sprite(\"debug.png\")
-self.alpha = 0
-self.c = 0","loop":"#Current loop
+self.alpha = 0","loop":"#Current loop
 
-if not self.c%60:
+if not game.c%60:
     for i in range(self.dense):
         fx = random.randrange(self.x-self.w, self.x+self.w)
         fy = random.randrange(self.y-self.h, self.y+self.h)
         make_particle(fx, fy, self.xa, self.ya, \"current_particle.png\", self)
 
-self.c += 1
-
 k = get_collision(self, \"Player\")
 if k:
     k.xMOD += self.xa
-    k.yMOD += self.ya
-
-"
+    k.yMOD += self.ya"
 }
 },
 {"textbox_inst":{
@@ -311,18 +309,31 @@ if k:
 "
 }
 },
-{"Angelfish":{
-"type":"object script","start":"
-scale = 4
+{"Anglerfish":{
+"type":"object script","start":"scale = 1
 
-self.sprite = new_sprite(\"Angelfish.png\")
+self.sprite = new_sprite(\"Anglerfish.png\")
+
 self.light = Slate()
-self.light.sprite = new_sprite(\"Angelfish_light.png\")
+self.light.sprite = new_sprite(\"Anglerfish_light.png\")
+filterConfig = {
+    \"threshold\": 0.5,
+    \"bloomScale\" : 2,
+    \"brightness\" : 1,
+    \"blur\" : 2,
+    \"quality\" : 10,
+
+}
+advBloom = new_adv_bloom_filter(filterConfig)
+add_filter(self.light, advBloom)
+
+
 self.scaleX = scale
 self.scaleY = scale
+
 transform(self.light, self.x, self.y, scale, scale)
 self.alpha = 0","loop":"#Opacity uppon approach
-if hyp((self.x-game.p.x), (self.y-game.p.y)) < 300:
+if hyp((self.x-game.p.x), (self.y-game.p.y)) < 150:
     self.alpha = min(1, self.alpha+0.1)
 else:
     self.alpha = max(0, self.alpha-0.1)
@@ -348,8 +359,7 @@ if get_collision(self, 'Player'):
 self.z = 1000
 self.scaleX = 1
 self.scaleY = 1
-#self.alpha = 0.6
-self.sprite = new_sprite(\"octopus.png\")
+
 spritesheet = sprite('dynamic_squid.png', 4, 4)
 self.anim = animation(spritesheet, 10, 0, 12)
 set_animation(self, self.anim)
@@ -400,9 +410,7 @@ self.scaleX = self.scaleY = 2
 #self.sprite = sprite('whale.png')
 
 self.x, self.y = 1500, -420
-self.visible = True
-
-self.frames = 0","loop":"try:
+self.visible = True","loop":"try:
     # Exit the loop early if far from player
     pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
     if pdist > 1700:
@@ -416,14 +424,12 @@ except AttributeError: # Whale created before player in Game start
     pass
 
 if self.visible:
-    d = self.frames % 100
+    d = game.c % 100
     
     if 0 <= d < 50:
         self.y += 0.5
     if 50 <= d < 100:
-        self.y -= 0.5
-    
-    self.frames += 1"
+        self.y -= 0.5"
 }
 }
 ],
@@ -515,9 +521,8 @@ make_map(lvlmap)
 colliders = [
     (0, -400, 95, 900),
     (1050, 0, 2200, 95),
-    (1250, -800, 2600, 95),
-    (2100, -250, 95, 600),
-    (2300, -500, 450, 95),
+    (1250, -800, 2600, 95), 
+    (2300, -250, 495, 595),
 
 ]
 
@@ -548,7 +553,7 @@ lvlmap = [
     '......X..........R',
     '.................R',
     'NVBBV1...........R',
-    '     L...........2CCCCCCC6',
+    '     L.........O.2CCCCCCC6',
     '     5VNNBNVV1...........R',
     '             L...........R',
     '             L...........2CCCCC',
@@ -565,37 +570,32 @@ lvlmap = [
 
 make_map(lvlmap)
 
-
+# from (0, 0)
 colliders = [
     (-350, 100, 600, 95),
-    (-360, -200, 590, 95),
+    (-350, -300, 595, 295),
     (500, 200, 1300, 95),
-    (-100, -310, 95, 290),
-    (295, -400, 890, 95),
-    (1100, -40, 95, 595)
+    (300, -700, 895, 695),
+    (1500, -50, 895, 595),
 
 ]
 blockgroup(0, 0, colliders)
-make_current(500, 20, 600, 400, 0, -8)
-make_spike(50, 110, \"N\", 1)
-make_spike(100, 110, \"N\", 1)
-make_spike(150, 110, \"N\", 1)
-make_spike(200, 110, \"N\", 1)
-make_booster(0, -300, -90)
-make_booster(875, -300, 225)
-make_angelf(1375, -800)
+
+# from (900, -300)
 colliders = [
-    (605, 0, 890, 95),
-    (-200, -405, 95, 690),
-    (1000, -140, 95, 395),
-    (190, -700, 895, 95),
-    (1260, -300, 595, 95),
-    (1260, -600, 595, 95),
-    (600, -910, 95, 495),
-    (1000, -860, 95, 595)
+    (1250, -150, 595, 395),
+    (200, -900, 895, 495),
+    (1250, -850, 595, 595)
 
 ]
 blockgroup(900, -300, colliders)
+
+make_current(1700, -1100, 300, 400, 0, 3.5)
+make_spike(50, 115, \"N\", 1)
+make_spike(100, 115, \"N\", 1)
+make_spike(150, 115, \"N\", 1)
+make_spike(200, 115, \"N\", 1)
+make_anglerf(900, -800)
 
 
 
@@ -627,7 +627,7 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 }
 ],
 "texture":[
-{"tempTiles":[
+{"tiles":[
 {"ground1.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615954594.ground1.png"
 }
@@ -691,25 +691,13 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 ]
 },
 {"NPCs":[
-{"whalesheet.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615951193.whalesheet.png"
-}
-},
 {"whalesheet_gap.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615951543.whalesheet_gap.png"
-}
-},
-{"whale.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615757396.whale.png"
 }
 }
 ]
 },
 {"Player":[
-{"octopus.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615621603.octopus.png"
-}
-},
 {"dynamic_squid.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615957753.dynamic_squid.png"
 }
@@ -760,12 +748,12 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 ]
 },
 {"Gameplay_elements":[
-{"bumper.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616106674.bumper.png"
+{"booster_new.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616268793.booster_new.png"
 }
 },
-{"booster.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616209254.booster.png"
+{"bumper.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616106674.bumper.png"
 }
 },
 {"Spike1.png":{
@@ -779,6 +767,14 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 ]
 },
 {"Misc":[
+{"text_box.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616039356.text_box.png"
+}
+},
+{"black40x40.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616018445.black40x40.png"
+}
+},
 {"current_particle.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616010007.current_particle.png"
 }
@@ -786,30 +782,18 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 ]
 },
 {"Enemies":[
-{"Angelfish.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616224550.Angelfish.png"
+{"Anglerfish_light.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616275209.Anglerfish_light.png"
 }
 },
-{"Angelfish_light.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616224562.Angelfish_light.png"
+{"Anglerfish.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616275637.Anglerfish.png"
 }
 }
 ]
 },
 {"debug.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
-}
-},
-{"black40x40.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616018445.black40x40.png"
-}
-},
-{"text_box.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616039356.text_box.png"
-}
-},
-{"booster_new.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616268793.booster_new.png"
 }
 }
 ],
@@ -822,7 +806,6 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 import math
 import time
 import random
-
 "
 }
 },
@@ -1037,7 +1020,7 @@ def make_current(x, y, w, h, xa, ya):
 
     inst.w = w/2
     inst.h = h/2
-    inst.dense = (w*h)//6000
+    inst.dense = max((w*h)//10000, 1)
     
 def make_particle(x, y, xv, yv, spr, proc):
     \"\"\"Create a particle with a linear velocity. 
@@ -1073,9 +1056,9 @@ def make_bumper(x, y, force=30):
     inst.y = y
     inst.force = force
 
-def make_angelf(x, y, AI=True):
-    \"\"\"Create an angelfish.\"\"\"
-    inst = Angelfish()
+def make_anglerf(x, y, AI=True):
+    \"\"\"Create an anglerfish.\"\"\"
+    inst = Anglerfish()
     inst.x = x
     inst.y = y
     
