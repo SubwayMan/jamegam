@@ -541,9 +541,6 @@ if get_dist(self.x, self.y, pX, pY) < 80:
     s = Slate()
 
     s.sprite = sprite('pressE.png')
-    if not game.prog.interact:
-        s.sprite = sprite('pressE_full.png')
-        game.prog.interact = True
     s.x = self.x - 50
     s.y = self.y + 10
 "
@@ -609,9 +606,6 @@ game.cam_limit_y = (-110, -290)
 
 if game.travelid == '1-1':
     smooth_tp(1900, -450)
-    # game.p.x = 1900
-    # game.p.y = -450
-    # set_camera(1900, -450)
 
 
 # game.bg = Background()
@@ -660,9 +654,6 @@ game.cam_limit_y = (-110, -1090)
 
 if game.travelid == '1-0':
     smooth_tp(-350, -50)
-    # game.p.x = -350
-    # game.p.y = -50
-    # set_camera(game.p.x, game.p.y)
 
 lvlmap = [
     '     7CCCCCCCCCCC6',
@@ -670,7 +661,7 @@ lvlmap = [
     '......X..........R',
     '.................R',
     'NVBBV1...........R',
-    '     L...........2CCCCCCC6',
+    '     L......... .2CCCCCCC6',
     '     5VNNBNVV1...........R',
     '             L...........R',
     '             L...........2CCCCC',
@@ -910,10 +901,6 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 ]
 },
 {"Tutorial":[
-{"pressE_full.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616288767.pressE_full.png"
-}
-},
 {"pressE.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616288773.pressE.png"
 }
@@ -1285,6 +1272,7 @@ def make_jelly(x, y, angle, scale=1):
         self.dest = dest
 
     def travel(self):
+        \"\"\"\"\"\"
         game.travelid = self.roomid
         set_room(self.dest)"
 }
