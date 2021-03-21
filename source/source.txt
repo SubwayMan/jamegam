@@ -12,6 +12,7 @@ self.travelid = None\r
 self.fpslog = int(self.t/1000)\r
 self.fpscount = 0\r
 \r
+self.prog = ProgTracker()\r
 self.p = Player()\r
 \r
 # set_room('Demo_Room')\r
@@ -349,6 +350,22 @@ self.parent = None","loop":"#travel_gate loop
 
 if get_collision(self, 'Player'):
     self.parent.travel()"
+}
+},
+{"SimpleNPC":{
+"type":"object script","start":"# set by constructor \"make_simple(type_, x, y, scale, msg)\"\"
+self.msg = ''","loop":"pX, pY = game.p.x, game.p.y
+
+if get_dist(self.x, self.y, pX, pY) < 80:
+    s = Slate()
+
+    s.sprite = sprite('pressE.png')
+    if not game.prog.interact:
+        s.sprite = sprite('pressE_full.png')
+        game.prog.interact = True
+    s.x = self.x - 50
+    s.y = self.y + 10
+"
 }
 }
 ]
@@ -792,6 +809,17 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 }
 ]
 },
+{"Tutorial":[
+{"pressE_full.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616288767.pressE_full.png"
+}
+},
+{"pressE.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616288773.pressE.png"
+}
+}
+]
+},
 {"debug.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
 }
@@ -1179,6 +1207,25 @@ def make_hurtbox(x, y, w, h, dmg):
                 game.text_box = None"
 }
 },
+{"NPC.py":{
+"type":"function script","head":"def make_simple(type_, x, y, scale, msg):
+    npc = eval(type_ + '()')
+    npc.x = x
+    npc.y = y
+    npc.scaleX = npc.scaleY = scale
+    npc.msg = msg
+    return npc
+
+class simple_NPC:
+    def __init__(self, x, y, scale, type_, line):
+        self.inst = eval(type_ + '()')
+        self.inst.x = x
+        self.inst.y = y
+        self.inst.scaleX = self.inst.scaleY = scale
+
+        self.line = line"
+}
+},
 {"Enemies.py":{
 "type":"function script","head":"d_to_angle = {
     \"N\": 0,
@@ -1198,6 +1245,14 @@ def make_spike(x, y, point_d, scale=1):
 ]
     inst.scaleX *= scale
     inst.scaleY *= scale"
+}
+},
+{"ProgTracker.py":{
+"type":"function script","head":"class ProgTracker:
+    def __init__(self):
+        
+        self.move = False # Movement tutorial
+        self.interact = False # Interaction tutorial"
 }
 }
 ]
