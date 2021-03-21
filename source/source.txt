@@ -292,21 +292,26 @@ self.parent.do_loop()"
 self.sprite = new_sprite(\"Spike1.png\")
 ","loop":"#Spike loop
 l = get_collision(self, \"Player\")
-if l:
+if l and l.dmgF:
     boost(l, 8, l.angle-180)
     damage(1)"
 }
 },
 {"Hurtbox":{
-"type":"object script","start":"#General purpose Hurtbox object
+"type":"object script","start":"self.sprite = new_sprite(\"debug.png\")
+self.alpha = 0
 
+#Func holds a function that describes player movement after hurtbox collision.
+#Can be redefined externally.
+self.func = lambda a, l: boost(l, 10, l.angle-180)
 
-","loop":"#Hurtbox loop
-k = get_collis(self, \"Player\")
+if game.debug:
+    self.alpha = 0.8","loop":"#Hurtbox loop
+k = get_collision(self, \"Player\")
 
-if k:
+if k and k.dmgF:
     damage(self.dmg)
-    boost(k, 10, k.angle-180)
+    self.func(self, k)
 "
 }
 },
@@ -333,13 +338,42 @@ self.scaleX = scale
 self.scaleY = scale
 
 transform(self.light, self.x, self.y, scale, scale)
-self.alpha = 0","loop":"#Opacity uppon approach
-if hyp((self.x-game.p.x), (self.y-game.p.y)) < 150:
+self.alpha = 0
+self.disabled = False
+
+self.x0 = 0
+self.y0 = 0
+
+self.h = make_hurtbox(self.x+30, self.y, 20, 20, 2)
+self.h.parent = self
+self.h.func = lambda s, pl: boost(pl, 10, s.parent.angle-90)","loop":"if self.disabled:
+    return
+
+dx = game.p.x - self.x 
+dy = game.p.y - self.y
+
+
+#Opacity uppon approach
+if hyp(dx, dy) < 250:
     self.alpha = min(1, self.alpha+0.1)
+    self.angle = angle_helper(dx, dy) + 90
+    mod = 2/hyp(dx, dy)    
+    self.x += dx*mod
+    self.y += dy*mod
+    if dx < 0:
+        self.scaleY = -4
+    else:
+        self.scaleY = 4
 else:
     self.alpha = max(0, self.alpha-0.1)
 
-transform(self.light, self.x, self.y)"
+transform(self.light, self.x, self.y)
+self.light.angle = self.angle
+self.light.scaleY = self.scaleY
+
+hitbox_rotate(self.h, self, self.angle, 30)
+
+"
 }
 },
 {"travelgate_inst":{
@@ -935,6 +969,11 @@ def transform(obj, x, y, scaleX=None, scaleY=None):
     if scaleX: obj.scaleX = scaleX
     if scaleY: obj.scaleY = scaleY
 
+def hitbox_rotate(obj, orig, obj_0, rad):
+    \"\"\"For rotating objects around a point.\"\"\"
+    obj.x = (math.cos(math.radians(obj_0)) * rad) + orig.x
+    obj.y = (math.sin(math.radians(obj_0)) * rad) + orig.y
+
 
 "
 }
@@ -1090,15 +1129,17 @@ def make_anglerf(x, y, AI=True):
     inst.x = x
     inst.y = y
     
-def make_hurtbox(x, y, w, h, dmg):
+def make_hurtbox(x, y, w, h, dmg, boost_f=None):
     inst = Hurtbox()
     inst.x = x
     inst.y = y
-    inst.sprite = new_sprite(\"debug.png\")
-    inst.alpha = 0
+    
     inst.scaleX = w/40
     inst.scaleY = h/40
     inst.dmg = dmg
+    if boost_f != None:
+        inst.func = boost_f
+    return inst
 
 
 "
