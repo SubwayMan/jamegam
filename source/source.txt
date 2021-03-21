@@ -38,8 +38,8 @@ self.x = 0
 self.y = 0
 self.z = 1001
 self.sprite = new_sprite(\"debug.png\")
-self.scaleX = 1.3
-self.scaleY = 1.3
+self.scaleX = 1
+self.scaleY = 1
 self.rad = self.scaleX*20
 self.persistent = True
 
@@ -391,6 +391,46 @@ hitbox_rotate(self.h, self, self.angle, 30)
 "
 }
 },
+{"Jellyfish":{
+"type":"object script","start":"
+spritesheet = new_sprite(\"Jelly.png\", 1, 8)
+self.anim = animation(spritesheet, 4, 0, 7)
+set_animation(self, self.anim)
+self.scaleX = 4
+self.scaleY = 4
+#bounce cap
+self.bounce_h = Jellycap()
+self.bounce_h.scaleX = 1.3
+self.bounce_h.scaleY = 0.5
+
+
+
+","loop":"#Jellyfish loop
+
+"
+}
+},
+{"Jellycap":{
+"type":"object script","start":"#Helper class - special kind of booster for jellyfish caps
+self.sprite = new_sprite(\"debug.png\")
+self.z = 100
+if not game.debug:
+    self.alpha = 0
+    
+#prevent double collisions
+self.mcf = False
+","loop":"#Jellycap loop
+k = get_collision(self, \"Player\")
+if k and not self.mcf:
+    f0 = (2*self.angle) - (k.angle-180)
+    boost(k, 20, f0)
+    self.mcf = True
+
+if not k:
+    self.mcf = False
+"
+}
+},
 {"travelgate_inst":{
 "type":"object script","start":"#travel_gate start
 
@@ -407,8 +447,8 @@ if get_collision(self, 'Player'):
 {"Psprite":{
 "type":"object script","start":"#Hitbox start
 self.z = 1000
-self.scaleX = 1
-self.scaleY = 1
+self.scaleX = 0.7
+self.scaleY = 0.7
 
 spritesheet = sprite('dynamic_squid.png', 4, 4)
 self.anim = animation(spritesheet, 10, 0, 12)
@@ -652,7 +692,7 @@ make_spike(100, 115, \"N\", 1)
 make_spike(150, 115, \"N\", 1)
 make_spike(200, 115, \"N\", 1)
 make_anglerf(900, -800)
-
+make_jelly(1400, -700, 45)
 
 
 make_dark_gradient(-350, -50, 600, 400, 20, direction=False)
@@ -857,6 +897,10 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 },
 {"debug.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
+}
+},
+{"Jelly.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616305942.Jelly.png"
 }
 }
 ],
@@ -1131,6 +1175,8 @@ def make_anglerf(x, y, AI=True):
     inst.y = y
     
 def make_hurtbox(x, y, w, h, dmg, boost_f=None):
+    \"\"\"Create a hurtbox at a specific location, given dimenstions,
+    damage value, and a player movement modification function\"\"\"
     inst = Hurtbox()
     inst.x = x
     inst.y = y
@@ -1142,6 +1188,20 @@ def make_hurtbox(x, y, w, h, dmg, boost_f=None):
         inst.func = boost_f
     return inst
 
+def make_jelly(x, y, angle, scale=1):
+    \"\"\"Create a jellyfish pointing at a specfic angle.\"\"\"
+    inst = Jellyfish()
+    inst.x = x
+    inst.y = y
+    inst.angle = angle
+    inst.scaleX *= scale
+    inst.scaleY *= scale
+    inst.bounce_h.x = x + math.cos(math.radians(angle+90))*20
+    inst.bounce_h.y = y + math.sin(math.radians(angle+90))*20
+    inst.bounce_h.angle = angle
+    inst.hbox = make_hurtbox(x, y+15, 40, 30, 1)
+    hitbox_rotate(inst.hbox, inst, angle-90, 15)
+    inst.hbox.angle = angle
 
 "
 }
