@@ -7,9 +7,9 @@ self.t = time_ms()\r
 self.c = 0\r
 \r
 self.debug = False\r
-\r
+self.showgrid = True\r
 #create guides\r
-if self.debug:\r
+if self.showgrid:\r
     for i in range(-20, 21):\r
         for j in range(-10, 11):\r
             temp = Slate()\r
@@ -19,6 +19,7 @@ if self.debug:\r
             temp.persistent = True\r
             temp.scaleX = 0.6\r
             temp.scaleY = 0.6\r
+            temp.z = 150\r
 \r
 self.travelid = None\r
 self.fpslog = int(self.t/1000)\r
@@ -28,7 +29,7 @@ self.prog = ProgTracker()\r
 self.npcs = [
 ]\r
 self.p = Player()\r
-\r
+self.bg = Background()\r
 # set_room('Demo_Room')\r
 # set_room('Starting_Room')\r
 set_room('Room1')","loop":"self.t = time_ms()\r
@@ -661,7 +662,7 @@ lvlmap = [
     '......X..........R',
     '.................R',
     'NVBBV1...........R',
-    '     L......... .2CCCCCCC6',
+    '     L......... .2CCCCOCC6',
     '     5VNNBNVV1...........R',
     '             L...........R',
     '             L...........2CCCCC',
@@ -918,6 +919,10 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 {"Guide.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616348073.Guide.png"
 }
+},
+{"temptext.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616350974.temptext.png"
+}
 }
 ],
 "sound":[
@@ -1041,24 +1046,34 @@ def hitbox_rotate(obj, orig, obj_0, rad):
 },
 {"make_map.py":{
 "type":"function script","head":"tile_map = {
-    'C': sprite('ciel.png'), # placeholder ceiling
-    'L': sprite('wall_left.png'),
-    'R': sprite('wall_right.png'),
-    'V': sprite('ground1.png'),
-    'B': sprite('ground2.png'),
-    'N': sprite('ground3.png'),
-    '0': sprite('in_corner_tl.png'),
-    '1': sprite('in_corner_tr.png'),
-    '2': sprite('in_corner_bl.png'),
-    '3': sprite('in_corner_br.png'),
-    '4': sprite('out_corner_tl.png'),
-    '5': sprite('out_corner_tr.png'),
-    '6': sprite('out_corner_bl.png'),
-    '7': sprite('out_corner_br.png'),
+    'C': (sprite('ciel.png'), ), # placeholder ceiling
+    'L': (sprite('wall_left.png'), ),
+    'R': (sprite('wall_right.png'), ),
+    'V': (sprite('ground1.png'), ),
+    'B': (sprite('ground2.png'), ),
+    'N': (sprite('ground3.png'), ),
+    '0': (sprite('in_corner_tl.png'), ),
+    '1': (sprite('in_corner_tr.png'), ),
+    '2': (sprite('in_corner_bl.png'), ),
+    '3': (sprite('in_corner_br.png'), ),
+    '4': (sprite('out_corner_tl.png'), ),
+    '5': (sprite('out_corner_tr.png'), ),
+    '6': (sprite('out_corner_bl.png'), ),
+    '7': (sprite('out_corner_br.png'), ),
+    \"O\": (sprite(\"temptext.png\"), 1.25, 1.25, 50, 50),
+    \"o\": (sprite(\"temptext4.png\"), 1.25, 1.25, 0, 0),
+    \"=\": (sprite(\"temptext2.png\"), 1.25, 1.25, 50, 0),
+    \"-\": (sprite(\"temptext3.png\"), 1.25, 1.25, 0, 50)
 
 }
 
+block_map = {
+    \"O\": (200, 200),
+    \"o\": (100, 100),
+    \"=\": (200, 100),
+    \"-\": (100, 200)
 
+}
 
 def make_map(layout):
     for i in range(len(layout)):
@@ -1070,13 +1085,12 @@ def make_map(layout):
     for i in range(len(layout)):
         for j in range(len(layout[i
 ])):
-            if layout[i
+            key = layout[i
 ][j
-] in '. X':
+]
+            if key in '. X':
                 continue
-            elif layout[i
-][j
-] not in tile_map.keys():
+            elif key not in tile_map.keys():
                 print(f'Unrecognised \"{layout[i
 ][j
 ]
@@ -1085,22 +1099,32 @@ def make_map(layout):
 
             t = Tile()
 
-            x = abs(100 * (origin[0
-]-j))
-            x *= -1 if j < origin[0
-] else 1
-            t.x = x
-
-            y = abs(100 * (origin[1
-]-i))
-            y *= 1 if i < origin[1
-] else -1
-            t.y = y
-
-            t.sprite = tile_map[layout[i
-][j
+            t.x = 100 * (j - origin[0
+])
+            t.y = 100 * (origin[1
+] - i)
+            if len(tile_map[key
+]) == 1:
+                t.sprite = tile_map[key
+][0
 ]
-]"
+            else:
+                spr, scX, scY, x_off, y_off = tile_map[key
+]
+                t.sprite = spr
+                t.scaleX = scX
+                t.scaleY = scY
+                t.x += x_off
+                t.y -= y_off
+                t.z = 100
+
+
+
+
+
+
+
+"
 }
 },
 {"gamecreation.py":{
