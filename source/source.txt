@@ -26,6 +26,7 @@ self.fpslog = int(self.t/1000)\r
 self.fpscount = 0\r
 \r
 self.prog = ProgTracker()\r
+self.prog.visible = False\r
 self.npcs = [
 ]\r
 self.e = False\r
@@ -33,11 +34,12 @@ self.p = Player()\r
 self.bg = Background()\r
 self.bg.persistent = True\r
 # set_room('Demo_Room')\r
-# set_room('Starting_Room')\r
+\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
 set_room('Room1')\r
+#set_room('Starting_Room')\r
 #","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
@@ -526,7 +528,7 @@ if not self.ai:
 if self.alert and not self.active:
     Dx, Dy = game.p.x - self.x, game.p.y - self.y
     k = angle_helper(Dx, Dy) + 90
-    if abs((self.angle - k)%360) < 20:
+    if abs((self.angle - k)%360) < 10:
         self.active = True
 
 if self.alert and self.active:
@@ -539,6 +541,7 @@ if self.alert and self.active:
     k = get_collision(self.h, \"Block\")
     if k:
         self.alert = False
+        destroy(self.h)
 
 
 
@@ -663,18 +666,7 @@ self.song = None
 "type":"room script","start":"#Demo_Room start
 
 game.bg = Background()
-level = [
-        '...CCC...',
-        '..BL.RB..',
-        '...L.R...',
-        '...L.R...',
-        '...L.R...',
-        '...L.R...',
-        '...LXR...',
-        '...L.R...',
-        '.VCC.CCV.',
-        '.L.....R.',
-        '.VBNBNNV.'
+level = ['...CCC...','..BL.RB..','...L.R...','...L.R...', '...L.R...','...L.R...', '...LXR...', '...L.R...','.VCC.CCV.', '.L.....R.', '.VBNBNNV.'
 ]
         
 make_map(level)
@@ -716,7 +708,8 @@ TextBox('Welcome to the demo room', 1500)","loop":"#Demo_Room loop
 self.roomid = '1-0'
 game.cam_limit_x = (290, 1610)
 game.cam_limit_y = (-110, -290)
-
+game.bg.sprite = new_sprite(\"Cave_Background.png\")
+game.bg.scaleX = 2
 if game.travelid == '1-1':
     smooth_tp(1900, -450)
 
@@ -755,7 +748,12 @@ blockgroup(-300, 200, colliders)
 
 make_dark_gradient(2000, -450, 500, 400, 20)
 
-self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')","loop":"#Starting_Room loop
+self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
+
+make_simple_npc(500, -500, 'Whale', 'Howdy stranger, I\\'m William the whale!\
+I was supposed to tell you how to move, but you had to move\
+to get to me, huh? No tutorial for you!\
+Proceed to the bottom right.')","loop":"#Starting_Room loop
 
 "
 }
@@ -777,8 +775,8 @@ lvlmap = [
     '.................R  o o        ',
     'NVBBV1...........R =  o        ',
     '     L...........2CCoCCCC6     ',
-    '     5...................R     ',
-    '     L...................R     ',
+    '     5NNNNNNNNB..........R     ',
+    '     LCCCCCCCC1..........R     ',
     '     L...................2CCCCC',
     '     L.........................',
     '     L.........................',
@@ -804,6 +802,7 @@ colliders = [
     (500, 200, 1300, 95),
     (300, -1300, 895, 695),
     (1500, -50, 895, 595),
+    (400, -450, 900, 200)
 
 ]
 blockgroup(0, 0, colliders)
@@ -817,15 +816,16 @@ colliders = [
 ]
 blockgroup(900, -300, colliders)
 
-make_current(1700, -1100, 300, 400, 0, 3.5)
-make_spike(50, 115, \"N\", 1)
-make_spike(100, 115, \"N\", 1)
-make_spike(150, 115, \"N\", 1)
-make_spike(200, 115, \"N\", 1)
-make_anglerf(900, -800)
-make_jelly(900, 50, 45)
-make_sfish(600, 0, 150)
-make_simple_npc(1500, -700, 'Whale', 'Nothing, for now')
+make_current(500, 0, 800, 200, 16, 0)
+make_current(500, -200, 800, 200, -17, 0)
+make_sfish(1000, 100, 180)
+make_sfish(0, -300, 0)
+make_anglerf(1000, -600)
+make_jelly(100, -800, -45)
+make_jelly(400, -700, 135)
+make_booster(700, -800, 90)
+make_simple_npc(1500, -800, 'Whale', 'Hi, I\\'m Winona the Whale!\
+You completed this challenge! More to come soon...')
 
 
 make_dark_gradient(-350, -50, 600, 400, 20, direction=False)
