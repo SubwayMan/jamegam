@@ -38,8 +38,8 @@ self.bg.persistent = True\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('Room1')\r
-#set_room('Starting_Room')\r
+#set_room('Room1')\r
+set_room('Starting_Room')\r
 #","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
@@ -791,7 +791,9 @@ self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
 make_simple_npc(500, -500, 'Whale', 'Howdy stranger, I\\'m William the whale!\
 I was supposed to tell you how to move, but you had to move\
 to get to me, huh? No tutorial for you!\
-Proceed to the bottom right.')","loop":"#Starting_Room loop
+Proceed to the bottom right.')
+
+play_track(game.music, 2)","loop":"#Starting_Room loop
 
 "
 }
@@ -811,24 +813,23 @@ else:
 lvlmap = [
     '     7CCCCCCCCCCC6             ',
     'CCCCC3...........R             ',
-    '......X..........R     -       ',
-    '.................R  o o        ',
-    'NVBBV1...........R =  o        ',
-    '     L...........2CCoCCCC6     ',
-    '     5NNNNNNNNB..........R     ',
-    '     LCCCCCCCC1..........R     ',
+    '......X..........R             ',
+    '.................R             ',
+    'NVBBV1...........R             ',
+    '     L...........2CCCCCCC6     ',
+    '     5NNNNNNNN1..........R     ',
+    '     7CCCCCCCC3..........R     ',
     '     L...................2CCCCC',
     '     L.........................',
     '     L.........................',
     '     L...................0VNBVB',
-    '     ooNNNNNNNVNNBNVB1...R     ',
+    '     5VNNNNNNNVNNBNVB1...R     ',
     '                     L...R     ',
     '                     L...R     ',
     '                     L...R     ',
     '                     L...R     ',
 
 ]
-
 make_map(lvlmap)
 game.bg.sprite = new_sprite(\"Cave_Background.png\")
 game.bg.x, game.bg.y = -100, -300
@@ -874,8 +875,8 @@ TravelGate(-560, -50, 60, 400, self.roomid, 'Starting_Room')
 make_dark_gradient(1700, -1200, 500, 500, 20, vert=True)
 
 make_dark_gradient(2150, -750, 600, 400, 20)
-
-#play_track(game.music, 6)
+stop_track(game.music)
+play_track(game.music, 6)
 # Empty lines for scroll glitch
 
 
@@ -1334,6 +1335,7 @@ def create_msg(obj):
     TextBox(obj.msg, obj.msg_duration)
 
 def play_track(s_obj, s_id):
+
     s_obj.song = new_sound(\"Mood\" + str(s_id) + \".mp3\")
     set_volume(s_obj.song, 0.3)
     loop_sound(s_obj.song)
