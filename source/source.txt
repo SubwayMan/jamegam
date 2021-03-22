@@ -93,14 +93,7 @@ self.hp = 5","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
-# damage invincibility management
-if self.damage_cool < game.t and not self.dmgF:
-    self.dmgF = True
-    self.spr_obj.alpha = 1
-   
-# death check
-if self.hp < 0:
-    pass
+
 
 # for arrow key movement
 keys = [key_is_pressed('arrowRight'), 
@@ -219,6 +212,18 @@ if game.npcs:
 # game.bg.x += (Dx*0.4)
 # game.bg.y += (Dy*0.4)
 
+# damage invincibility management
+if self.damage_cool < game.t and not self.dmgF:
+    self.dmgF = True
+    self.spr_obj.alpha = 1
+   
+# death check
+if self.hp < 1:
+    set_room(get_room().__name__)
+    self.hp = 5
+    # stop movement
+    self.xv = self.yv = self.boostx = self.boosty = 0
+    self.xext = self.yext = self.xMOD = self.yMOD = 0
 
 
 
@@ -483,9 +488,10 @@ if not k:
 }
 },
 {"Echolocation":{
-"type":"object script","start":"#Echolocation start
-
-","loop":"#Echolocation loop
+"type":"object script","start":"self.sprite = sprite('sonar_beam.png')
+self.angle = game.p.angle
+self.scaleX = 0.3
+self.scaleY = 0.5","loop":"#Echolocation loop
 
 "
 }
@@ -770,7 +776,7 @@ lvlmap = [
     '......X..........R     -       ',
     '.................R  o o        ',
     'NVBBV1...........R =  o        ',
-    '     L...........2CCoCCC6      ',
+    '     L...........2CCoCCCC6     ',
     '     5...................R     ',
     '     L...................R     ',
     '     L...................2CCCCC',
