@@ -34,6 +34,9 @@ self.bg = Background()\r
 self.bg.persistent = True\r
 # set_room('Demo_Room')\r
 # set_room('Starting_Room')\r
+self.music = SoundManager()\r
+self.music.persistent = True\r
+self.music.visible = False\r
 set_room('Room1')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
@@ -212,14 +215,26 @@ if game.npcs:
                 o.e_popup = False
 
 #slightly shift background
-game.bg.x += (Dx*0.4)
-game.bg.y += (Dy*0.4)
+# game.bg.x += (Dx*0.4)
+# game.bg.y += (Dy*0.4)
 
 
 
 
 # Empty lines because I don't like it when code 
 # is at the bottom of the screen"
+}
+},
+{"Conventions":{
+"type":"object script","start":"#This is for storing reference for future ease of use.
+
+#==================== Z REFERENCE =======================
+#Place any non-zero Z values here for reference, so we don't end up 
+#setting objects to z-403285245 to place objects on top.
+#BACKGROUND: -10
+#Tiles: 9
+#Dark area (black tiles): -5
+#If you come across an undocumented Z-value, add it here.","loop":""
 }
 },
 {"gameplay":[
@@ -466,6 +481,14 @@ if not k:
 "
 }
 },
+{"Echolocation":{
+"type":"object script","start":"#Echolocation start
+
+","loop":"#Echolocation loop
+
+"
+}
+},
 {"travelgate_inst":{
 "type":"object script","start":"#travel_gate start
 
@@ -496,7 +519,8 @@ self.persistent = True","loop":"#Psprite loop
 },
 {"Tile":{
 "type":"object script","start":"# Empty (at least for now) class that is used to make tiles\r
-# Sprite gets set anyways","loop":""
+# Sprite gets set anyways\r
+","loop":""
 }
 },
 {"Particle":{
@@ -520,7 +544,8 @@ self.y += self.yv
 self.x = 0
 self.y = 0
 self.scaleX = 0.6
-self.scaleY = 0.6","loop":"#Background loop
+self.scaleY = 0.6
+self.z = -10","loop":"#Background loop
 
 "
 }
@@ -560,6 +585,29 @@ if self.visible:
         self.y -= 0.5
 
 pX, pY = game.p.x, game.p.y
+"
+}
+},
+{"SoundManager":{
+"type":"object script","start":"#SONG CREDIT: Terminus by meganeko
+
+#SoundManager start
+self.queue = [
+]
+
+#Uses time in seconds
+self.orig = game.t // 1000
+
+#Maps songs to their length for scheduling
+#Key: mood no. -1
+self.sl = [40, 36, 33, 36, 16, 29, 29, 30
+]
+
+#Store current song.
+self.song = None
+
+","loop":"#SoundManager loop
+
 "
 }
 }
@@ -677,23 +725,23 @@ if game.travelid == '1-0':
     smooth_tp(-350, -50)
 
 lvlmap = [
-    '~~~~~7CCCCCCCCCCC6',
-    'CCCCC3...........R',
-    '......X..........R',
-    '.................R...O',
-    'NVBBV1...........O.=',
-    '~~~~~L......... .2Co=.o.C6',
-    '~~~~~5...................R',
-    '~~~~~L...................R',
-    '~~~~~L...................2CCCCC',
+    '     7CCCCCCCCCCC6             ',
+    'CCCCC3...........R             ',
+    '......X..........R     -       ',
+    '.................R  o o        ',
+    'NVBBV1...........R =  o        ',
+    '     L...........2CCoCCC6      ',
+    '     5...................R     ',
+    '     L...................R     ',
+    '     L...................2CCCCC',
     '     L.........................',
     '     L.........................',
     '     L...................0VNBVB',
-    '     oooooooo5VNNBNVB1...R      ',
-    '                     L...R      ',
-    '                     L...R      ',
-    '                     L...R      ',
-    '                     L...R      ',
+    '     ooNNNNNNNVNNBNVB1...R     ',
+    '                     L...R     ',
+    '                     L...R     ',
+    '                     L...R     ',
+    '                     L...R     ',
 
 ]
 
@@ -741,7 +789,7 @@ make_dark_gradient(1700, -1200, 500, 500, 20, vert=True)
 
 make_dark_gradient(2150, -750, 600, 400, 20)
 
-
+play_track(game.music, 6)
 # Empty lines for scroll glitch
 
 
@@ -817,6 +865,22 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 },
 {"out_corner_br.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616116652.out_corner_br.png"
+}
+},
+{"temptext.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616350974.temptext.png"
+}
+},
+{"temptext2.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361483.temptext2.png"
+}
+},
+{"temptext3.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361495.temptext3.png"
+}
+},
+{"temptext4.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361465.temptext4.png"
 }
 },
 {"greenblock.png":{
@@ -895,6 +959,10 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616106674.bumper.png"
 }
 },
+{"sonar_beam.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616371496.sonar_beam.png"
+}
+},
 {"Spike1.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616188359.Spike1.png"
 }
@@ -914,6 +982,14 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616018445.black40x40.png"
 }
 },
+{"debug.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
+}
+},
+{"Guide.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616348073.Guide.png"
+}
+},
 {"current_particle.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616010007.current_particle.png"
 }
@@ -923,6 +999,10 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 {"Enemies":[
 {"Anglerfish_light.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616275209.Anglerfish_light.png"
+}
+},
+{"jelly.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616347498.jelly.png"
 }
 },
 {"Anglerfish.png":{
@@ -941,38 +1021,41 @@ make_dark_gradient(2150, -750, 600, 400, 20)
 }
 }
 ]
-},
-{"debug.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1615942085.debug.png"
-}
-},
-{"jelly.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616347498.jelly.png"
-}
-},
-{"Guide.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616348073.Guide.png"
-}
-},
-{"temptext.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616350974.temptext.png"
-}
-},
-{"temptext4.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361465.temptext4.png"
-}
-},
-{"temptext2.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361483.temptext2.png"
-}
-},
-{"temptext3.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616361495.temptext3.png"
-}
 }
 ],
 "sound":[
-
+{"Mood1.mp3":{
+"type":"audio","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616368556.Mood1.mp3"
+}
+},
+{"Mood2.mp3":{
+"type":"audio","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616368566.Mood2.mp3"
+}
+},
+{"Mood3.mp3":{
+"type":"audio","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616368576.Mood3.mp3"
+}
+},
+{"Mood4.mp3":{
+"type":"audio","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616368585.Mood4.mp3"
+}
+},
+{"Mood5.mp3":{
+"type":"audio","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616368596.Mood5.mp3"
+}
+},
+{"Mood6.mp3":{
+"type":"audio","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616368609.Mood6.mp3"
+}
+},
+{"Mood7.mp3":{
+"type":"audio","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616368620.Mood7.mp3"
+}
+},
+{"Mood8.mp3":{
+"type":"audio","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616368629.Mood8.mp3"
+}
+}
 ],
 "function":[
 {"imports.py":{
@@ -1108,13 +1191,21 @@ def create_msg(obj):
         pass
     TextBox(obj.msg, obj.msg_duration)
 
+def play_track(s_obj, s_id):
+    s_obj.song = new_sound(\"Mood\" + str(s_id) + \".mp3\")
+    set_volume(s_obj.song, 0.3)
+    loop_sound(s_obj.song)
+
+def stop_track(s_obj):
+    stop_sound(s_obj.song)
+
 
 "
 }
 },
 {"make_map.py":{
 "type":"function script","head":"tile_map = {
-    'C': (sprite('ciel.png'), ), # placeholder ceiling
+    'C': (sprite('ciel.png'), ),
     'L': (sprite('wall_left.png'), ),
     'R': (sprite('wall_right.png'), ),
     'V': (sprite('ground1.png'), ),
@@ -1128,11 +1219,11 @@ def create_msg(obj):
     '5': (sprite('out_corner_tr.png'), ),
     '6': (sprite('out_corner_bl.png'), ),
     '7': (sprite('out_corner_br.png'), ),
-    \"~\": (sprite(\"black40x40.png\"), 2.5, 2.5, 0, 0),
-    \"O\": (sprite(\"temptext.png\"), 1.25, 1.25, 50, 50),
-    \"o\": (sprite(\"temptext4.png\"), 1.25, 1.25, 0, 0),
-    \"=\": (sprite(\"temptext2.png\"), 1.25, 1.25, 50, 0),
-    \"-\": (sprite(\"temptext3.png\"), 1.25, 1.25, 0, 50)
+    \" \": (sprite(\"black40x40.png\"), 2.5, 2.5, 0, 0, -5),
+    \"O\": (sprite(\"temptext.png\"), 1.25, 1.25, 50, 50, 9),
+    \"o\": (sprite(\"temptext4.png\"), 1.25, 1.25, 0, 0, 9),
+    \"=\": (sprite(\"temptext2.png\"), 1.25, 1.25, 50, 0, 9),
+    \"-\": (sprite(\"temptext3.png\"), 1.25, 1.25, 0, 50, 9)
 
 }
 
@@ -1150,7 +1241,7 @@ def make_map(layout):
             key = layout[i
 ][j
 ]
-            if key in '. X':
+            if key in '.X':
                 continue
             elif key not in tile_map.keys():
                 print(f'Unrecognised \"{layout[i
@@ -1171,14 +1262,14 @@ def make_map(layout):
 ][0
 ]
             else:
-                spr, scX, scY, x_off, y_off = tile_map[key
+                spr, scX, scY, x_off, y_off, z = tile_map[key
 ]
                 t.sprite = spr
                 t.scaleX = scX
                 t.scaleY = scY
                 t.x += x_off
                 t.y -= y_off
-                t.z = 100
+                t.z = z
 
 
 
@@ -1390,13 +1481,22 @@ def make_jelly(x, y, angle, scale=1):
         self.text.z = 1002
 
         self.close_time = game.t + duration
+        self.textexists = True
     
     def do_loop(self):
+        
+        try:
+            self.text.x 
+        except Exception:
+            self.textexists = False
+        
         self.inst.x = camera_x()
         self.inst.y = camera_y() - 200
-
-        self.text.x = self.inst.x - 450
-        self.text.y = self.inst.y + 40
+        
+        if self.textexists:
+            self.text.x = self.inst.x - 450
+            self.text.y = self.inst.y + 40
+        
 
         if game.t > self.close_time:
             keys = (
