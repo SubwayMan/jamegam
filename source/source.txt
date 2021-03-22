@@ -37,7 +37,8 @@ self.bg.persistent = True\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('Room1')","loop":"self.t = time_ms()\r
+set_room('Room1')\r
+#","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -511,6 +512,45 @@ self.parent = None","loop":"#travel_gate loop
 if get_collision(self, 'Player'):
     self.parent.travel()"
 }
+},
+{"Swordfish":{
+"type":"object script","start":"#Swordfish start
+
+self.active = False
+self.alert = True
+self.sprite = new_sprite(\"Swordfish.png\")
+
+
+self.h = make_hurtbox(self.x+30, self.y, 20, 20, 2)
+self.h.parent = self
+self.h.func = lambda s, pl: boost(pl, 10, s.parent.angle-90)
+
+self.scaleX = 2
+self.scaleY = 2","loop":"#Swordfish loop
+if not self.ai:
+    return
+
+if self.alert and not self.active:
+    Dx, Dy = game.p.x - self.x, game.p.y - self.y
+    k = angle_helper(Dx, Dy) + 90
+    if abs((self.angle - k)%360) < 20:
+        self.active = True
+
+if self.alert and self.active:
+    i = (20*math.cos(math.radians(self.angle)))
+    j = (20*math.sin(math.radians(self.angle)))
+    self.x += i
+    self.y += j
+    self.h.x += i
+    self.h.y += j
+    k = get_collision(self.h, \"Block\")
+    if k:
+        self.alert = False
+
+
+
+"
+}
 }
 ]
 },
@@ -824,7 +864,7 @@ make_spike(150, 115, \"N\", 1)
 make_spike(200, 115, \"N\", 1)
 make_anglerf(900, -800)
 make_jelly(900, 50, 45)
-
+make_sfish(600, 0, 150)
 make_simple_npc(1500, -700, 'Whale', 'Nothing, for now')
 
 
@@ -835,7 +875,7 @@ make_dark_gradient(1700, -1200, 500, 500, 20, vert=True)
 
 make_dark_gradient(2150, -750, 600, 400, 20)
 
-play_track(game.music, 6)
+#play_track(game.music, 6)
 # Empty lines for scroll glitch
 
 
@@ -1045,6 +1085,10 @@ play_track(game.music, 6)
 {"Enemies":[
 {"Anglerfish_light.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616275209.Anglerfish_light.png"
+}
+},
+{"Swordfish.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616388014.Swordfish.png"
 }
 },
 {"jelly.png":{
@@ -1495,6 +1539,18 @@ def make_jelly(x, y, angle, scale=1):
     inst.hbox = make_hurtbox(x, y+20, 40*scale, 30*scale, 1)
     hitbox_rotate(inst.hbox, inst, angle-90, 20)
     inst.hbox.angle = angle
+
+def make_sfish(x, y, angle, AI=True):
+
+    inst = Swordfish()
+    inst.x = x
+    inst.y = y
+    inst.angle = angle
+    inst.ai = AI
+    hitbox_rotate(inst.h, inst, inst.angle, 40)
+    inst.h.angle = angle
+    if 90<angle<=270:
+        inst.scaleY *= -1
 
 "
 }
