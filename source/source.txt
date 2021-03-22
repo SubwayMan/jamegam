@@ -77,6 +77,7 @@ self.y0 = 0
 # sprite that user normally sees
 self.spr_obj = Psprite()
 
+
 # for debug mode
 self.visible = game.debug
 
@@ -88,7 +89,12 @@ self.yext = 0
 self.dash_cool = game.t
 self.damage_cool = game.t
 self.dmgF = True
-self.hp = 5","loop":"camX, camY = camera_x(), camera_y()
+
+self.hp = 5
+self.healthbar = HealthInd()
+self.healthbar.sprite = self.healthbar.spritemap[self.hp
+]
+self.healthbar.prev_h = self.hp","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
@@ -239,6 +245,9 @@ if self.hp < 1:
 #BACKGROUND: -10
 #Tiles: 9
 #Dark area (black tiles): -5
+#Text boxes: 25
+#Health indicator: 26
+#Dark gradients: 24
 #If you come across an undocumented Z-value, add it here.","loop":""
 }
 },
@@ -490,9 +499,7 @@ if not k:
 "type":"object script","start":"self.sprite = sprite('sonar_beam.png')
 self.angle = game.p.angle
 self.scaleX = 0.3
-self.scaleY = 0.5","loop":"#Echolocation loop
-
-"
+self.scaleY = 0.5","loop":""
 }
 },
 {"travelgate_inst":{
@@ -542,6 +549,35 @@ self.y += self.yv
 },
 {"Slate":{
 "type":"object script","start":"#A blank object that can be used in any way by any other object.","loop":""
+}
+},
+{"HealthInd":{
+"type":"object script","start":"self.spritemap = {
+    5: sprite('health_5.png'),
+    4: sprite('health_4.png'),
+    3: sprite('health_3.png'),
+    2: sprite('health_2.png'),
+    1: sprite('health_1.png'),
+    0: sprite('health_0.png'),
+
+}
+
+self.persistent = True
+
+self.x = -460
+self.y = 180
+self.scaleX = self.scaleY = 0.2
+
+# just here for reference, gets set by player class
+self.prev_h = None
+
+self.z = 26","loop":"if game.p.hp != self.prev_h:
+    self.sprite = self.spritemap[game.p.hp
+]
+self.prev_h = game.p.hp
+
+self.x = camera_x() - 540
+self.y = camera_y() + 260"
 }
 },
 {"Background":{
@@ -679,6 +715,8 @@ game.cam_limit_y = (-110, -290)
 
 if game.travelid == '1-1':
     smooth_tp(1900, -450)
+else:
+    smooth_tp(0, 0)
 
 
 # game.bg = Background()
@@ -729,6 +767,8 @@ game.cam_limit_y = (-110, -1090)
 
 if game.travelid == '1-0':
     smooth_tp(-350, -50)
+else:
+    smooth_tp(0, 0)
 
 lvlmap = [
     '     7CCCCCCCCCCC6             ',
@@ -1027,6 +1067,57 @@ play_track(game.music, 6)
 }
 }
 ]
+},
+{"Health":[
+{"health0.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616391217.health0.png"
+}
+},
+{"health1.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616391227.health1.png"
+}
+},
+{"health2.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616391238.health2.png"
+}
+},
+{"health3.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616391249.health3.png"
+}
+},
+{"health4.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616391263.health4.png"
+}
+},
+{"health5.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616391276.health5.png"
+}
+}
+]
+},
+{"health_0.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616393393.health_0.png"
+}
+},
+{"health_1.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616393407.health_1.png"
+}
+},
+{"health_2.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616393414.health_2.png"
+}
+},
+{"health_3.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616393422.health_3.png"
+}
+},
+{"health_4.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616393430.health_4.png"
+}
+},
+{"health_5.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616393438.health_5.png"
+}
 }
 ],
 "sound":[
@@ -1162,6 +1253,7 @@ def damage(st):
         game.p.spr_obj.alpha = 0.6
         game.p.dmgF = False
         game.p.damage_cool = game.t + 600
+        
 
 def transform(obj, x, y, scaleX=None, scaleY=None):
     \"\"\"Simple transform helper for working with slates.\"\"\"
@@ -1436,7 +1528,7 @@ def make_jelly(x, y, angle, scale=1):
 
         t.alpha = (1/(levels-1)) * i if direction else 1 - ((1/(levels-1)) * i)
 
-        if over: t.z = 1001"
+        if over: t.z = 24"
 }
 },
 {"Classes":[
@@ -1483,8 +1575,8 @@ def make_jelly(x, y, angle, scale=1):
         self.text.color = '#ffffff'
         self.text.fontsize = 70
         self.text.fontFamily = 'courier new'
-        self.inst.z = 1002
-        self.text.z = 1002
+        self.inst.z = 25
+        self.text.z = 25
 
         self.close_time = game.t + duration
         self.textexists = True
