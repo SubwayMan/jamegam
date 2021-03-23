@@ -8,7 +8,6 @@ self.c = 0\r
 \r
 self.debug = False\r
 self.showgrid = False\r
-\r
 # create grid guides\r
 if self.showgrid:\r
     for i in range(-20, 21):\r
@@ -90,8 +89,14 @@ self.visible = game.debug
 
 self.xMOD = 0
 self.yMOD = 0
+self.cxMOD = 0
+self.cyMOD = 0
+
 self.xext = 0
 self.yext = 0
+self.cxext = 0
+self.cyext = 0
+
 
 self.dash_cool = game.t
 self.damage_cool = game.t
@@ -161,18 +166,24 @@ if ((key_was_pressed(' ') or mouse_was_pressed('right')) and game.t > self.dash_
 self.xext = (self.xMOD if abs(self.xMOD)>abs(self.xext) else self.xext)
 self.yext = (self.yMOD if abs(self.yMOD)>abs(self.yext) else self.yext)
 
+#current (ugly fix)
+self.cxext = (self.cxMOD if abs(self.cxMOD)>abs(self.cxext) else self.cxext)
+self.cyext = (self.cyMOD if abs(self.cyMOD)>abs(self.cyext) else self.cyext)
+
 # deteriorate boost velocity
 self.boostx, self.boosty = deter(self.boostx, 0.94), deter(self.boosty, 0.94)
-#deteriorate external modif
-self.xext, self.yext = deter(self.xext, 0.96), deter(self.yext, 0.94)
+#deteriorate external modif & current
+self.xext, self.yext = deter(self.xext, 0.96), deter(self.yext, 0.96)
+self.cxext, self.cyext = deter(self.cxext, 0.96), deter(self.cyext, 0.94)
 
 # final movement values in x and y
-a, b = (self.xv+self.boostx+self.xext), (self.yv+self.boosty+self.yext)
+a, b = (self.xv+self.boostx+self.xext+self.cxext), (self.yv+self.boosty+self.yext+self.cyext)
 
 self.x += a
 self.y += b
 
 self.xMOD, self.yMOD = 0, 0
+self.cxMOD, self.cyMOD = 0, 0
 
 # start or stop animation based on speed
 if abs(a) + abs(b) > 2:
@@ -370,8 +381,8 @@ if not game.c%60:
 
 k = get_collision(self, \"Player\")
 if k:
-    k.xMOD += self.xa
-    k.yMOD += self.ya"
+    k.cxMOD += self.xa
+    k.cyMOD += self.ya"
 }
 },
 {"textbox_inst":{
@@ -960,14 +971,14 @@ colliders = [
 blockgroup(900, -300, colliders)
 
 make_current(1700, -1100, 300, 400, 0, 3.5)
-make_spike(50, 115, \"N\", 1)
-make_spike(100, 115, \"N\", 1)
-make_spike(150, 115, \"N\", 1)
-make_spike(200, 115, \"N\", 1)
+#make_spike(50, 115, \"N\", 1)
+#make_spike(100, 115, \"N\", 1)
+#make_spike(150, 115, \"N\", 1)
+#make_spike(200, 115, \"N\", 1)
 make_anglerf(1000, -600)
-make_jelly(100, -800, -45)
-make_jelly(400, -700, 135)
-make_booster(700, -800, 90)
+#make_jelly(100, -800, -45)
+#make_jelly(400, -700, 135)
+#make_booster(700, -800, 90)
 make_simple_npc(1500, -800, 'Whale', 'Hi, I\\'m Winona the Whale!\
 You completed this challenge! More to come soon...')
 
