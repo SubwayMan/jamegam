@@ -370,9 +370,12 @@ if not k:
 },
 {"Current":{
 "type":"object script","start":"self.sprite = new_sprite(\"debug.png\")
-self.alpha = 0","loop":"#Current loop
+self.alpha = 0
 
-if not game.c%60:
+# offset from game counter to create particles right away
+self.count_offset = game.c%60 + 1","loop":"#Current loop
+
+if not (game.c - self.count_offset)%60:
     for i in range(self.dense):
         fx = random.randrange(self.x-self.w, self.x+self.w)
         fy = random.randrange(self.y-self.h, self.y+self.h)
@@ -1005,10 +1008,6 @@ play_track(game.music, 6)
 
 ]
 },
-{"Stage3":[
-
-]
-},
 {"Room_Template":{
 "type":"room script","start":"# npc list for player to check
 game.npcs.clear()
@@ -1029,7 +1028,6 @@ if game.travelid == '1-0':
     smooth_tp(-350, -50)
 else:
     smooth_tp(0, 0)
-
 
 
 # X is (0, 0)
@@ -1084,8 +1082,8 @@ self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
 
 
 # set room music
-stop_track(game.music)
-play_track(game.music, 6)
+# stop_track(game.music)
+# play_track(game.music, 6)
 # Empty lines for scroll glitch
 
 
@@ -1318,17 +1316,6 @@ play_track(game.music, 6)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615667719.waterBG.png"
 }
 }
-]
-}
-]
-},
-{"Stage3":[
-{"Tiles3":[
-
-]
-},
-{"Background3":[
-
 ]
 }
 ]
