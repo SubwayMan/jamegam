@@ -6,7 +6,7 @@ self.t = time_ms()\r
 # general purpose frame counter\r
 self.c = 0\r
 \r
-self.debug = False\r
+self.debug = True\r
 self.showgrid = False\r
 # create grid guides\r
 if self.showgrid:\r
@@ -40,7 +40,7 @@ self.bg = Background()\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('Hub_Room')","loop":"self.t = time_ms()\r
+set_room('R3_B')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -238,9 +238,9 @@ if game.npcs:
             if o.e_popup:
                 o.e_popup = False
 
-#slightly shift background
-# game.bg.x += (Dx*0.4)
-# game.bg.y += (Dy*0.4)
+
+game.bg.x += (Dx*0.6)
+game.bg.y += (Dy*0.6)
 
 if key_was_pressed('f'):
     make_echo(self.x, self.y, self.angle)
@@ -393,6 +393,10 @@ if not k:
 "type":"object script","start":"self.sprite = new_sprite(\"debug.png\")
 self.alpha = 0
 
+#if temporary
+self.temp = False
+self.exp_time = 0
+
 # offset from game counter to create particles right away
 self.count_offset = game.c%60 + 1","loop":"#Current loop
 
@@ -406,7 +410,10 @@ if not (game.c - self.count_offset)%40:
 k = get_collision(self, \"Player\")
 if k:
     k.cxMOD += self.xa
-    k.cyMOD += self.ya"
+    k.cyMOD += self.ya
+
+if self.temp and game.t>self.exp_time:
+    destroy(self)"
 }
 },
 {"textbox_inst":{
@@ -448,7 +455,9 @@ if game.dark:
 {"Hurtbox":{
 "type":"object script","start":"self.sprite = new_sprite(\"debug.png\")
 self.alpha = 0
-
+#if temporary
+self.temp = False
+self.exp_time = 0
 #Func holds a function that describes player movement after hurtbox collision.
 #Can be redefined externally.
 self.func = lambda a, l: boost(l, 10, l.angle-180)
@@ -460,7 +469,9 @@ k = get_collision(self, \"Player\")
 if k and k.dmgF:
     damage(self.dmg)
     self.func(self, k)
-"
+
+if self.temp and game.t > self.exp_time:
+    destroy(self)"
 }
 },
 {"Anglerfish":{
@@ -620,6 +631,19 @@ if get_collision(self, 'Player'):
     self.parent.travel()"
 }
 },
+{"Nautilus":{
+"type":"object script","start":"#Nautilus start
+self.spr = Slate()
+self.hitbox = make_hurtbox(0, 0, 200, 200, 1, lambda a, l: boost(l, 20, l.angle-180))
+self.hitbox.alpha = 1
+self.spr.sprite = new_sprite(\"debug.png\")
+
+
+","loop":"#Nautilus loop
+
+"
+}
+},
 {"Swordfish":{
 "type":"object script","start":"#Swordfish start
 
@@ -668,6 +692,34 @@ if game.dark:
         if self.alpha <= 0:
             self.alpha = 0
             self.fading = False"
+}
+},
+{"boss_spike":{
+"type":"object script","start":"self.wait = game.t + 600
+self.idle = True
+self.sprite = new_sprite(\"Boss_Spike.png\")
+self.scaleX = 2
+self.scaleY = 2","loop":"#boss_spike loop
+if self.idle and game.t > self.wait:
+    self.idle = False
+    Dx, Dy = game.p.x - self.x, game.p.y - self.y
+    theta = angle_helper(Dx, Dy)
+    self.angle = theta
+    self.xv = math.acos(math.radians(self.angle)) * 25
+    self.yv = math.asin(math.radians(self.angle)) * 25
+
+if not self.idle:
+    self.x += self.xv
+    self.y += self.yv
+
+pl = get_collision(self, \"Player\")
+if pl:
+    damage(pl, 1)
+    destroy(self)
+
+if game.t - self.wait > 3000:
+    destroy(self)
+"
 }
 }
 ]
@@ -1609,6 +1661,98 @@ play_track(game.music, 6)
 
 "
 }
+},
+{"R3_B":{
+"type":"room script","start":"# npc list for player to check
+game.npcs.clear()
+
+# whether room is dark
+game.dark = False
+
+# ROOM ID - used for determining location when going to other rooms
+self.roomid = '3-B'
+
+# lowest(left) x + 640, highest(right) x - 640
+game.cam_limit_x = (490, 1510)
+# highest y - 360, lowest y + 360
+game.cam_limit_y = (-210, -790)
+
+# Insert room IDs and spawn locations for rooms that lead to this room
+
+smooth_tp(1900, -500)
+
+
+
+# X is (0, 0)
+lvlmap = [
+    '7CCCCCCCCCCCCCCCCCCCCC6',
+    'LX....................R',
+    'L.....................R',
+    'L.....................R',
+    'L.....................R',
+    'L......................',
+    'L......................',
+    'L......................',
+    'L.....................R',
+    'L.....................R',
+    'L.....................R',
+    'L.....................R',
+    '5VBNVBNNVNBBNVNVNBNBNN4'
+
+]
+make_map(lvlmap)
+
+# I didn't write this
+game.bg.sprite = new_sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = 500, -100
+game.bg.scaleX = 2
+game.bg.scaleY = 1.5
+
+# make colliders
+colliders = [
+    (1000, 100, 2300, 100),
+    (1000, -1100, 2300, 100),
+    (-100, -500, 100, 1300),
+    (2100, -100, 100, 500),
+    (2100, -900, 100, 500)
+
+]
+
+# from top left
+blockgroup(0, 0, colliders)
+
+# make objects here
+make_current(1800, -500, 500, 1100, -25, 0)
+# JELLY - x, y, angle, scale=1
+# CURRENT - x, y, w, h, xa, ya
+# BOOSTER - x, y, angle, force=30
+# SFISH - x, y, angle, AI=True
+# BOUNCER/(bumper) - x, y, force=30
+# ANGLERF - x, y, AI=True
+# SPIKE - x, y, point_d, scale=1
+
+
+# make gradients over exits/entrances
+# x, y, w, h, levels, direction=True, vert=False
+# levels is number of different opacity rects to divide into
+# direction True means top/left is lightest part (for exits going right/down)
+# vert decides vertical or horizontal gradient
+
+#self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
+
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
+
+","loop":"#R3_B loop
+
+"
+}
 }
 ]
 },
@@ -1933,6 +2077,13 @@ play_track(game.music, 6)
 }
 ]
 },
+{"Boss":[
+{"Boss_Spike.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616560041.Boss_Spike.png"
+}
+}
+]
+},
 {"Health":[
 {"health_0.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616393393.health_0.png"
@@ -2222,6 +2373,15 @@ def make_map(layout):
 },
 {"gamecreation.py":{
 "type":"function script","head":"
+
+d_to_angle = {
+    \"N\": 0,
+    \"W\": 90,
+    \"S\": 180,
+    \"E\": 270
+
+}
+
 def createblock(x, y, w, h):
     \"\"\"Basic opaque block. Takes args for pos, size, and optional block sprite.\"\"\"
     #construct block and set args
@@ -2234,7 +2394,7 @@ def createblock(x, y, w, h):
     a.scaleY = h/40
     
     if game.debug:
-        self.alpha = 0.6
+        a.alpha = 0.6
     else:
         a.z = -5
 
@@ -2269,6 +2429,7 @@ def make_current(x, y, w, h, xa, ya):
     inst.w = w/2
     inst.h = h/2
     inst.dense = max((w*h)//20000, 1)
+    return inst
     
 def make_particle(x, y, xv, yv, spr, proc):
     \"\"\"Create a particle with a linear velocity. 
@@ -2303,6 +2464,17 @@ def make_bumper(x, y, force=30):
     inst.x = inst.disp.x = x
     inst.y = inst.disp.y = y
     inst.force = force
+
+def make_spike(x, y, point_d, scale=1):
+    \"\"\"Make a spike at specified coords as well as a direction
+    (N, S, E, W). Also takes optional arg for scale.\"\"\"
+    inst = Spike()
+    inst.x = x
+    inst.y = y
+    inst.angle = d_to_angle[point_d
+]
+    inst.scaleX *= scale
+    inst.scaleY *= scale
 
 def make_anglerf(x, y, AI=True):
     \"\"\"Create an anglerfish.\"\"\"
@@ -2353,6 +2525,8 @@ def make_sfish(x, y, angle, AI=True):
     if 90<angle<=270:
         inst.scaleY *= -1
 
+    return inst
+
 def make_echo(x, y, angle):
     e = Echolocation()
     e.x = x
@@ -2394,6 +2568,55 @@ def make_echo(x, y, angle):
         t.alpha = (1/(levels-1)) * i if direction else 1 - ((1/(levels-1)) * i)
 
         if over: t.z = 24"
+}
+},
+{"Nautilusfuncs.py":{
+"type":"function script","head":"def summon_spike(boss):
+    \"\"\"Summons spikes around the boss, which
+    then home towards the player.\"\"\"
+    x0, y0 = boss.x, boss.y
+    offset0 = random.randrange(0, 60)
+
+    for i in range(6):
+        inst = boss_spike()
+        inst.angle = (i*60) + offset0
+        gcos, gsin = math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))
+        inst.x = 100*gcos
+        inst.y = 100*gsin
+        
+def summon_swordfish(boss):
+    \"\"\"Summons swordfish.\"\"\"
+    origin = boss.x
+    t = random.choice([\"T, B\"
+])
+    if t == \"T\":
+        sy = 0
+        sa = -90
+    else:
+        sy = 1000
+        sa = 90
+
+    for i in range(1, 5):
+        k = make_sfish(origin + (i*100), sy, sa)
+        k.fading = True
+
+def shockwave(boss):
+    \"\"\"Makes shockwave and sends player flying with massive current.\"\"\"
+    x0, y0 = boss.x, boss.y
+    hb = make_hurtbox(x0, y0, 400, 400, 1)
+    hb.temp = True
+    hb.exp_time = game.t + 400
+    cur = make_current(-500, 700, 1400, 1000, 23, 0)
+    cur.temp = True
+    cur.exp_time = game.t + 1200
+
+def dash(boss):
+    \"\"\"Dash towards the player, dealing large damage.\"\"\"
+
+        
+        
+
+"
 }
 },
 {"Classes":[
@@ -2485,24 +2708,7 @@ def make_echo(x, y, angle):
 }
 },
 {"Enemies.py":{
-"type":"function script","head":"d_to_angle = {
-    \"N\": 0,
-    \"W\": 90,
-    \"S\": 180,
-    \"E\": 270
-
-}
-
-def make_spike(x, y, point_d, scale=1):
-    \"\"\"Make a spike at specified coords as well as a direction
-    (N, S, E, W). Also takes optional arg for scale.\"\"\"
-    inst = Spike()
-    inst.x = x
-    inst.y = y
-    inst.angle = d_to_angle[point_d
-]
-    inst.scaleX *= scale
-    inst.scaleY *= scale"
+"type":"function script","head":""
 }
 },
 {"NPC.py":{
