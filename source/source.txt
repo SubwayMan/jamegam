@@ -34,20 +34,13 @@ self.npcs = [
 self.e = False\r
 self.p = Player()\r
 self.bg = Background()\r
-self.bg.persistent = True\r
-set_room('Demo_Room')\r
+\r
+# set_room('Demo_Room')\r
 \r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-#set_room('Room1')\r
-<<<<<<< HEAD
-set_room('R1_3')\r
-#","loop":"self.t = time_ms()\r
-=======
-# set_room('R1_0')\r
-","loop":"self.t = time_ms()\r
->>>>>>> 19c570c9fe061948b999bd6a3773e4bd80402b76
+set_room('Hub_Room')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -291,7 +284,7 @@ if self.hp < 1:
 {"gameplay":[
 {"Block":{
 "type":"object script","start":"#Block start
-self.alpha = 0.6","loop":"
+","loop":"
 # Exit the loop early if far from player
 pdistx = self.x - game.p.x
 pdisty = self.y - game.p.y
@@ -300,8 +293,6 @@ pdisty = self.y - game.p.y
 if abs(pdistx) > 2200 or abs(pdisty) > 1600:
     self.visible = False
     return
-
-self.visible = game.debug
 
 pl = get_collision(self, \"Player\")
 if pl:
@@ -400,9 +391,12 @@ if not k:
 },
 {"Current":{
 "type":"object script","start":"self.sprite = new_sprite(\"debug.png\")
-self.alpha = 0","loop":"#Current loop
+self.alpha = 0
 
-if not game.c%40:
+# offset from game counter to create particles right away
+self.count_offset = game.c%60 + 1","loop":"#Current loop
+
+if not (game.c - self.count_offset)%40:
     for i in range(self.dense):
         fx = random.randrange(self.x-self.w, self.x+self.w)
         fy = random.randrange(self.y-self.h, self.y+self.h)
@@ -776,7 +770,8 @@ self.x = 0
 self.y = 0
 self.scaleX = 0.6
 self.scaleY = 0.6
-self.z = -10","loop":"#Background loop
+self.z = -10
+self.persistent = True","loop":"#Background loop
 
 if game.dark == self.visible:
     self.visible = not self.visible"
@@ -912,7 +907,7 @@ lvlmap = [
 ]
 make_map(lvlmap)
 
-game.bg.sprite = new_sprite(\"Cave_Background.png\")
+game.bg.sprite = new_sprite(\"purple_bg.png\")
 game.bg.scaleX = 2
 
 # Make colliders
@@ -929,7 +924,7 @@ blockgroup(-300, 200, colliders)
 
 make_dark_gradient(2000, -450, 500, 400, 20)
 
-self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
+self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Hub_Room')
 
 make_simple_npc(500, -500, 'Whale', 'Howdy stranger, I\\'m William the whale!\
 I was supposed to tell you how to move, but you had to move\
@@ -949,8 +944,10 @@ self.roomid = '0-0'
 game.cam_limit_x = (10, 1810)
 game.cam_limit_y = (-110, -1090)
 
-if game.travelid == '1-0':
+if game.travelid == '0-1':
     smooth_tp(-350, -50)
+elif game.travelid == '1-0':
+    smooth_tp(1700, -1300)
 else:
     smooth_tp(0, 0)
 
@@ -975,7 +972,7 @@ lvlmap = [
 
 ]
 make_map(lvlmap)
-game.bg.sprite = new_sprite(\"Cave_Background.png\")
+game.bg.sprite = new_sprite(\"purple_bg.png\")
 game.bg.x, game.bg.y = -100, -300
 game.bg.scaleX = 2
 game.bg.scaleY = 1.5
@@ -1001,15 +998,6 @@ colliders = [
 ]
 blockgroup(900, -300, colliders)
 
-make_current(1700, -1100, 300, 400, 0, 3.5)
-#make_spike(50, 115, \"N\", 1)
-#make_spike(100, 115, \"N\", 1)
-#make_spike(150, 115, \"N\", 1)
-#make_spike(200, 115, \"N\", 1)
-make_anglerf(1000, -600)
-#make_jelly(100, -800, -45)
-#make_jelly(400, -700, 135)
-#make_booster(700, -800, 90)
 make_simple_npc(1500, -800, 'Whale', 'Hi, I\\'m Winona the Whale!\
 You completed this challenge! More to come soon...')
 
@@ -1018,6 +1006,7 @@ make_dark_gradient(-350, -50, 600, 400, 20, direction=False)
 TravelGate(-560, -50, 60, 400, self.roomid, 'Starting_Room')
 
 make_dark_gradient(1700, -1200, 500, 500, 20, vert=True)
+TravelGate(1700, -1400, 500, 60, self.roomid, 'R1_0')
 
 make_dark_gradient(2150, -750, 600, 400, 20)
 stop_track(game.music)
@@ -1030,7 +1019,100 @@ play_track(game.music, 6)
 "
 }
 },
-<<<<<<< HEAD
+{"R0_2":{
+"type":"room script","start":"#R0_2 start
+
+","loop":"#R0_2 loop
+
+"
+}
+},
+{"R1_0":{
+"type":"room script","start":"game.npcs.clear()
+game.dark = False
+
+# ROOM ID - used for determining location when going to other rooms
+self.roomid = '1-0'
+
+game.cam_limit_x = (-10, 1610)
+game.cam_limit_y = (290, -190)
+
+if game.travelid == '0-0':
+    smooth_tp(750, 400)
+elif game.travelid == '1-1':
+    smooth_tp(1950, -250)
+elif game.travelid == '1-10':
+    smooth_tp(-400, -250)
+else:
+    smooth_tp(0, 0)
+
+
+
+# X is (0, 0)
+lvlmap = [
+    '            L..R         ',
+    '            L..R         ',
+    '            L..R         ',
+    '            L..R         ',
+    '    7CCCCCCC3..2CCCCCCCC6',
+    '    L...................R',
+    '    L.X.................R',
+    'CCCC3...................2CCCC',
+    '.............................',
+    '.............................',
+    'NVBB1...................0VBNN',
+    '    5BNVBNNVNBBNVNVNBNBN4'
+
+]
+make_map(lvlmap)
+
+game.bg.sprite = sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = 300, -100
+game.bg.scaleX = 2
+game.bg.scaleY = 2
+
+# make colliders
+colliders = [
+    (-200, -150, 495, 395),
+    (-200, -650, 495, 195),
+    (400, 200, 895, 495),
+    (1550, 200, 995, 495),
+    (1000, -700, 2100, 95),
+    (2200, -150, 495, 395),
+    (2200, -650, 495, 195)
+
+]
+
+# from top left
+blockgroup(-200, 200, colliders)
+
+make_current(575, -150, 350, 600, 1, -12)
+make_current(925, -150, 350, 600, -5, 12)
+
+make_current(1800, -250, 600, 300, -9, 0)
+
+make_dark_gradient(2000, -250, 500, 400, 20)
+TravelGate(2220, -250, 60, 400, self.roomid, 'R1_1')
+
+make_dark_gradient(750, 400, 400, 500, 20, direction=False, vert=True)
+TravelGate(750, 600, 400, 60, self.roomid, 'Hub_Room')
+
+make_dark_gradient(-400, -250, 500, 400, 20, direction=False)
+TravelGate(-600, -250, 60, 400, self.roomid, 'R1_10')
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
+
+","loop":"#1_0 loop
+
+"
+}
+},
 {"R1_1":{
 "type":"room script","start":"# npc list for player to check
 game.npcs.clear()
@@ -1068,7 +1150,7 @@ lvlmap = [
 make_map(lvlmap)
 
 # I didn't write this
-game.bg.sprite = new_sprite(\"Cave_Background.png\")
+game.bg.sprite = new_sprite(\"purple_bg.png\")
 game.bg.x, game.bg.y = -100, -100
 game.bg.scaleX = 2
 game.bg.scaleY = 1.5
@@ -1130,21 +1212,11 @@ play_track(game.music, 1)
 
 
 ","loop":"#1_0 loop
-=======
-{"R0_2":{
-"type":"room script","start":"#R0_2 start
-
-","loop":"#R0_2 loop
->>>>>>> 19c570c9fe061948b999bd6a3773e4bd80402b76
 
 "
 }
 },
-<<<<<<< HEAD
 {"R1_2":{
-=======
-{"R1_0":{
->>>>>>> 19c570c9fe061948b999bd6a3773e4bd80402b76
 "type":"room script","start":"# npc list for player to check
 game.npcs.clear()
 
@@ -1152,7 +1224,6 @@ game.npcs.clear()
 game.dark = False
 
 # ROOM ID - used for determining location when going to other rooms
-<<<<<<< HEAD
 self.roomid = '1-2'
 
 # lowest(left) x + 640, highest(right) x - 640
@@ -1164,57 +1235,26 @@ game.cam_limit_y = (90, -90)
 
 smooth_tp(-100, 0)
 
-=======
-self.roomid = '1-0'
-
-game.cam_limit_x = (290, 1710)
-game.cam_limit_y = (290, -190)
-
-if game.travelid == '0-0':
-    smooth_tp(750, 250)
-elif game.travelid == '1-1':
-    smooth_tp(1950, -250)
-else:
-    smooth_tp(0, 0)
->>>>>>> 19c570c9fe061948b999bd6a3773e4bd80402b76
-
 
 
 # X is (0, 0)
 lvlmap = [
-    '         L..R         ',
-    '         L..R         ',
-    '         L..R         ',
-    '         L..R         ',
-    '7CCCCCCCC3..2CCCCCCCC6',
+    '7CCCCCCCCCCCCCCCCCCCC6',
     'L....................R',
-<<<<<<< HEAD
     'L...6................R',
     '....4.................',
     '...X..................',
     '......................',
     'L....................R',
     'L....................R',
-=======
-    'L..X.................R',
-    'L....................2CCCCC',
-    'L..........................',
-    'L..........................',
-    'L....................0VBNNV',
->>>>>>> 19c570c9fe061948b999bd6a3773e4bd80402b76
     '5VBNVBNNVNBBNVNVNBNBN4'
 
 ]
 make_map(lvlmap)
 
-<<<<<<< HEAD
 # I didn't write this
-game.bg.sprite = new_sprite(\"Cave_Background.png\")
+game.bg.sprite = new_sprite(\"purple_bg.png\")
 game.bg.x, game.bg.y = -100, -100
-=======
-game.bg.sprite = sprite(\"Cave_Background.png\")
-game.bg.x, game.bg.y = -100, -300
->>>>>>> 19c570c9fe061948b999bd6a3773e4bd80402b76
 game.bg.scaleX = 2
 game.bg.scaleY = 1.5
 
@@ -1260,56 +1300,109 @@ make_spike(180, 200, \"W\")
 # levels is number of different opacity rects to divide into
 # direction True means top/left is lightest part (for exits going right/down)
 # vert decides vertical or horizontal gradient
-<<<<<<< HEAD
 make_dark_gradient(2000, -250, 500, 400, 20)
-=======
-make_dark_gradient(2000, -450, 500, 400, 20)
->>>>>>> 19c570c9fe061948b999bd6a3773e4bd80402b76
 #self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
 
 
 # set room music
 stop_track(game.music)
-<<<<<<< HEAD
 play_track(game.music, 1)
-=======
-play_track(game.music, 6)
->>>>>>> 19c570c9fe061948b999bd6a3773e4bd80402b76
 # Empty lines for scroll glitch
 
 
 
 
-<<<<<<< HEAD
-","loop":"#R1_2 loop
-=======
-","loop":"#1_0 loop
->>>>>>> 19c570c9fe061948b999bd6a3773e4bd80402b76
-
-"
-}
-},
-<<<<<<< HEAD
-{"R1_3":{
-=======
-{"R1_1":{
-"type":"room script","start":"#R1_1 start
-
-","loop":"#R1_1 loop
-
-"
-}
-},
-{"R1_2":{
-"type":"room script","start":"#R1_2 start
-
 ","loop":"#R1_2 loop
 
 "
 }
 },
 {"R1_3":{
-"type":"room script","start":"#R1_3 start
+"type":"room script","start":"# npc list for player to check
+game.npcs.clear()
+
+# whether room is dark
+game.dark = False
+
+# ROOM ID - used for determining location when going to other rooms
+self.roomid = '1-3'
+
+# lowest(left) x + 640, highest(right) x - 640
+game.cam_limit_x = (290, 1210)
+# highest y - 360, lowest y + 360
+game.cam_limit_y = (90, -90)
+
+# Insert room IDs and spawn locations for rooms that lead to this room
+
+smooth_tp(-100, 0)
+
+
+
+# X is (0, 0)
+lvlmap = [
+    '7CCCCCCCCCCCCCCCCCCCC6',
+    'L......RL.....RL.....R',
+    'L......RL.....RL.....R',
+    '.......67.....67......',
+    '...X..................',
+    '.......45.....45......',
+    'L......RL.....RL.....R',
+    'L......RL.....RL.....R',
+    '5VBNVBNNVNBBNVNVNBNBN4'
+
+]
+make_map(lvlmap)
+
+# I didn't write this
+game.bg.sprite = new_sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = -100, -100
+game.bg.scaleX = 2
+game.bg.scaleY = 1.5
+
+# make colliders
+colliders = [
+    (0, -200, 95, 900),
+    (1050, 200, 2200, 95),
+    (1250, -600, 2600, 95), 
+    (2300, -200, 495, 900),
+    (750, 0, 200, 300),
+    (750, -400, 200, 300),
+    (1450, 0, 200, 300),
+    (1450, -400, 200, 300)
+
+]
+
+# from top left
+blockgroup(-300, 200, colliders)
+make_anglerf(600, 0)
+make_anglerf(1200, 0)
+
+# make objects here
+# JELLY - x, y, angle, scale=1
+# CURRENT - x, y, w, h, xa, ya
+# BOOSTER - x, y, angle, force=30
+# SFISH - x, y, angle, AI=True
+# BOUNCER/(bumper) - x, y, force=30
+# ANGLERF - x, y, AI=True
+# SPIKE - x, y, point_d, scale=1
+
+
+# make gradients over exits/entrances
+# x, y, w, h, levels, direction=True, vert=False
+# levels is number of different opacity rects to divide into
+# direction True means top/left is lightest part (for exits going right/down)
+# vert decides vertical or horizontal gradient
+make_dark_gradient(2000, -250, 500, 400, 20)
+#self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
+
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 1)
+# Empty lines for scroll glitch
+
+
+
 
 ","loop":"#R1_3 loop
 
@@ -1365,7 +1458,77 @@ play_track(game.music, 6)
 }
 },
 {"R1_10":{
-"type":"room script","start":"#R1_10 start
+"type":"room script","start":"game.npcs.clear()
+game.dark = False
+
+# ROOM ID - used for determining location when going to other rooms
+self.roomid = '1-10'
+
+game.cam_limit_x = (390, 1410)
+game.cam_limit_y = (-10, -590)
+
+if game.travelid == '1-9':
+    smooth_tp(0, -750)
+elif game.travelid == '1-0':
+    smooth_tp(1900, -250)
+else:
+    smooth_tp(0, 0)
+
+
+
+# X is (0, 0)
+lvlmap = [
+    '7CCCCCCCCCCCCCCCCC6',
+    'L.................R',
+    'L.................R',
+    'L.X...............R',
+    'L.................2CCCC',
+    'L......................',
+    'L......................',
+    'L.................0VBNN',
+    'L...0NNVNBBNVNBNBN4',
+    'L...R              ',
+    'L...R              ',
+    'L...R              ',
+    'L...R              ',
+
+]
+make_map(lvlmap)
+
+game.bg.sprite = sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = 300, -100
+game.bg.scaleX = 2
+game.bg.scaleY = 2
+game.bg.z = -10
+
+# make colliders
+colliders = [
+    (900, 0, 1900, 95),
+    (0, -600, 95, 1295),
+    (1100, -1000, 1495, 495),
+    (2000, -750, 495, 195),
+    (2000, -200, 495, 495),
+
+
+]
+# from top left
+blockgroup(-200, 300, colliders)
+
+make_current(700, -100, 1700, 700, 20, 0)
+
+make_dark_gradient(1800, -250, 500, 400, 20)
+TravelGate(2000, -250, 60, 400, self.roomid, 'R1_0')
+
+make_dark_gradient(0, -700, 500, 500, 20, vert=True)
+TravelGate(0, -900, 500, 60, self.roomid, 'R1_9')
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
 
 ","loop":"#R1_10 loop
 
@@ -1450,109 +1613,6 @@ play_track(game.music, 6)
 ]
 },
 {"Room_Template":{
->>>>>>> 19c570c9fe061948b999bd6a3773e4bd80402b76
-"type":"room script","start":"# npc list for player to check
-game.npcs.clear()
-
-# whether room is dark
-game.dark = False
-
-# ROOM ID - used for determining location when going to other rooms
-self.roomid = '1-3'
-
-# lowest(left) x + 640, highest(right) x - 640
-game.cam_limit_x = (290, 1610)
-# highest y - 360, lowest y + 360
-game.cam_limit_y = (90, -90)
-
-# Insert room IDs and spawn locations for rooms that lead to this room
-
-smooth_tp(-100, 0)
-
-
-
-# X is (0, 0)
-lvlmap = [
-    '7CCCCCCCCCCCCCCCCCCCC6',
-    'L......RL.....RL.....R',
-    'L......RL.....RL.....R',
-    '.......67.....67......',
-    '...X..................',
-    '.......45.....45......',
-    'L......RL.....RL.....R',
-    'L......RL.....RL.....R',
-    '5VBNVBNNVNBBNVNVNBNBN4'
-
-]
-make_map(lvlmap)
-
-# I didn't write this
-game.bg.sprite = new_sprite(\"Cave_Background.png\")
-game.bg.x, game.bg.y = -100, -100
-game.bg.scaleX = 2
-game.bg.scaleY = 1.5
-
-# make colliders
-colliders = [
-    (0, -200, 95, 900),
-    (1050, 200, 2200, 95),
-    (1250, -600, 2600, 95), 
-    (2300, -200, 495, 900),
-    (750, 0, 200, 300),
-    (750, -400, 200, 300),
-    (1450, 0, 200, 300),
-    (1450, -400, 200, 300)
-
-]
-
-# from top left
-blockgroup(-300, 200, colliders)
-make_anglerf(600, 0)
-make_anglerf(1200, 0)
-
-# make objects here
-# JELLY - x, y, angle, scale=1
-# CURRENT - x, y, w, h, xa, ya
-# BOOSTER - x, y, angle, force=30
-# SFISH - x, y, angle, AI=True
-# BOUNCER/(bumper) - x, y, force=30
-# ANGLERF - x, y, AI=True
-# SPIKE - x, y, point_d, scale=1
-
-
-# make gradients over exits/entrances
-# x, y, w, h, levels, direction=True, vert=False
-# levels is number of different opacity rects to divide into
-# direction True means top/left is lightest part (for exits going right/down)
-# vert decides vertical or horizontal gradient
-make_dark_gradient(2000, -250, 500, 400, 20)
-#self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
-
-
-# set room music
-stop_track(game.music)
-play_track(game.music, 1)
-# Empty lines for scroll glitch
-
-
-
-
-","loop":"#R1_3 loop
-
-"
-}
-}
-]
-},
-{"Stage2":[
-
-]
-},
-{"Stage3":[
-
-]
-},
-{"Room_Template":{
 "type":"room script","start":"# npc list for player to check
 game.npcs.clear()
 
@@ -1568,8 +1628,10 @@ game.cam_limit_x = (290, 1610)
 game.cam_limit_y = (-110, -290)
 
 # Insert room IDs and spawn locations for rooms that lead to this room
-
-smooth_tp(0, 0)
+if game.travelid == '1-0':
+    smooth_tp(-350, -50)
+else:
+    smooth_tp(0, 0)
 
 
 # X is (0, 0)
@@ -1587,8 +1649,8 @@ lvlmap = [
 ]
 make_map(lvlmap)
 
-# Background manipulation
-game.bg.sprite = new_sprite(\"Cave_Background.png\")
+# background manipulation
+game.bg.sprite = new_sprite(\"purple_bg.png\")
 game.bg.x, game.bg.y = -100, -300
 game.bg.scaleX = 2
 game.bg.scaleY = 1.5
@@ -1624,8 +1686,8 @@ self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
 
 
 # set room music
-# stop_track(game.music)
-# play_track(game.music, 6)
+stop_track(game.music)
+play_track(game.music, 6)
 # Empty lines for scroll glitch
 
 
@@ -1749,8 +1811,8 @@ self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615953211.gradient1.png"
 }
 },
-{"Cave_Background.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616362233.Cave_Background.png"
+{"purple_bg.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616546270.purple_bg.png"
 }
 },
 {"pixel_bg_stage1.png":{
@@ -1771,17 +1833,6 @@ self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615667719.waterBG.png"
 }
 }
-]
-}
-]
-},
-{"Stage3":[
-{"Tiles3":[
-
-]
-},
-{"Background3":[
-
 ]
 }
 ]
@@ -2178,11 +2229,14 @@ def createblock(x, y, w, h):
     a.x = x
     a.y = y
     #This works for 40x40 sprite. For other sprites, change divisor accordingly
-    a.sprite = new_sprite('debug.png') # For debugging
+    a.sprite = sprite('debug.png') if game.debug else sprite('black40x40.png')
     a.scaleX = w/40
     a.scaleY = h/40
     
-    a.visible = game.debug
+    if game.debug:
+        self.alpha = 0.6
+    else:
+        a.z = -5
 
     #store these for collision purposes
     a.wid = w/2
