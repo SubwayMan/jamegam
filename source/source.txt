@@ -35,14 +35,14 @@ self.e = False\r
 self.p = Player()\r
 self.bg = Background()\r
 self.bg.persistent = True\r
-# set_room('Demo_Room')\r
+set_room('Demo_Room')\r
 \r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
 #set_room('Room1')\r
-set_room('R1_0')\r
-#","loop":"self.t = time_ms()\r
+# set_room('R1_0')\r
+","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -325,9 +325,11 @@ if al:
 },
 {"Booster":{
 "type":"object script","start":"#Booster start
-spritesheet = sprite(\"booster_new.png\", 4, 3)
+
+self.disp = Slate()
+spritesheet = sprite(\"boostersheet.png\", 4, 3)
 self.anim = animation(spritesheet, 15, 0, 10)
-set_animation(self, self.anim)
+set_animation(self.disp, self.anim)
 
 filterConfig = {
     \"threshold\": 0.7,
@@ -339,11 +341,13 @@ filterConfig = {
 }
 
 advBloom = new_adv_bloom_filter(filterConfig)
-add_filter(self, advBloom)
+add_filter(self.disp, advBloom)
 
+self.sprite = sprite('debug.png')
+self.visible = game.debug
 
-self.scaleX = 1
-self.scaleY = 1","loop":"#Booster loop
+self.scaleX = 1.4
+self.scaleY = 1.4","loop":"#Booster loop
 
 k = get_collision(self, \"Player\")
 if k:
@@ -353,10 +357,31 @@ if k:
 },
 {"Bumper":{
 "type":"object script","start":"#Bumper start
-self.sprite = new_sprite(\"bumper.png\")
+
+self.disp = Slate()
+self.disp.scaleX = self.disp.scaleY = 0.6
+spritesheet = sprite(\"bouncesheet.png\", 2, 1)
+self.anim = animation(spritesheet, 2, 0, 1)
+set_animation(self.disp, self.anim)
+
+filterConfig = {
+    \"threshold\": 0.825,
+    \"bloomScale\" : 2,
+    \"brightness\" : 0.3,
+    \"blur\" : 2,
+    \"quality\" : 10,
+
+}
+
+advBloom = new_adv_bloom_filter(filterConfig)
+add_filter(self.disp, advBloom)
+
+self.sprite = sprite('debug.png')
+self.visible = game.debug
+
 self.fl = False
-self.scaleX = 1.5
-self.scaleY = 1.5","loop":"#Bumper loop
+self.scaleX = 1.3
+self.scaleY = 1.3","loop":"#Bumper loop
 k = get_collision(self, \"Player\")
 if k and not self.fl:
     boost(k, self.force, k.angle-180)
@@ -857,19 +882,17 @@ TextBox('Welcome to the demo room', 1500)","loop":"#Demo_Room loop
 },
 {"Stage1":[
 {"Starting_Room":{
-"type":"room script","start":"game.npcs.clear()
-game.dark = False
+"type":"room script","start":"self.roomid = '0-1'
 
-self.roomid = '1-0'
+game.npcs.clear()
+game.dark = False
 game.cam_limit_x = (290, 1610)
 game.cam_limit_y = (-110, -290)
-game.bg.sprite = new_sprite(\"Cave_Background.png\")
-game.bg.scaleX = 2
-if game.travelid == '1-1':
+
+if game.travelid == '0-0':
     smooth_tp(1900, -450)
 else:
     smooth_tp(0, 0)
-
 
 lvlmap = [
     '7CCCCCCCCCCCCCCCCCCCC6',
@@ -883,9 +906,10 @@ lvlmap = [
     '5VBNVBNNVNBBNVNVNBNBNVBNVN'
 
 ]
-
 make_map(lvlmap)
 
+game.bg.sprite = new_sprite(\"Cave_Background.png\")
+game.bg.scaleX = 2
 
 # Make colliders
 colliders = [
@@ -913,11 +937,11 @@ play_track(game.music, 2)","loop":"#Starting_Room loop
 "
 }
 },
-{"Room1":{
+{"Hub_Room":{
 "type":"room script","start":"game.npcs.clear()
 game.dark = False
 
-self.roomid = '1-1'
+self.roomid = '0-0'
 game.cam_limit_x = (10, 1810)
 game.cam_limit_y = (-110, -1090)
 
@@ -1001,11 +1025,258 @@ play_track(game.music, 6)
 
 "
 }
+},
+{"R0_2":{
+"type":"room script","start":"#R0_2 start
+
+","loop":"#R0_2 loop
+
+"
+}
+},
+{"R1_0":{
+"type":"room script","start":"# npc list for player to check
+game.npcs.clear()
+
+# whether room is dark
+game.dark = False
+
+# ROOM ID - used for determining location when going to other rooms
+self.roomid = '1-0'
+
+game.cam_limit_x = (290, 1710)
+game.cam_limit_y = (290, -190)
+
+if game.travelid == '0-0':
+    smooth_tp(750, 250)
+elif game.travelid == '1-1':
+    smooth_tp(1950, -250)
+else:
+    smooth_tp(0, 0)
+
+
+
+# X is (0, 0)
+lvlmap = [
+    '         L..R         ',
+    '         L..R         ',
+    '         L..R         ',
+    '         L..R         ',
+    '7CCCCCCCC3..2CCCCCCCC6',
+    'L....................R',
+    'L..X.................R',
+    'L....................2CCCCC',
+    'L..........................',
+    'L..........................',
+    'L....................0VBNNV',
+    '5VBNVBNNVNBBNVNVNBNBN4'
+
+]
+make_map(lvlmap)
+
+game.bg.sprite = sprite(\"Cave_Background.png\")
+game.bg.x, game.bg.y = -100, -300
+game.bg.scaleX = 2
+game.bg.scaleY = 1.5
+
+# make colliders
+colliders = [
+    (0, -400, 95, 900),
+    (1050, 0, 2200, 95),
+    (1250, -800, 2600, 95), 
+    (2300, -250, 495, 595),
+
+]
+
+# from top left
+blockgroup(-300, 200, colliders)
+
+# make objects here
+# JELLY - x, y, angle, scale=1
+# CURRENT - x, y, w, h, xa, ya
+# BOOSTER - x, y, angle, force=30
+# SFISH - x, y, angle, AI=True
+# BOUNCER/(bumper) - x, y, force=30
+# ANGLERF - x, y, AI=True
+# SPIKE - x, y, point_d, scale=1
+
+# make gradients over exits/entrances
+# x, y, w, h, levels, direction=True, vert=False
+# levels is number of different opacity rects to divide into
+# direction True means top/left is lightest part (for exits going right/down)
+# vert decides vertical or horizontal gradient
+make_dark_gradient(2000, -450, 500, 400, 20)
+#self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
+
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
+
+","loop":"#1_0 loop
+
+"
+}
+},
+{"R1_1":{
+"type":"room script","start":"#R1_1 start
+
+","loop":"#R1_1 loop
+
+"
+}
+},
+{"R1_2":{
+"type":"room script","start":"#R1_2 start
+
+","loop":"#R1_2 loop
+
+"
+}
+},
+{"R1_3":{
+"type":"room script","start":"#R1_3 start
+
+","loop":"#R1_3 loop
+
+"
+}
+},
+{"R1_4":{
+"type":"room script","start":"#R1_4 start
+
+","loop":"#R1_4 loop
+
+"
+}
+},
+{"R1_5":{
+"type":"room script","start":"#R1_5 start
+
+","loop":"#R1_5 loop
+
+"
+}
+},
+{"R1_6":{
+"type":"room script","start":"#R1_6 start
+
+","loop":"#R1_6 loop
+
+"
+}
+},
+{"R1_7":{
+"type":"room script","start":"#R1_7 start
+
+","loop":"#R1_7 loop
+
+"
+}
+},
+{"R1_8":{
+"type":"room script","start":"#R1_8 start
+
+","loop":"#R1_8 loop
+
+"
+}
+},
+{"R1_9":{
+"type":"room script","start":"#R1_9 start
+
+","loop":"#R1_9 loop
+
+"
+}
+},
+{"R1_10":{
+"type":"room script","start":"#R1_10 start
+
+","loop":"#R1_10 loop
+
+"
+}
 }
 ]
 },
 {"Stage2":[
+{"R2_0":{
+"type":"room script","start":"#R2_0 start
 
+","loop":"#R2_0 loop
+
+"
+}
+},
+{"R2_1":{
+"type":"room script","start":"#R2_1 start
+
+","loop":"#R2_1 loop
+
+"
+}
+},
+{"R2_2":{
+"type":"room script","start":"#R2_2 start
+
+","loop":"#R2_2 loop
+
+"
+}
+},
+{"R2_3":{
+"type":"room script","start":"#R2_3 start
+
+","loop":"#R2_3 loop
+
+"
+}
+},
+{"R2_4":{
+"type":"room script","start":"#R2_4 start
+
+","loop":"#R2_4 loop
+
+"
+}
+},
+{"R2_5":{
+"type":"room script","start":"#R2_5 start
+
+","loop":"#R2_5 loop
+
+"
+}
+},
+{"R2_6":{
+"type":"room script","start":"#R2_6 start
+
+","loop":"#R2_6 loop
+
+"
+}
+},
+{"R2_7":{
+"type":"room script","start":"#R2_7 start
+
+","loop":"#R2_7 loop
+
+"
+}
+},
+{"R2_8":{
+"type":"room script","start":"#R2_8 start
+
+","loop":"#R2_8 loop
+
+"
+}
+}
 ]
 },
 {"Room_Template":{
@@ -1090,93 +1361,6 @@ self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
 
 
 ","loop":"#Room_Template loop
-
-"
-}
-},
-{"R1_0":{
-"type":"room script","start":"# npc list for player to check
-game.npcs.clear()
-
-# whether room is dark
-game.dark = False
-
-# ROOM ID - used for determining location when going to other rooms
-self.roomid = '69-69'
-
-# lowest(left) x + 640, highest(right) x - 640
-game.cam_limit_x = (290, 1210)
-# highest y - 360, lowest y + 360
-game.cam_limit_y = (-110, -290)
-
-# Insert room IDs and spawn locations for rooms that lead to this room
-if game.travelid == '1-0':
-    smooth_tp(-350, -50)
-else:
-    smooth_tp(0, 0)
-
-
-
-# X is (0, 0)
-lvlmap = [
-    '7CCCCCCCCCCCCCCCCCCCC6',
-    'L....................R',
-    'L..X.................R',
-    'L....................R',
-    'L....................R',
-    'L....................R',
-    'L....................R',
-    'L....................R',
-    '5VBNVBNNVNBBNVNVNBNBNV'
-
-]
-make_map(lvlmap)
-
-# I didn't write this
-game.bg.sprite = new_sprite(\"Cave_Background.png\")
-game.bg.x, game.bg.y = -100, -300
-game.bg.scaleX = 2
-game.bg.scaleY = 1.5
-
-# make colliders
-colliders = [
-    (0, -400, 95, 900),
-    (1050, 0, 2200, 95),
-    (1250, -800, 2600, 95), 
-    (2300, -250, 495, 595),
-
-]
-
-# from top left
-blockgroup(-300, 200, colliders)
-
-# make objects here
-# JELLY - x, y, angle, scale=1
-# CURRENT - x, y, w, h, xa, ya
-# BOOSTER - x, y, angle, force=30
-# SFISH - x, y, angle, AI=True
-# BOUNCER/(bumper) - x, y, force=30
-# ANGLERF - x, y, AI=True
-# SPIKE - x, y, point_d, scale=1
-
-# make gradients over exits/entrances
-# x, y, w, h, levels, direction=True, vert=False
-# levels is number of different opacity rects to divide into
-# direction True means top/left is lightest part (for exits going right/down)
-# vert decides vertical or horizontal gradient
-make_dark_gradient(2000, -450, 500, 400, 20)
-#self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
-
-
-# set room music
-stop_track(game.music)
-play_track(game.music, 6)
-# Empty lines for scroll glitch
-
-
-
-
-","loop":"#1_0 loop
 
 "
 }
@@ -1321,12 +1505,12 @@ play_track(game.music, 6)
 ]
 },
 {"Gameplay_elements":[
-{"booster_new.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616268793.booster_new.png"
+{"boostersheet.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616545842.boostersheet.png"
 }
 },
-{"bumper.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616106674.bumper.png"
+{"bouncesheet.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616545187.bouncesheet.png"
 }
 },
 {"sonar_beam.png":{
@@ -1771,17 +1955,17 @@ def make_booster(x, y, angle, force=30):
     Force is given a default value, as for the sake of gameplay, faster boosters should
     be indicated as such to the player.\"\"\"
     inst = Booster()
-    inst.x = x
-    inst.y = y
-    inst.angle = angle
+    inst.x = inst.disp.x = x
+    inst.y = inst.disp.y = y
+    inst.angle = inst.disp.angle = angle
     inst.force = force
 
 def make_bumper(x, y, force=30):
     \"\"\"A bumper that always sends you in the opposite direction 
     from when you last bumped into it.\"\"\"
     inst = Bumper()
-    inst.x = x
-    inst.y = y
+    inst.x = inst.disp.x = x
+    inst.y = inst.disp.y = y
     inst.force = force
 
 def make_anglerf(x, y, AI=True):
