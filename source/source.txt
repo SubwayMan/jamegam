@@ -6,7 +6,7 @@ self.t = time_ms()\r
 # general purpose frame counter\r
 self.c = 0\r
 \r
-self.debug = True\r
+self.debug = False\r
 self.showgrid = False\r
 # create grid guides\r
 if self.showgrid:\r
@@ -40,7 +40,7 @@ self.bg = Background()\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('R3_B')","loop":"self.t = time_ms()\r
+set_room('Hub_Room')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -238,9 +238,6 @@ if game.npcs:
                 o.e_popup = False
 
 
-game.bg.x += (Dx*0.6)
-game.bg.y += (Dy*0.6)
-
 if key_was_pressed('f'):
     make_echo(self.x, self.y, self.angle)
 
@@ -291,8 +288,12 @@ pdisty = self.y - game.p.y
 
 
 if abs(pdistx) > 2200 or abs(pdisty) > 1600:
-    self.visible = False
+    if self.visible:
+        self.visible = False
     return
+else:
+    if not self.visible:
+        self.visible = True
 
 pl = get_collision(self, \"Player\")
 if pl:
@@ -2360,6 +2361,7 @@ def createblock(x, y, w, h):
     
     if game.debug:
         a.alpha = 0.6
+        a.z = 9
     else:
         a.z = -5
 
