@@ -6,7 +6,7 @@ self.t = time_ms()\r
 # general purpose frame counter\r
 self.c = 0\r
 \r
-self.debug = False\r
+self.debug = True\r
 self.showgrid = False\r
 # create grid guides\r
 if self.showgrid:\r
@@ -39,7 +39,7 @@ self.bg = Background()\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('Hub_Room')","loop":"self.t = time_ms()\r
+set_room('R3_B')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -642,15 +642,100 @@ if get_collision(self, 'Player'):
 },
 {"Nautilus":{
 "type":"object script","start":"#Nautilus start
-self.spr = Slate()
-self.hitbox = make_hurtbox(0, 0, 200, 200, 1, lambda a, l: boost(l, 20, l.angle-180))
+
+self.hitbox = make_hurtbox(0, 0, 200, 250, 1, lambda a, l: boost(l, 20, l.angle-180))
 self.hitbox.alpha = 1
-self.spr.sprite = new_sprite(\"debug.png\")
+self.hurtbox = Slate()
+self.hurtbox.sprite = new_sprite(\"debug.png\")
+self.hurtbox.scaleX = 2.5
+self.hurtbox.scaleY = 1.8
+self.sprite = new_sprite(\"ciel.png\")
+self.visible = False
+self.scaleX = 0.2
+self.scaleY = 0.2
+
+self.z = 5
+self.counter = 0
+
+self.timedict = {
+    \"SPIKES\": 1,
+    \"SHOCKWAVE\": 3,
+    \"SUMMON\": 1.5,
+    \"DASH\": 4
+
+}
+
+#order: spikes, dash, summon, shockwave
+self.weights = [
+    [50, 10, 30, 10
+],
+
+    [20, 25, 30, 25
+],
+
+    [15, 15, 40, 30
+],
+
+    [0, 0, 50, 50
+]
+
+]
+
+self.wlevel = 0
+self.clock0 = int(time.time())
+self.clock =  int(time.time()) - self.clock0
+self.wanderc = 0
+self.t = 0
+self.xv = 0
+self.yv = 0
+
+self.resetX = 0
+self.resetY = 0
+self.resettime = 0
+self.inDash = False
+self.dashEnd = 0
 
 
-","loop":"#Nautilus loop
+","loop":"
 
-"
+
+if self.counter > 300:
+    dash(self)
+    self.counter = 0
+self.counter += 1
+
+self.clock =  int(time.time()) - self.clock0
+
+if self.wanderc > 90 and not self.inDash:
+
+    n = random.randrange(1, 4)
+    if n==1:
+        wander(self)
+        self.wanderc = 0
+    else:
+        self.wanderc -= 15
+  
+if self.inDash and self.resettime == self.t:
+    self.x = self.resetX
+    self.y = self.resetY
+
+
+if self.inDash and self.dashEnd == self.t:
+    self.xv = 0
+    self.yv = 0
+
+    wander(self)
+
+self.wanderc += 1
+self.t += 1
+
+#move
+self.x += self.xv
+self.y += self.yv
+
+#hit/hurtbox alignment
+hitbox_rotate(self.hitbox, self, self.angle+180, 60)
+hitbox_rotate(self.hurtbox, self, self.angle-35, 75)"
 }
 },
 {"Swordfish":{
@@ -660,11 +745,8 @@ self.active = False
 self.alert = True
 
 self.fading = False
-if game.dark:
-    self.sprite = sprite(\"Swordfish_dark.png\")
-    self.alpha = 0
-else:
-    self.sprite = sprite(\"Swordfish.png\")
+self.alpha = 1
+self.sprite = sprite(\"Swordfish.png\")
 
 
 self.h = make_hurtbox(self.x+30, self.y, 20, 20, 2)
@@ -692,15 +774,12 @@ if self.alert and self.active:
         destroy(self.h)
 
 
-if game.dark:
-    if get_collision(self, 'Echolocation'):
-        self.alpha = 1
-        self.fading = True
-    if self.fading:
-        self.alpha -= 0.01
-        if self.alpha <= 0:
-            self.alpha = 0
-            self.fading = False"
+
+
+if self.fading and (not self.alert) and self.active:
+    self.alpha -= 0.01
+    if self.alpha <= 0:
+        destroy(self)"
 }
 },
 {"boss_spike":{
@@ -714,17 +793,19 @@ if self.idle and game.t > self.wait:
     Dx, Dy = game.p.x - self.x, game.p.y - self.y
     theta = angle_helper(Dx, Dy)
     self.angle = theta
-    self.xv = math.acos(math.radians(self.angle)) * 25
-    self.yv = math.asin(math.radians(self.angle)) * 25
+    self.xv = math.cos(math.radians(self.angle+90)) * 20
+    self.yv = math.sin(math.radians(self.angle+90)) * 20
 
 if not self.idle:
     self.x += self.xv
     self.y += self.yv
+   
 
 pl = get_collision(self, \"Player\")
 if pl:
-    damage(pl, 1)
+    damage(1)
     destroy(self)
+    boost(pl, 10, self.angle)
 
 if game.t - self.wait > 3000:
     destroy(self)
@@ -2250,6 +2331,9 @@ blockgroup(0, 0, colliders)
 
 # make objects here
 make_current(1800, -500, 500, 1100, -25, 0)
+n = Nautilus()
+n.x = 200
+n.y = -500
 # JELLY - x, y, angle, scale=1
 # CURRENT - x, y, w, h, xa, ya
 # BOOSTER - x, y, angle, force=30
@@ -3107,39 +3191,61 @@ def make_echo(x, y, angle):
 
     for i in range(6):
         inst = boss_spike()
-        inst.angle = (i*60) + offset0
-        gcos, gsin = math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))
-        inst.x = 100*gcos
-        inst.y = 100*gsin
+        vangle = (i*60) + offset0
+        gcos, gsin = math.cos(math.radians(vangle)), math.sin(math.radians(vangle))
+        inst.x = (230*gcos) + boss.x
+        inst.y = (230*gsin) + boss.y
+        inst.angle = -1*(90-vangle)
         
-def summon_swordfish(boss):
+def summon_sfish(boss):
     \"\"\"Summons swordfish.\"\"\"
     origin = boss.x
-    t = random.choice([\"T, B\"
+    t = random.choice([\"T\", \"B\"
 ])
+    print(t)
     if t == \"T\":
         sy = 0
         sa = -90
     else:
-        sy = 1000
+        sy = -1000
         sa = 90
 
     for i in range(1, 5):
-        k = make_sfish(origin + (i*100), sy, sa)
+        k = make_sfish(origin + (i*180), sy, sa)
         k.fading = True
 
 def shockwave(boss):
     \"\"\"Makes shockwave and sends player flying with massive current.\"\"\"
     x0, y0 = boss.x, boss.y
-    hb = make_hurtbox(x0, y0, 400, 400, 1)
+    hb = make_hurtbox(x0, y0, 600, 600, 1, lambda hb, pl: boost(pl, 20, -90))
     hb.temp = True
-    hb.exp_time = game.t + 400
-    cur = make_current(-500, 700, 1400, 1000, 23, 0)
+    hb.exp_time = game.t + 800
+    cur = make_current(550, -500, 1200, 1100, 30, 0)
     cur.temp = True
-    cur.exp_time = game.t + 1200
+    cur.exp_time = game.t + 2000
 
 def dash(boss):
     \"\"\"Dash towards the player, dealing large damage.\"\"\"
+    Dx, Dy = game.p.x - boss.x, game.p.y - boss.y
+    Vmod = 20/hyp(Dx, Dy)
+    boss.xv, boss.yv = Dx*Vmod, Dy*Vmod
+
+    boss.inDash = True
+    boss.resetX, boss.resetY = (boss.x - (40*boss.xv)), (boss.y - (40*boss.yv))
+    boss.resettime = boss.t + 80
+    boss.dashEnd = boss.t + 120
+    boss.hitbox.dmg = 2
+
+def wander(boss):
+    \"\"\"Function for random movement.\"\"\"
+    Dx, Dy = random.randrange(300, 500) - boss.x, random.randrange(-800, -200) - boss.y
+    Vmod = 2/hyp(Dx, Dy)
+    boss.xv = Dx*Vmod
+    boss.yv = Dy*Vmod
+    
+
+
+    
 
         
         
