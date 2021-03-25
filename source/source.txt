@@ -28,7 +28,6 @@ self.fpscount = 0\r
 self.dark = False\r
 \r
 self.prog = ProgTracker()\r
-self.prog.visible = False\r
 self.npcs = [
 ]\r
 self.e = False\r
@@ -100,6 +99,8 @@ self.dash_cool = game.t
 self.damage_cool = game.t
 self.dmgF = True
 
+self.echo_cool = game.t
+
 self.hp = 5
 self.healthbar = HealthInd()
 self.healthbar.sprite = self.healthbar.spritemap[self.hp
@@ -107,7 +108,6 @@ self.healthbar.sprite = self.healthbar.spritemap[self.hp
 self.healthbar.prev_h = self.hp","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
-
 
 # for arrow key movement
 keys = [key_is_pressed('arrowRight'), 
@@ -193,17 +193,17 @@ else:
         self.moving = False
 
 # distance from camera after move
-xdist = self.x - camX
-ydist = self.y - camY
+distX = self.x - camX
+distY = self.y - camY
 
 # update camera position either moves camera with delay
 # following player or caps at set limits
-new_camX = camX + (xdist - xdist/1.1) + self.x_off
+new_camX = camX + (distX - distX/1.1) + self.x_off
 new_camX = min(max(new_camX, game.cam_limit_x[0
 ]), game.cam_limit_x[1
 ])
 
-new_camY = camY + (ydist - ydist/1.1) + self.y_off
+new_camY = camY + (distY - distY/1.1) + self.y_off
 new_camY = max(min(new_camY, game.cam_limit_y[0
 ]), game.cam_limit_y[1
 ])
@@ -237,9 +237,15 @@ if game.npcs:
             if o.e_popup:
                 o.e_popup = False
 
-
-if key_was_pressed('f'):
-    make_echo(self.x, self.y, self.angle)
+if game.prog.echo:
+    if key_was_pressed('f') and game.t > self.echo_cool:
+        if any(keys):
+            angle = self.angle
+        else:
+            a = get_angle(ydist) - 90
+            angle = a if xdist > 0 else -a
+        make_echo(self.x, self.y, angle)
+        self.echo_cool = game.t + 700
 
 # damage invincibility management
 if self.damage_cool < game.t and not self.dmgF:
@@ -392,7 +398,8 @@ if not k:
 },
 {"Current":{
 "type":"object script","start":"self.sprite = new_sprite(\"debug.png\")
-self.alpha = 0
+self.alpha = 0.3
+self.visible = game.debug
 
 #if temporary
 self.temp = False
@@ -447,7 +454,7 @@ if game.dark:
         self.alpha = 1
         self.fading = True
     if self.fading:
-        self.alpha -= 0.02
+        self.alpha -= 0.01
         if self.alpha <= 0:
             self.alpha = 0
             self.fading = False"
@@ -574,7 +581,7 @@ self.bounce_h.scaleY = 0.5","loop":"if game.dark:
         self.fading = True
         set_animation(self, self.anim)
     if self.fading:
-        self.alpha -= 0.02
+        self.alpha -= 0.01
         if self.alpha <= 0:
             self.alpha = 0"
 }
@@ -617,6 +624,7 @@ if game.dark:\r
         for t in t_col:\r
             t.alpha = 1\r
             t.fading = True\r
+            t.visible = True\r
 \r
 if game.c > self.deathtime:\r
     destroy(self)"
@@ -689,7 +697,7 @@ if game.dark:
         self.alpha = 1
         self.fading = True
     if self.fading:
-        self.alpha -= 0.02
+        self.alpha -= 0.01
         if self.alpha <= 0:
             self.alpha = 0
             self.fading = False"
@@ -754,9 +762,10 @@ if game.dark:\r
     self.alpha = 0\r
 self.fading = False","loop":"if game.dark:\r
     if self.fading:\r
-        self.alpha -= 0.02\r
+        self.alpha -= 0.01\r
         if self.alpha <= 0:\r
             self.alpha = 0\r
+            self.visible = False\r
             self.fading = False"
 }
 },
@@ -777,7 +786,7 @@ if game.dark:
         self.alpha = 1
         self.fading = True
     if self.fading:
-        self.alpha -= 0.02
+        self.alpha -= 0.01
         if self.alpha <= 0:
             self.alpha = 0
             self.fading = False"
@@ -938,6 +947,7 @@ TextBox('Welcome to the demo room', 1500)","loop":"#Demo_Room loop
 
 game.npcs.clear()
 game.dark = False
+
 game.cam_limit_x = (290, 1610)
 game.cam_limit_y = (-110, -290)
 
@@ -990,10 +1000,11 @@ play_track(game.music, 2)","loop":"#Starting_Room loop
 }
 },
 {"Hub_Room":{
-"type":"room script","start":"game.npcs.clear()
+"type":"room script","start":"self.roomid = '0-0'
+
+game.npcs.clear()
 game.dark = False
 
-self.roomid = '0-0'
 game.cam_limit_x = (10, 1810)
 game.cam_limit_y = (-110, -1090)
 
@@ -1001,6 +1012,8 @@ if game.travelid == '0-1':
     smooth_tp(-350, -50)
 elif game.travelid == '1-0':
     smooth_tp(1700, -1300)
+elif game.travelid == '0-2':
+    smooth_tp(2200, -750)
 else:
     smooth_tp(0, 0)
 
@@ -1032,7 +1045,7 @@ game.bg.scaleY = 1.5
 
 # from (0, 0)
 colliders = [
-    (-350, 100, 600, 95),
+    (-350, 150, 600, 195),
     (-350, -700, 595, 1095),
     (500, 200, 1300, 95),
     (300, -1300, 895, 695),
@@ -1062,6 +1075,8 @@ make_dark_gradient(1700, -1200, 500, 500, 20, vert=True)
 TravelGate(1700, -1400, 500, 60, self.roomid, 'R1_0')
 
 make_dark_gradient(2150, -750, 600, 400, 20)
+TravelGate(2400, -750, 60, 400, self.roomid, 'R0_2')
+
 stop_track(game.music)
 play_track(game.music, 6)
 # Empty lines for scroll glitch
@@ -1073,9 +1088,60 @@ play_track(game.music, 6)
 }
 },
 {"R0_2":{
-"type":"room script","start":"#R0_2 start
+"type":"room script","start":"self.roomid = '0-2'
 
-","loop":"#R0_2 loop
+game.npcs.clear()
+game.dark = False
+
+game.cam_limit_x = (-110, 1110)
+game.cam_limit_y = (-110, -490)
+
+if game.travelid == '0-0':
+    smooth_tp(-500, -50)
+else:
+    smooth_tp(0, 0)
+
+lvlmap = [
+    '    7CCCCCCCCCCCCCCCCCCC6',
+    'CCCC3...................R',
+    '.......X................R',
+    '........................R',
+    'NNVB1...................R',
+    '    L...................R',
+    '    L...................R',
+    '    L...................R',
+    '    L...................R',
+    '    L...................R',
+    '    5VBNVBNNVVBVVNNBNBNB4',
+
+]
+make_map(lvlmap)
+
+game.bg.sprite = new_sprite(\"purple_bg.png\")
+game.bg.scaleX = 2
+
+# Make colliders
+colliders = [
+    (-200, -50, 495, 195),
+    (-200, -700, 495, 695),
+    (1000, 0, 2100, 95),
+    (2000, -500, 95, 1100),
+    (1000, -1000, 2100, 95)
+
+]
+
+# From top left
+blockgroup(-300, 200, colliders)
+
+make_dark_gradient(-500, -50, 500, 400, 20, direction=False)
+TravelGate(-700, -50, 60, 400, self.roomid, 'Hub_Room')
+
+make_simple_npc(500, -500, 'Whale', 'Howdy stranger, I\\'m William the whale!\
+I was supposed to tell you how to move, but you had to move\
+to get to me, huh? No tutorial for you!\
+Proceed to the bottom right.')
+
+play_track(game.music, 2)","loop":"#R0_2 loop
 
 "
 }
@@ -1364,74 +1430,73 @@ game.dark = False
 # ROOM ID - used for determining location when going to other rooms
 self.roomid = '1-3'
 
-# lowest(left) x + 640, highest(right) x - 640
-game.cam_limit_x = (290, 1210)
+game.cam_limit_x = (-110, 1210)
 # highest y - 360, lowest y + 360
-game.cam_limit_y = (90, -90)
+game.cam_limit_y = (90, -490)
 
 # Insert room IDs and spawn locations for rooms that lead to this room
 
-smooth_tp(-100, 0)
+if game.travelid == '1-2':
+    smooth_tp(-600, 50)
+elif game.travelid == '1-4':
+    smooth_tp(1650, -650)
+else:
+    smooth_tp(0, 0)
 
 
 
 # X is (0, 0)
 lvlmap = [
-    '7CCCCCCCCCCCCCCCCCCCC6',
-    'L......RL.....RL.....R',
-    'L......RL.....RL.....R',
-    '.......67.....67......',
-    '...X..................',
-    '.......45.....45......',
-    'L......RL.....RL.....R',
-    'L......RL.....RL.....R',
-    '5VBNVBNNVNBBNVNVNBNBN4'
+    '    7CCCCCCCCCCCCCCCCCCCC6',
+    '    L......RL.....RL.....R',
+    'CCCC3......RL.....RL.....R',
+    '...........67.....67.....R',
+    '.......X.................R',
+    'NVBB1......45.....45.....R',
+    '    L......RL.....RL.....R',
+    '    L......RL.....RL.....R',
+    '    5VBNVBNNVNBBNVNVNB1..R',
+    '                      L..R',
+    '                      L..R',
+    '                      L..R',
+    '                      L..R',
 
 ]
 make_map(lvlmap)
 
-# I didn't write this
+
+# make colliders
+colliders = [
+    (-500, 300, 495, 295),
+    (-500, -250, 495, 395),
+    (750, 400, 2200, 95),
+    (600, -600, 1895, 495),
+    (450, 200, 195, 295),
+    (450, -200, 195, 295),
+    (1150, 200, 195, 295),
+    (1150, -200, 195, 295),
+    (1800, -200, 95, 1300),
+
+]
+blockgroup(0, 0, colliders)
+
+# background configuration
 game.bg.sprite = new_sprite(\"purple_bg.png\")
 game.bg.x, game.bg.y = 300, 0
 game.bg.scaleX = 2
 game.bg.scaleY = 2
 
-# make colliders
-colliders = [
-    (0, -200, 95, 900),
-    (1050, 200, 2200, 95),
-    (1250, -600, 2600, 95), 
-    (2300, -200, 495, 900),
-    (750, 0, 200, 300),
-    (750, -400, 200, 300),
-    (1450, 0, 200, 300),
-    (1450, -400, 200, 300)
-
-]
-
-# from top left
-blockgroup(-300, 200, colliders)
+# make room objects
 make_anglerf(600, 0)
 make_anglerf(1200, 0)
 
-# make objects here
-# JELLY - x, y, angle, scale=1
-# CURRENT - x, y, w, h, xa, ya
-# BOOSTER - x, y, angle, force=30
-# SFISH - x, y, angle, AI=True
-# BOUNCER/(bumper) - x, y, force=30
-# ANGLERF - x, y, AI=True
-# SPIKE - x, y, point_d, scale=1
 
+# gradients over exits/entrances
+make_dark_gradient(-500, 50, 500, 400, 20, direction=False)
+TravelGate(-700, 50, 60, 400, self.roomid, 'R1_2')
 
-# make gradients over exits/entrances
-# x, y, w, h, levels, direction=True, vert=False
-# levels is number of different opacity rects to divide into
-# direction True means top/left is lightest part (for exits going right/down)
-# vert decides vertical or horizontal gradient
-make_dark_gradient(2000, -250, 500, 400, 20)
-#self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
-
+make_dark_gradient(1650, -600, 400, 500, 20, vert=True)
+TravelGate(1650, -800, 400, 60, self.roomid, 'R1_4')
 
 # set room music
 stop_track(game.music)
@@ -1447,7 +1512,82 @@ play_track(game.music, 1)
 }
 },
 {"R1_4":{
-"type":"room script","start":"#R1_4 start
+"type":"room script","start":"self.roomid = '1-4'
+
+game.npcs.clear()
+game.dark = False
+
+
+# lowest(left) x + 640, highest(right) x - 640
+game.cam_limit_x = (290, 310)
+# highest y - 360, lowest y + 360
+game.cam_limit_y = (290, -690)
+
+# Insert room IDs and spawn locations for rooms that lead to this room
+if game.travelid == '1-3':
+    smooth_tp(750, 550)
+elif game.travelid == '1-5':
+    smooth_tp(-150, -900)
+else:
+    smooth_tp(0, 0)
+
+# X is (0, 0)
+lvlmap = [
+    '         L..R',
+    '         L..R',
+    '         L..R',
+    '         L..R',
+    '7CCCCCCCCC..R',
+    'L...........R',
+    'L..X........R',
+    'L...........R',
+    'L...........R',
+    'L...........R',
+    'L...........R',
+    'L...........R',
+    'L..0VBNNBNBN4',
+    'L..R          ',
+    'L..R          ',
+    'L..R          ',
+    'L..R          ',
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    (450, 200, 995, 495),
+    (1200, -200, 95, 1300),
+    (750, -1000, 995, 495),
+    (0, -600, 95, 1300)
+
+
+]
+# from top left
+blockgroup(-300, 200, colliders)
+
+
+# background manipulation
+game.bg.sprite = new_sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = 300, 500
+game.bg.scaleX = 2
+game.bg.scaleY = 2
+
+# gradients over exits/entrances
+make_dark_gradient(-150, -800, 400, 500, 20, vert=True)
+self.gate = TravelGate(-150, -1000, 400, 60, self.roomid, 'R1_5')
+
+make_dark_gradient(750, 400, 400, 500, 20, vert=True, direction=False)
+self.gate = TravelGate(750, 600, 400, 60, self.roomid, 'R1_3')
+
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
 
 ","loop":"#R1_4 loop
 
@@ -1455,7 +1595,71 @@ play_track(game.music, 1)
 }
 },
 {"R1_5":{
-"type":"room script","start":"#R1_5 start
+"type":"room script","start":"game.npcs.clear()
+game.dark = True
+
+# ROOM ID - used for determining location when going to other rooms
+self.roomid = '1-5'
+
+game.cam_limit_x = (-10, 1110)
+game.cam_limit_y = (290, -290)
+
+if game.travelid == '1-4':
+    smooth_tp(750, 400)
+elif game.travelid == '1-6':
+    smooth_tp(-400, -250)
+else:
+    smooth_tp(0, 0)
+
+
+
+# X is (0, 0)
+lvlmap = [
+    '            L..R        ',
+    '            L..R        ',
+    '            L..R        ',
+    '            L..R        ',
+    '    7CCCCCCCW..WCCCCCCC6',
+    '    L.......L..........R',
+    '    L.X.....L..........R',
+    'CCCCA.......L..........R',
+    '...........NLVNNBBB....R',
+    '........R..............R',
+    'NVBBA...R..............R',
+    '    L...R..............R',
+    '    5BNVBNNVNBBNVNVNBNB4',
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    (-200, -150, 495, 395),
+    (-200, -650, 495, 195),
+    (400, 200, 895, 495),
+    (1550, 200, 995, 495),
+    (1000, -800, 2100, 95),
+    (1900, -400, 95, 900),
+
+    (800, -200, 95, 495),
+    (1050, -400, 795, 95),
+    (400, -650, 95, 395)
+
+]
+# from top left
+blockgroup(-200, 200, colliders)
+
+TravelGate(750, 600, 400, 60, self.roomid, 'R1_4')
+
+TravelGate(-600, -250, 60, 400, self.roomid, 'R1_6')
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
 
 ","loop":"#R1_5 loop
 
@@ -1463,7 +1667,85 @@ play_track(game.music, 1)
 }
 },
 {"R1_6":{
-"type":"room script","start":"#R1_6 start
+"type":"room script","start":"game.npcs.clear()
+game.dark = True
+
+# ROOM ID - used for determining location when going to other rooms
+self.roomid = '1-6'
+
+# lowest(left) x + 640, highest(right) x - 640
+game.cam_limit_x = (290, 1610)
+# highest y - 360, lowest y + 360
+game.cam_limit_y = (90, -490)
+
+# Insert room IDs and spawn locations for rooms that lead to this room
+if game.travelid == '1-5':
+    smooth_tp(2000, 50)
+elif game.travelid == '1-7':
+    smooth_tp(-100, -600)
+else:
+    smooth_tp(0, 0)
+
+
+# X is (0, 0)
+lvlmap = [
+    'LCCCCCCCCCCCCCCCCCCCC6',
+    'L....................R',
+    'L.............RCCCL..DCCCC',
+    'L.............R...L.......',
+    'L..X.CCCCCCC..R...L.......',
+    'L....R.....L..RCCCL..DVNNB',
+    'L....R.....L.........R',
+    'L....R.....L.........R',
+    'S...SBNNVNBBNVNVNBNBN4',
+    'L...R                 ',
+    'L...R                 ',
+    'L...R                 ',
+    'L...R                 ',
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    (750, 400, 2200, 95),
+    (950, -600, 1795, 495), 
+    (2000, 300, 495, 295),
+    (2000, -250, 495, 395),
+    (-300, -200, 95, 1300),
+    (1300, 50, 495, 395),
+    (800, -150, 95, 395),
+    (500, -200, 695, 495)
+
+]
+blockgroup(0, 0, colliders)
+
+# room objects
+make_anglerf(1650, 220)
+make_spike(1580, 0, 'W')
+make_spike(1580, -100, 'W')
+for i in range(5):
+    make_spike(1100 + (100*i), -180, 'N', scale=2-(0.2*i))
+make_jelly(900, -300, -45)
+for x in range(2):
+    for i in range(3):
+        make_spike(200 + (100*i) + (400*x), 80, 'S')
+make_current(500, 200, 700, 300, 0, -8)
+make_jelly(500, 100, 0)
+
+
+TravelGate(2200, 50, 60, 400, self.roomid, 'R1_5')
+
+TravelGate(-100, -800, 500, 60, self.roomid, 'R1_7')
+
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 1)
+# Empty lines for scroll glitch
+
+
+
 
 ","loop":"#R1_6 loop
 
@@ -1471,7 +1753,76 @@ play_track(game.music, 1)
 }
 },
 {"R1_7":{
-"type":"room script","start":"#R1_7 start
+"type":"room script","start":"game.npcs.clear()
+game.dark = True
+
+# ROOM ID - used for determining location when going to other rooms
+self.roomid = '1-7'
+
+game.cam_limit_x = (-810, 10)
+game.cam_limit_y = (190, -790)
+
+if game.travelid == '1-6':
+    smooth_tp(0, 400)
+elif game.travelid == '1-8':
+    smooth_tp(-1200, -650)
+else:
+    smooth_tp(0, 0)
+
+
+
+# X is (0, 0)
+lvlmap = [
+    '            L...R    ',
+    '            L...R    ',
+    '            L...R    ',
+    '            L...R    ',
+    '            W...WCCC6',
+    '            L.X.....R',
+    '            L.......R',
+    '            L.......R',
+    '            L.......R',
+    '    LCCCCCCCL.......R',
+    'CCCCAf...............R',
+    '..............NVBNVVR',
+    '..............R      ',
+    'NVBBA.........R      ',
+    '    L.........R      ',
+    '    L.........R      ',
+    '    5BNVBNNVNBB      ',
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    (-600, 50, 895, 995),
+    (400, 300, 495, 495),
+    (600, -250, 95, 800),
+    (300, -850, 695, 595),
+    (-500, -1100, 1100, 95),
+    (-1200, -950, 495, 395),
+    (-1200, -450, 495, 195)
+
+
+]
+blockgroup(0, 0, colliders)
+
+make_anglerf(-10, -480)
+make_current(0, -400, 400, 400, -12, -7)
+make_bumper(-100, -400)
+make_anglerf(-600, -800)
+
+TravelGate(0, 500, 500, 60, self.roomid, 'R1_6')
+TravelGate(-1400, -650, 60, 400, self.roomid, 'R1_8')
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
 
 ","loop":"#R1_7 loop
 
@@ -1479,7 +1830,85 @@ play_track(game.music, 1)
 }
 },
 {"R1_8":{
-"type":"room script","start":"#R1_8 start
+"type":"room script","start":"self.roomid = '1-8'
+
+game.npcs.clear()
+game.dark = False
+
+game.cam_limit_x = (290, 1410)
+game.cam_limit_y = (490, -290)
+
+if game.travelid == '1-7':
+    smooth_tp(1850, -450)
+elif game.travelid == '1-9':
+    smooth_tp(-150, 600)
+else:
+    smooth_tp(0, 0)
+
+
+# X is (0, 0)
+lvlmap = [
+    'L..R                    ',
+    'L..R                    ',
+    'L..R                    ',
+    'L..R                    ',
+    'L..2CCCCCCCCCCCCCCCCC6  ',
+    'L....................R  ',
+    'L....................R  ',
+    'L....................R  ',
+    'L..X.................R  ',
+    'L....................R  ',
+    'L....................R  ',
+    'L....................2CC',
+    '5NVBBBNNVNBBNVNVNN1.....',
+    '                  L.....',
+    '                  5VNBBB',
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    (-300, 200, 95, 1300),
+    (900, 600, 1895, 495),
+    (1900, 50, 295, 795),
+    (600, -500, 1895, 295),
+    (1750, -600, 600, 95),
+
+]
+blockgroup(0, 0, colliders)
+
+# background configuration
+game.bg.sprite = sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = 300, 0
+game.bg.scaleX = 2
+game.bg.scaleY = 2
+
+for i in range(7):
+    make_spike(1730, -300 + (100*i), 'E', 1 + ((i*0.1) * ((-1)**i)))
+make_current(1450, -50, 200, 600, 13, 0)
+make_current(1050, 50, 200, 600, 13, 0)
+
+make_current(700, 150, 150, 400, 13, 0)
+make_current(700, -250, 150, 180, 13, 0)
+
+make_current(300, -50, 200, 600, 13, 0)
+make_current(0, 50, 124, 600, 13, 0)
+
+make_dark_gradient(1800, -450, 500, 400, 20)
+TravelGate(2000, -450, 60, 400, self.roomid, 'R1_7')
+
+make_dark_gradient(-150, 600, 400, 500, 20, vert=True, direction=False)
+TravelGate(-150, 800, 500, 60, self.roomid, 'R1_9')
+
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 1)
+# Empty lines for scroll glitch
+
+
+
 
 ","loop":"#R1_8 loop
 
@@ -1487,7 +1916,120 @@ play_track(game.music, 1)
 }
 },
 {"R1_9":{
-"type":"room script","start":"#R1_9 start
+"type":"room script","start":"self.roomid = '1-9'
+
+game.npcs.clear()
+game.dark = True
+
+game.cam_limit_x = (-210, 210)
+game.cam_limit_y = (2290, -290)
+
+# room IDs and spawn locations for rooms that lead to this room
+if game.travelid == '1-8':
+    smooth_tp(-50, -500)
+elif game.travelid == '1-10':
+    smooth_tp(0, 2500)
+else:
+    smooth_tp(0, 0)
+
+# X is (0, 0)
+lvlmap = [
+    '       L...R       ',
+    '       L...R       ',
+    '       L...R       ',
+    '       L...R       ',
+    '  CCCCCW...WCCCCC  ',
+    '  L.............R  ',
+    '  L.............R  ',
+    '  L.............R  ',
+    '  L.............R  ',
+    '  L.............R  ',
+    '  L.............R  ',
+    '  VBNL.......RNNB  ',
+    '     L.......R     ',
+    '     L.......R     ',
+    '     L.......R     ',
+    '     L.......R     ',
+    '     L.......R     ',
+    ' LCCCC.......CCCCR ',
+    ' L...............R ',
+    ' LVBN............R ',
+    ' L...............R ',
+    ' L............NBVR ',
+    ' L...............R ',
+    ' LVBN....X.......R ',
+    ' L...............R ',
+    ' VNBBNNS..SVBNNVBN ',
+    '       R..L        ',
+    '       R..L        ',
+    '       R..L        ',
+    '       R..L        ',
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    (250, -50, 595, 595),
+    (1150, -50, 595, 595),
+    (0, -650, 95, 800),
+    (1400, -650, 95, 800),
+    (100, -1300, 495, 695),
+    (1300, -1300, 495, 695),
+
+]
+# from top left top section
+blockgroup(-700, 2200, colliders)
+colliders = [
+    (0, -400, 95, 900),
+    (1600, -400, 95, 900),
+    (300, -1000, 695, 495),
+    (1200, -1000, 695, 495),
+    (150, -200, 395, 95),
+    (1450, -400, 395, 95),
+    (150, -600, 395, 95),
+
+]
+#from top left bottom section
+blockgroup(-800, 600, colliders)
+
+# make objects here
+# JELLY - x, y, angle, scale=1
+# CURRENT - x, y, w, h, xa, ya
+# BOOSTER - x, y, angle, force=30
+# SFISH - x, y, angle, AI=True
+# BOUNCER/(bumper) - x, y, force=30
+# ANGLERF - x, y, AI=True
+# SPIKE - x, y, point_d, scale=1
+
+for x in range(3):
+    for i in range(9):
+        if x == 2 and i in (3, 5, 7):
+            make_jelly(-400 + 100*i + 300*(x%2), 200*x, 180)    
+        else:
+            make_jelly(-400 + 100*i, 200*x, 0)
+make_current(100, 300, 700, 260, 0, 4)
+
+make_current(0, 700, 700, 160, 0, -13)
+make_spike(-320, 970, 'W')
+make_spike(-320, 1040, 'W')
+make_current(0, 1000, 700, 160, -15, 0)
+
+make_anglerf(150, 1750)
+make_anglerf(-150, 1750)
+make_anglerf(0, 1650)
+
+TravelGate(-50, -600, 400, 60, self.roomid, 'R1_8')
+TravelGate(0, 2300, 500, 60, self.roomid, 'R1_10')
+
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
 
 ","loop":"#R1_9 loop
 
@@ -1778,12 +2320,6 @@ lvlmap = [
 ]
 make_map(lvlmap)
 
-# background manipulation
-game.bg.sprite = new_sprite(\"purple_bg.png\")
-game.bg.x, game.bg.y = -100, -300
-game.bg.scaleX = 2
-game.bg.scaleY = 1.5
-
 # make colliders
 colliders = [
     (0, -400, 95, 900),
@@ -1795,6 +2331,13 @@ colliders = [
 
 # from top left
 blockgroup(-300, 200, colliders)
+
+
+# background manipulation
+game.bg.sprite = new_sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = -100, -300
+game.bg.scaleX = 2
+game.bg.scaleY = 1.5
 
 # make objects here
 # JELLY - x, y, angle, scale=1
@@ -1893,6 +2436,22 @@ play_track(game.music, 6)
 {"dark_tile.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616445786.dark_tile.png"
 }
+},
+{"arrowN.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616622273.arrowN.png"
+}
+},
+{"arrowW.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616622547.arrowW.png"
+}
+},
+{"arrowS.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616622281.arrowS.png"
+}
+},
+{"arrowE.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616622543.arrowE.png"
+}
 }
 ]
 },
@@ -1915,24 +2474,17 @@ play_track(game.music, 6)
 ]
 },
 {"Stage1":[
-{"Tiles1":[
-
-]
-},
-{"Background1":[
 {"gradient1.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615953211.gradient1.png"
-}
-},
-{"purple_bg.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616546270.purple_bg.png"
 }
 },
 {"pixel_bg_stage1.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615960001.pixel_bg_stage1.png"
 }
+},
+{"purple_bg.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616546270.purple_bg.png"
 }
-]
 }
 ]
 },
@@ -1994,12 +2546,12 @@ play_track(game.music, 6)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616348073.Guide.png"
 }
 },
-{"current_particle.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616545915.current_particle.png"
+{"current_particle_dark.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616627807.current_particle_dark.png"
 }
 },
-{"current_particle_dark.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616456872.current_particle_dark.png"
+{"current_particle.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616545915.current_particle.png"
 }
 }
 ]
@@ -2278,6 +2830,10 @@ def stop_track(s_obj):
     '5': (sprite('out_corner_tr.png'), ),
     '6': (sprite('out_corner_bl.png'), ),
     '7': (sprite('out_corner_br.png'), ),
+    \"W\": (sprite(\"arrowN.png\"), ),
+    \"D\": (sprite(\"arrowE.png\"), ),
+    \"S\": (sprite(\"arrowS.png\"), ),
+    \"A\": (sprite(\"arrowW.png\"), ),
     \"O\": (sprite(\"centre.png\"), ),
     \"~\": (sprite(\"black40x40.png\"), 2.5, 2.5, 0, 0, -5),
 
@@ -2315,7 +2871,12 @@ def make_map(layout):
             t.z = 9
             if len(tile_map[key
 ]) == 1:
-                t.sprite = DARK_TILE if game.dark else tile_map[key
+                if key in 'WASD':
+                    t.sprite = tile_map[key
+][0
+]
+                else:
+                    t.sprite = DARK_TILE if game.dark else tile_map[key
 ][0
 ]
             else:
@@ -2701,12 +3262,44 @@ def make_simple_npc(x, y, type_, msg, scale=1):
     return n"
 }
 },
+{"Rect.py":{
+"type":"function script","head":"class Rect:
+    def __init__(x, y, w, h, dark=False):
+        self.x = x
+        self.y = y
+        self.x0 = x-(w/2)
+        self.x1 = x+(w/2)
+        self.y0 = y-(h/2)
+        self.y1 = y+(h/2)
+        self.colour = 0x18ae5f if dark else 0xffffff
+        self.drawid = None
+    
+    def move(self, dx, dy):
+        self.x += dx
+        self.x0 += dx
+        self.x1 += dx
+        self.y += dy
+        self.y0 += dy
+        self.y1 += dy
+        self.draw()
+
+    def draw(self):
+        if self.drawid is not None:
+            destroyGraphic(self.drawid)
+        self.drawid = drawRect(self.x0, self.x1, self.y0, self.y1, 0, 0, self.colour)
+    
+    def destroy(self):
+        if self.drawid is not None:
+            destroyGraphic(self.drawid)"
+}
+},
 {"ProgTracker.py":{
 "type":"function script","head":"class ProgTracker:
     def __init__(self):
         
         self.move = False # Movement tutorial
-        self.interact = False # Interaction tutorial"
+        self.interact = False # Interaction tutorial
+        self.echo = True # CHANGE THIS"
 }
 }
 ]
