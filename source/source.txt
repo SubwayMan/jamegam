@@ -43,7 +43,7 @@ self.start_time = datetime.datetime.now()\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('R0_2')","loop":"self.t = time_ms()\r
+set_room('R2_8')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -1407,37 +1407,7 @@ blockgroup(-300, 200, colliders)
 make_dark_gradient(-500, -50, 500, 400, 20, direction=False)
 TravelGate(-700, -50, 60, 400, self.roomid, 'Hub_Room')
 
-dialogue1 = (
-    \"Howdy stranger! It's rare to see travellers nowadays...\
-\"
-    \"I'm Watson the Whale. Not much changes around these parts.\
-\"
-    \"We'd make cave paintings of the Sun to tell tales of the past,\
-\"
-    \"but we don't know how to paint.\")
-
-dialogue2 = (
-    \"Winona sent you, huh?\
-\",
-    \"So you want to hear about how we got stuck down here, eh?\"
-)
-
-dialogue3 = (
-    \"We used to live up at the surface of the water,\
-\"
-    \"but one day, some scary creatures used 3 magic stones,\"
-    \"and sealed all the water away.\
-\"
-    \"Man, of only there was a convenient hero that could get the stones and save us...\"
-)
-
-dialogue4 = (
-    \"Oh hey! Do you want to go on a quest to save the world?\
-\"
-    \"You look like you can handle it!\"
-)
-
-make_simple_npc(500, -500, 'Whale', dialogue1)
+# Watson(500, -500)
 
 stop_track(game.music)
 play_track(game.music, 2)","loop":"#R0_2 loop
@@ -2144,7 +2114,7 @@ game.cam_limit_y = (490, -290)
 
 if game.travelid == '1-7':
     smooth_tp(1850, -450)
-elif game.travelid == '1-9':
+elif game.travelid == '1-10':
     smooth_tp(-150, 600)
 else:
     smooth_tp(0, 0)
@@ -2190,14 +2160,13 @@ game.bg.scaleY = 2
 
 for i in range(7):
     make_spike(1730, -300 + (100*i), 'E', 1 + ((i*0.1) * ((-1)**i)))
-make_current(1450, -50, 200, 600, 13, 0)
-make_current(1050, 50, 200, 600, 13, 0)
 
-make_current(700, 150, 150, 400, 13, 0)
-make_current(700, -250, 150, 180, 13, 0)
+make_current(1360, -100, 300, 500, 15, 0)
+make_current(800, 100, 300, 500, 15, 0)
+make_current(250, -100, 300, 500, 15, 0)
 
-make_current(300, -50, 200, 600, 13, 0)
-make_current(0, 50, 124, 600, 13, 0)
+if not game.prog.gem1_pick:
+    make_gem(-100, 300, 'gem_blue.png')
 
 make_dark_gradient(1800, -450, 500, 400, 20)
 TravelGate(2000, -450, 60, 400, self.roomid, 'R1_7')
@@ -2215,132 +2184,6 @@ play_track(game.music, 1)
 
 
 ","loop":"#R1_8 loop
-
-"
-}
-},
-{"R1_9":{
-"type":"room script","start":"self.roomid = '1-9'
-
-game.npcs.clear()
-game.dark = True
-
-game.cam_limit_x = (-210, 210)
-game.cam_limit_y = (2290, -290)
-
-# room IDs and spawn locations for rooms that lead to this room
-if game.travelid == '1-8':
-    smooth_tp(-50, -500)
-elif game.travelid == '1-10':
-    smooth_tp(0, 2500)
-else:
-    smooth_tp(0, 0)
-
-# X is (0, 0)
-lvlmap = [
-    '       L...R       ',
-    '       L...R       ',
-    '       L...R       ',
-    '       L...R       ',
-    '  CCCCCW...WCCCCC  ',
-    '  L.............R  ',
-    '  L.............R  ',
-    '  L.............R  ',
-    '  L.............R  ',
-    '  L.............R  ',
-    '  L.............R  ',
-    '  VBNL.......RNNB  ',
-    '     L.......R     ',
-    '     L.......R     ',
-    '     L.......R     ',
-    '     L.......R     ',
-    '     L.......R     ',
-    ' LCCCC.......CCCCR ',
-    ' L...............R ',
-    ' LVBN............R ',
-    ' L...............R ',
-    ' L............NBVR ',
-    ' L...............R ',
-    ' LVBN....X.......R ',
-    ' L...............R ',
-    ' VNBBNNS..SVBNNVBN ',
-    '       R..L        ',
-    '       R..L        ',
-    '       R..L        ',
-    '       R..L        ',
-
-]
-make_map(lvlmap)
-
-# make colliders
-colliders = [
-    (250, -50, 595, 595),
-    (1150, -50, 595, 595),
-    (0, -650, 95, 800),
-    (1400, -650, 95, 800),
-    (100, -1300, 495, 695),
-    (1300, -1300, 495, 695),
-
-]
-# from top left top section
-blockgroup(-700, 2200, colliders)
-colliders = [
-    (0, -400, 95, 900),
-    (1600, -400, 95, 900),
-    (300, -1000, 695, 495),
-    (1200, -1000, 695, 495),
-    (150, -200, 395, 95),
-    (1450, -400, 395, 95),
-    (150, -600, 395, 95),
-
-]
-#from top left bottom section
-blockgroup(-800, 600, colliders)
-
-# make objects here
-# JELLY - x, y, angle, scale=1
-# CURRENT - x, y, w, h, xa, ya
-# BOOSTER - x, y, angle, force=30
-# SFISH - x, y, angle, AI=True
-# BOUNCER/(bumper) - x, y, force=30
-# ANGLERF - x, y, AI=True
-# SPIKE - x, y, point_d, scale=1
-
-for x in range(3):
-    for i in range(9):
-        if x == 2 and i in (3, 5, 7):
-            make_jelly(-400 + 100*i + 300*(x%2), 200*x, 180)    
-        else:
-            make_jelly(-400 + 100*i, 200*x, 0)
-make_current(100, 300, 700, 260, 0, 4)
-
-make_current(0, 700, 700, 160, 0, -13)
-make_spike(-320, 970, 'W')
-make_spike(-320, 1040, 'W')
-make_current(0, 1000, 700, 160, -15, 0)
-
-make_anglerf(150, 1750)
-make_anglerf(-150, 1750)
-make_anglerf(0, 1650)
-
-make_gem(0, 1750, 'gem_blue.png')
-
-make_light_gradient(-50, -500, 200, 300, 25, vert=True)
-TravelGate(-50, -600, 400, 60, self.roomid, 'R1_8')
-
-make_light_gradient(0, 2200, 300, 300, 25, vert=True, direction=False)
-TravelGate(0, 2300, 500, 60, self.roomid, 'R1_10')
-
-
-# set room music
-stop_track(game.music)
-play_track(game.music, 6)
-# Empty lines for scroll glitch
-
-
-
-
-","loop":"#R1_9 loop
 
 "
 }
@@ -2969,6 +2812,9 @@ make_sfish(1000, -500, 90)
 make_sfish(800, -1400, 0)
 make_sfish(800, -1600, 0)
 
+if not game.prog.gem2_pick:
+    make_gem(50, -1250, 'gem_red.png')
+
 # set room music
 stop_track(game.music)
 play_track(game.music, 6)
@@ -2992,9 +2838,111 @@ TravelGate(-250, -1250, 60, 500, self.roomid, 'R2_8')
 }
 },
 {"R2_8":{
-"type":"room script","start":"#R2_8 start
+"type":"room script","start":"self.roomid = '2-0'
+
+game.npcs.clear()
+game.dark = False
+
+self.placed = game.prog.gem1_place
+self.water_rising = False
+if not self.placed:
+    game.water_height = -170
+
+game.cam_limit_x = (290, 1410)
+game.cam_limit_y = (490, -290)
+
+if game.travelid == '2-6':
+    smooth_tp(1850, -450)
+elif game.travelid == '3-1':
+    smooth_tp(-150, 600)
+else:
+    smooth_tp(0, 0)
+
+
+# X is (0, 0)
+lvlmap = [
+    'L..R                    ',
+    'L..R                    ',
+    'L..R                    ',
+    'L..R                    ',
+    'L..2CCCCCCCCCCCCCCCCC6  ',
+    'L....................R  ',
+    'L....................R  ',
+    'L....................R  ',
+    'L..X.................R  ',
+    'L....................R  ',
+    'L....................R  ',
+    'L....................2CC',
+    '5NVBBBNNVNBBNVNVNN1.....',
+    '                  L.....',
+    '                  5VNBBB',
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    (-300, 200, 95, 1300),
+    (900, 600, 1895, 495),
+    (1900, 50, 295, 795),
+    (600, -500, 1895, 295),
+    (1750, -600, 600, 95),
+
+]
+blockgroup(0, 0, colliders)
+
+
+# background manipulation
+game.bg.sprite = new_sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = 1300, -1400
+game.bg.scaleX = 2
+game.bg.scaleY = 2
+
+if not self.placed:
+    self.water = list()
+    spritesheet = sprite('wavesheet.png', 4, 1)
+    anim = animation(spritesheet, 5, 0, 3)
+    for i in range(4):
+        s = Slate()
+        s.x = 600*i
+        s.y = -190
+        s.z = -6
+        set_animation(s, anim)
+        self.water.append(s)
+
+ped = make_pedestal(500, -120, 0.5, self.placed)
+if self.placed:
+    g = make_gem(ped.x, ped.y + (270 * ped.scaleY), 'gem_blue.png')
+    g.placed = True
+    g.z = -7
+
+make_dark_gradient(1800, -450, 500, 400, 20)
+TravelGate(2000, -450, 60, 400, self.roomid, 'R2_6')
+
+make_dark_gradient(-150, 600, 400, 500, 20, vert=True, direction=False)
+TravelGate(-150, 800, 500, 60, self.roomid, 'R3_1')
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
+
+
+
+
 
 ","loop":"#R2_8 loop
+
+"
+}
+},
+{"R3_1":{
+"type":"room script","start":"#R3_1 start
+
+","loop":"#R3_1 loop
 
 "
 }
@@ -4428,9 +4376,59 @@ class Wilhelm(ComplexNPC):
                 pass
 
 
+WATSON_MSGS = [
+[
+\"\"\"Howdy stranger! It's rare to see travellers nowadays...
+I'm Watson the Whale. Not much changes around these parts.
+We'd make cave paintings of the Sun to tell tales of the past,
+but we don't know how to paint.\"\"\",
 
+\"\"\"Winona sent you, huh?
+So you want to hear about how we got stuck down here, eh?\"\"\",
 
+\"\"\"We used to live up at the surface of the water,
+but one day, some scary creatures used 3 magic stones,
+and sealed all the water away.
+Man, of only there was a convenient hero that could get the stones and save us...\"\"\",
 
+\"\"\"Oh hey! Do you want to go on a quest to save the world?
+You look like you can handle it!\"\"\"
+
+],
+
+[
+\"\"\"I knew you had it in you! Good goin, little guy!\"\"\"
+
+]
+
+]
+
+## TODO
+class Watson(ComplexNPC):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.update_msg()
+    
+    def update_msg(self):
+        if not game.prog.wilson_e1 and self.mark is None:
+            self.make_exclaim()
+        
+        if not game.prog.gem1_pick:
+            self.msgs = WATSON_MSGS[0
+]
+        else:
+            self.msgs = WATSON_MSGS[1
+]
+        
+        self.msg = self.msgs[self.msg_ind%len(self.msgs)
+]
+        self.inst.msg = self.msg
+
+        if not self.msg_ind%len(self.msgs):
+            try:
+                destroy(game.e)
+            except AttributeError:
+                pass
 
 
 "
@@ -4451,7 +4449,8 @@ class Wilhelm(ComplexNPC):
         # exclamation marks for npcs - has player seen message
         self.winona_e1 = False
         self.winona_e2 = False
-"
+
+        self.watson_e1 = False"
 }
 }
 ]
