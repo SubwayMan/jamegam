@@ -38,12 +38,11 @@ self.bg = Background()\r
 self.deaths = 0\r
 self.start_time = datetime.datetime.now()\r
 \r
-\r
 self.bossdead = False\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('R2_5')","loop":"self.t = time_ms()\r
+set_room('Starting_Room')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -817,6 +816,7 @@ if self.hp <= 0:
     destroy(self.hurtbox)
     self.time0 = int(time.time())
     game.bossdead = True
+    make_gem(self.x, self.y, 'gem_rainbow.png', scale=0.6)
 #move healthbar
 self.barobj.x = camera_x()
 self.barobj.y = camera_y()+300
@@ -2923,10 +2923,10 @@ blockgroup(0, 0, colliders)
 
 
 # background manipulation
-game.bg.sprite = new_sprite(\"purple_bg.png\")
+game.bg.sprite = new_sprite(\"ocean_bg.png\")
 game.bg.x, game.bg.y = 1300, -1400
-game.bg.scaleX = 2
-game.bg.scaleY = 2
+game.bg.scaleX = 1.5
+game.bg.scaleY = 1.5
 
 if not self.placed:
     self.water = list()
@@ -2995,7 +2995,7 @@ game.cam_limit_y = (90, -490)
 if game.travelid == '3-2':
     smooth_tp(-450, -250)
 elif game.travelid == '2-8':
-    smooth_tp(1650, -650)
+    smooth_tp(1350, -600)
 else:
     smooth_tp(0, 0)
 
@@ -3061,6 +3061,8 @@ TravelGate(-700, -250, 60, 400, self.roomid, 'R3_2')
 make_dark_gradient(1350, -600, 400, 500, 25, vert=True)
 TravelGate(1350, -800, 400, 60, self.roomid, 'R2_8')
 
+TravelGate(600, 400, 1900, 60, self.roomid, 'Victory_Room')
+
 # set room music
 stop_track(game.music)
 play_track(game.music, 1)
@@ -3089,16 +3091,16 @@ game.npcs.clear()
 game.dark = False
 
 # ROOM ID - used for determining location when going to other rooms
-self.roomid = '69-69'
+self.roomid = '3-2'
 
-# lowest(left) x + 640, highest(right) x - 640
 game.cam_limit_x = (290, 1210)
-# highest y - 360, lowest y + 360
 game.cam_limit_y = (-110, -290)
 
 # Insert room IDs and spawn locations for rooms that lead to this room
-if game.travelid == '1-0':
-    smooth_tp(-350, -50)
+if game.travelid == '3-1':
+    smooth_tp(1700, -200)
+elif game.travelid == '3-B':
+    smooth_p(-100, -200)
 else:
     smooth_tp(0, 0)
 
@@ -3139,22 +3141,8 @@ game.bg.x, game.bg.y = -100, -300
 game.bg.scaleX = 2
 game.bg.scaleY = 1.5
 
-# make objects here
-# JELLY - x, y, angle, scale=1
-# CURRENT - x, y, w, h, xa, ya
-# BOOSTER - x, y, angle, force=30
-# SFISH - x, y, angle, AI=True
-# BOUNCER/(bumper) - x, y, force=30
-# ANGLERF - x, y, AI=True
-# SPIKE - x, y, point_d, scale=1
-
-# make gradients over exits/entrances
-# x, y, w, h, levels, direction=True, vert=False
-# levels is number of different opacity rects to divide into
-# direction True means top/left is lightest part (for exits going right/down)
-# vert decides vertical or horizontal gradient
-
 self.gate = TravelGate(-390, -200, 100, 300, self.roomid, 'R3_B')
+
 self.gate2 = TravelGate(1800, -200, 100, 300, self.roomid, 'R3_1')
 
 if game.bossdead:
@@ -4514,7 +4502,7 @@ there.\"\"\"
 [
 \"\"\"Woah, you actually got the gem! Uh, I mean, I beleived
 in you the whole time. Quick, go put it on the pedestal
-in the room above to raise the water level!\"\"\",
+in the cave above to raise the water level!\"\"\",
 
 ],
 
@@ -4613,7 +4601,7 @@ class Wilhelm(ComplexNPC):
             except AttributeError:
                 pass
 
-        if game.prog.echo:
+        if game.prog.echo or not self.msg_ind>=elen(self.msgs):
             try:
                 self.destroy_exclaim()
             except Exception:
