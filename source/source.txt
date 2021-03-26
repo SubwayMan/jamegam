@@ -6,7 +6,7 @@ self.t = time_ms()\r
 # general purpose frame counter\r
 self.c = 0\r
 \r
-self.debug = False\r
+self.debug = True\r
 self.showgrid = False\r
 # create grid guides\r
 if self.showgrid:\r
@@ -43,7 +43,7 @@ self.start_time = datetime.datetime.now()\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('R2_1')","loop":"self.t = time_ms()\r
+set_room('R2_5')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -2657,7 +2657,7 @@ game.cam_limit_y = (90, -190)
 # room IDs and spawn locations for rooms that lead to this room
 if game.travelid == '2-2':
     smooth_tp(-500, 50)
-elif game.travelid == '2-4':
+elif game.travelid == '2-5':
     smooth_tp(1500, 50)
 else:
     smooth_tp(0, 0)
@@ -2725,7 +2725,7 @@ make_jelly(1150, 0, -90)
 
 # make gradients over exits/entrances
 make_dark_gradient(1600, 50, 500, 400, 20)
-TravelGate(1800, 50, 60, 500, self.roomid, 'R2_4')
+TravelGate(1800, 50, 60, 500, self.roomid, 'R2_5')
 
 make_dark_gradient(-500, 50, 500, 400, 20, direction=False)
 TravelGate(-700, 50, 60, 400, self.roomid, 'R2_2')
@@ -2744,16 +2744,82 @@ play_track(game.music, 1)
 "
 }
 },
-{"R2_4":{
-"type":"room script","start":"#R2_4 start
-
-","loop":"#R2_4 loop
-
-"
-}
-},
 {"R2_5":{
-"type":"room script","start":"#R2_5 start
+"type":"room script","start":"self.roomid = '2-5'
+
+game.npcs.clear()
+game.dark = False
+
+self.placed = game.prog.gem1_place
+
+game.cam_limit_x = (-560, -490)
+game.cam_limit_y = (-110, -890)
+
+# Insert room IDs and spawn locations for rooms that lead to this room
+if game.travelid == '2-6':
+    smooth_tp(-1000, 50)
+elif game.travelid == '2-3':
+    smooth_tp(-1000, -1050)
+else:
+    smooth_tp(0, 0)
+
+# X is (0, 0)
+lvlmap = [
+    'CCCCCCCCCCCCC6',
+    '.............R',
+    '............XR',
+    'NVBNNBVBN1...R',
+    '         L...R',
+    '         L...R',
+    '         L...R',
+    '         L...R',
+    '         L...R',
+    '         L...R',
+    '         L...R',
+    'CCCCCCCCC3...R',
+    '.............R',
+    '.............R',
+    'NBVBNNNBNBVBN4',
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    (-550, 200, 1400, 95),
+    (100, -500, 95, 1500),
+    (-750, -500, 995, 895),
+    (-550, -1200, 1400, 95)
+
+]
+blockgroup(0, 0, colliders)
+
+
+# background manipulation
+game.bg.sprite = new_sprite(\"ocean_bg.png\")
+game.bg.x, game.bg.y = 0, -1400
+game.bg.scaleX = 1.5
+game.bg.scaleY = 1.5
+
+
+# gradients over exits/entrances
+make_dark_gradient(-1000, -1050, 500, 400, 20, direction=False)
+TravelGate(-1200, -1050, 60, 400, self.roomid, 'R2_3')
+
+make_dark_gradient(-1000, 50, 500, 400, 20, direction=False)
+TravelGate(-1200, 50, 60, 400, self.roomid, 'R2_6')
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+
+
+# Empty lines for scroll glitch
+
+
+
+
+
 
 ","loop":"#R2_5 loop
 
@@ -2770,51 +2836,70 @@ game.dark = False
 self.water_rising = False
 
 
-game.cam_limit_x = (290, 1790)
+game.cam_limit_x = (290, 1510)
 game.cam_limit_y = (-110, -1390)
 
 # Insert room IDs and spawn locations for rooms that lead to this room
 
-smooth_tp(2000, -300)
+if game.travelid == '2-5':
+    smooth_tp(1800, -300)
+elif game.travelid == '2-8':
+    smooth_tp(-100, -1100)
+else:
+    smooth_tp(1800, -300)
 
 # X is (0, 0)
 lvlmap = [
-    '7CCCCCCCCCCCCCCCCCCC6    ',
-    'L.......R L.........R    ',
-    'L..X....R L.........R    ',
-    'L.......R L.........RCCCC',
-    'L.......R L...RCL........',
-    'L.......R L...R L........',
-    'L.......R L...RVC........',
-    'L.......R L...RVCVNVBN0VB',
-    'L.......R L...R          ',
-    'L.......R L...RCCCC6.....',
-    'L.......R L        R     ',
-    'L.......R L        R     ',
-    'LCCCCCCCR L        R     ',
-    '........R 6VNBVN...R......',
-    '........R L....R...R.....',
-    '........R LCCCCC...R.....',
-    'LVBNL..............R.....',
-    'L...L..............R.....',
-    'L...L..............R.....',
-    'BBBNBVBNVBBVNBVBNBVN.....'
+    '          7CCCCCCCCC6    ',
+    '          L.........R    ',
+    '   X      L.........R    ',
+    '          L.........2CCCC',
+    '          L...0V1........',
+    '          L...R L........',
+    '          L...R L........',
+    '          L...R 5VBNNVBNN',
+    '          L...R          ',
+    '          L...2CCCC6     ',
+    '          L........R     ',
+    '          L........R     ',
+    'CCCCCCCC6 L........R     ',
+    '........R 5VNBV1...R     ',
+    '........R      L...R     ',
+    '........2CCCCCC3...R     ',
+    'NVBN1..............R     ',
+    '    L..............R     ',
+    '    L..............R     ',
+    '    5VBNVBBVNBVBNBV4     '
 
 ]
 make_map(lvlmap)
 
 # make colliders
 colliders = [
-    
-
+    (500, 0, 1100, 95),
+    (1200, -150, 495, 395),
+    (0, -650, 95, 1395),
+    (500, -650, 295, 595),
+    (900, -800, 1095, 295),
+    (150, -1400, 796, 295),
+    (900, -1500, 95, 1100)
 
 ]
-blockgroup(0, 0, colliders)
+blockgroup(700, 200, colliders)
 
+colliders = [
+    (400, 0, 1100, 95),
+    (200, -550, 495, 395),
+    (1150, -700, 1600, 95),
+    (450, 650, 1005, 1205),
+    (2200, -150, 505, 1205)
+
+]
+blockgroup(-300, -1000, colliders)
 
 # background manipulation
-game.bg.sprite = new_sprite(\"purple_bg.png\")
-game.bg.x, game.bg.y = 1300, -1400
+game.bg.sprite = new_sprite(\"ocean_bg.png\")
+game.bg.x, game.bg.y = 0, 0
 game.bg.scaleX = 2
 game.bg.scaleY = 2
 
@@ -2832,23 +2917,25 @@ make_sfish(800, -500, 90)
 make_sfish(1000, -500, 90)
 make_sfish(800, -1400, 0)
 make_sfish(800, -1600, 0)
+
 # set room music
 stop_track(game.music)
 play_track(game.music, 6)
 # Empty lines for scroll glitch
 
+make_dark_gradient(1900, -300, 500, 500, 25)
+TravelGate(2000, -300, 60, 500, self.roomid, 'R2_5')
+
+make_dark_gradient(-100, -1200, 500, 500, 25, direction=False)
+TravelGate(-250, -1250, 60, 500, self.roomid, 'R2_8')
+
+
+
+
 
 
 
 ","loop":"#R2_6 loop
-
-"
-}
-},
-{"R2_7":{
-"type":"room script","start":"#R2_7 start
-
-","loop":"#R2_7 loop
 
 "
 }
