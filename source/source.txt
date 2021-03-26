@@ -43,7 +43,7 @@ self.start_time = datetime.datetime.now()\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('Hub_Room')","loop":"self.t = time_ms()\r
+set_room('R3_B')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -664,7 +664,7 @@ if get_collision(self, 'Player'):
 {"Nautilus":{
 "type":"object script","start":"#Nautilus start
 
-self.hitbox = make_hurtbox(0, 0, 200, 225, 1, lambda a, l: boost(l, 20, l.angle-180))
+self.hitbox = make_hurtbox(0, 0, 150, 180, 1, lambda a, l: boost(l, 20, l.angle-180))
 #self.hitbox.alpha = 1
 self.hurtbox = Slate()
 self.hurtbox.sprite = new_sprite(\"debug.png\")
@@ -674,27 +674,43 @@ self.scaleX = -2
 self.scaleY = 2
 self.alpha = 1
 self.hurtbox.visible = False
-self.hp = 15
+self.hp = 1
 self.vulnerable = True
 
+self.gate = make_current(1800, -500, 500, 1100, -25, 0)
 #Store animations
 self.idleAnim = new_animation(new_sprite(\"N_Idle.png\", 3, 2), 8, 0, 5)
+self.spikeAnim = new_animation(new_sprite(\"N_Spike_Shoot.png\", 5, 4), 8, 0, 16)
+self.summonAnim = new_animation(new_sprite(\"N_Summon.png\", 4, 4), 8, 0, 15)
+self.shockwaveAnim = new_animation(new_sprite(\"N_Shockwave.png\", 4, 4), 8, 0, 13)
+self.dashAnim = new_animation(new_sprite(\"N_Spike.png\", 4, 4), 8, 0, 15)
+self.hurtAnim = new_animation(new_sprite(\"N_Hit.png\", 3, 2), 8, 0, 5)
+self.deathAnim = new_sprite(\"N_Death.png\", 4, 4)
+
+#dict for mapping attack id to animation
+self.animdict = {
+    0: self.spikeAnim,
+    1: self.dashAnim,
+    2: self.summonAnim,
+    3: self.shockwaveAnim
+
+}
 
 set_animation(self, self.idleAnim)
 self.z = 5
 self.counter = 0
 
 #order: spikes, dash, summon, shockwave
-self.timedict = [1, 3, 2, 4
+self.timedict = [60, 120, 90, 120
 ]
 self.weights = [
-    [70, 10, 20, 0
+    [60, 10, 30, 0
 ],
 
     [30, 15, 30, 25
 ],
 
-    [15, 40, 15, 30
+    [5, 40, 25, 30
 ],
 
     [0, 50, 0, 50
@@ -710,8 +726,8 @@ self.attackdict = {
 }
 
 self.wlevel = 0
-self.clock0 = int(time.time())
-self.clock =  int(time.time()) - self.clock0
+
+self.clock =  0
 self.wanderc = 1
 self.t = 0
 self.xv = 0
@@ -729,7 +745,11 @@ self.attdelay = 0
 #health bar
 self.bossbar = new_sprite(\"BossBar.png\", 16, 1)
 self.barobj = Slate()
+self.barobj.z = 10
 update_bar(self.barobj, self.hp, self)
+
+self.dead = False
+self.death_t = 0
 
 
 
@@ -739,6 +759,14 @@ update_bar(self.barobj, self.hp, self)
 
 
 ","loop":"
+if self.dead:
+    if self.death_t > 120:
+        return
+    self.death_t += 1
+    k = self.death_t//8
+    set_animation(self, new_animation(self.deathAnim, 0, k, k))
+    return
+    
 #distance check
 if abs(self.x - game.p.x) > 1800:
     return None
@@ -747,15 +775,7 @@ pl = get_collision(self.hurtbox, \"Player\")
 if self.vulnerable and pl:
     #Player must be boosting
     if pl.boostx or pl.boosty:
-        #Extra damage if hit while dashing
-        if not self.inDash:
-            self.hp -= 1
-        else:
-            self.hp -= 2
-            self.xv = 0
-            self.yv = 0
-            self.inDash = False
-        
+        self.hp -= 1
         update_bar(self.barobj, self.hp, self)
         wander(self, 4)
         boost(pl, 35, -90)
@@ -763,32 +783,49 @@ if self.vulnerable and pl:
     else:
         boost(pl, 10, -90)
 
+if self.hp <= 0:
+    self.dead = True
+    destroy(self.barobj)
+    destroy(self.gate)
+    self.time0 = int(time.time())
 #move healthbar
 self.barobj.x = camera_x()
 self.barobj.y = camera_y()+300
 #Attacking
-if self.clock >= 70:
+if self.clock >= 80:
     if self.wlevel == 3 or random.randint(0, 1):
         self.pending = gen_att(self.weights[self.wlevel
 ])
         self.ispending = True
         self.attdelay = 60
         self.wlevel = 0
+        if self.pending < 2:
+            self.scaleX = -3
+            self.scaleY = 3
+        set_animation(self, self.animdict[self.pending
+])
     else:
         self.clock = 1
         self.wlevel += 1
 
+if self.clock == 0:
+    self.vulnerable = True
+    set_animation(self, self.idleAnim)
+    self.scaleX = -2
+    self.scaleY = 2
+
 #Timing for attack events
 self.clock += 1
 if self.ispending:
-    self.clock = 0
+    self.vulnerable = False
+    self.clock = -1 * self.timedict[self.pending
+]
     self.attdelay -= 1
     if not self.attdelay:
         self.attackdict[self.pending
 ](self)
         self.ispending = False
-        self.clock = -1 * self.timedict[self.pending
-]
+        
 
 
 
@@ -823,7 +860,7 @@ self.x += self.xv
 self.y += self.yv
 
 #hit/hurtbox alignment
-hitbox_rotate(self.hitbox, self, self.angle+190, 60)
+hitbox_rotate(self.hitbox, self, self.angle+210, 60)
 hitbox_rotate(self.hurtbox, self, self.angle-35, 75)
 
 
@@ -2571,7 +2608,7 @@ colliders = [
 blockgroup(0, 0, colliders)
 
 # make objects here
-make_current(1800, -500, 500, 1100, -25, 0)
+
 n = Nautilus()
 n.x = 200
 n.y = -500
@@ -2956,14 +2993,6 @@ play_track(game.music, 6)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616714811.N_Shockwave.png"
 }
 },
-{"N_Spike.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616714825.N_Spike.png"
-}
-},
-{"N_Spike_Shoot.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616714845.N_Spike_Shoot.png"
-}
-},
 {"N_Idle.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616714798.N_Idle.png"
 }
@@ -3023,6 +3052,14 @@ play_track(game.music, 6)
 },
 {"gem_rainbow.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716536.gem_rainbow.png"
+}
+},
+{"N_Spike_Shoot.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616729211.N_Spike_Shoot.png"
+}
+},
+{"N_Spike.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616729202.N_Spike.png"
 }
 }
 ],
@@ -3594,7 +3631,6 @@ def summon_sfish(boss):
     origin = boss.x
     t = random.choice([\"T\", \"B\"
 ])
-    print(t)
     if t == \"T\":
         sy = 0
         sa = -90
