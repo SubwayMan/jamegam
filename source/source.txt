@@ -38,12 +38,12 @@ self.bg = Background()\r
 self.deaths = 0\r
 self.start_time = datetime.datetime.now()\r
 \r
-# set_room('Demo_Room')\r
+\r
 \r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('R1_1')","loop":"self.t = time_ms()\r
+set_room('R0_2')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -1157,7 +1157,7 @@ self.queue = [
 
 #Uses time in seconds
 self.orig = game.t // 1000
-
+self.cplaying = None
 #Maps songs to their length for scheduling
 #Key: mood no. -1
 self.sl = [40, 36, 33, 36, 16, 29, 29, 30
@@ -1168,7 +1168,7 @@ self.song = None
 
 ","loop":"#SoundManager loop
 
-"
+self.orig = game.t // 1000"
 }
 }
 ],
@@ -1390,7 +1390,6 @@ lvlmap = [
 make_map(lvlmap)
 
 game.bg.sprite = new_sprite(\"purple_bg.png\")
-game.bg.scaleX = 2
 
 # Make colliders
 colliders = [
@@ -1440,6 +1439,7 @@ dialogue4 = (
 
 make_simple_npc(500, -500, 'Whale', dialogue1)
 
+stop_track(game.music)
 play_track(game.music, 2)","loop":"#R0_2 loop
 
 "
@@ -3428,6 +3428,10 @@ play_track(game.music, 6)
 },
 {"Player_Death.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616737689.Player_Death.png"
+}
+},
+{"Test_BG.jpg":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616739315.Test_BG.jpg"
 }
 }
 ],
