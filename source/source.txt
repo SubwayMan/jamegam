@@ -26,6 +26,7 @@ self.fpslog = int(self.t/1000)\r
 self.fpscount = 0\r
 \r
 self.dark = False\r
+self.water_height = None\r
 \r
 self.prog = ProgTracker()\r
 self.npcs = [
@@ -34,12 +35,15 @@ self.e = False\r
 self.p = Player()\r
 self.bg = Background()\r
 \r
+self.deaths = 0\r
+self.start_time = datetime.datetime.now()\r
+\r
 # set_room('Demo_Room')\r
 \r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('R3_B')","loop":"self.t = time_ms()\r
+set_room('Hub_Room')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -94,6 +98,7 @@ self.yext = 0
 self.cxext = 0
 self.cyext = 0
 
+self.fall_vel = 0
 
 self.dash_cool = game.t
 self.damage_cool = game.t
@@ -105,7 +110,9 @@ self.hp = 5
 self.healthbar = HealthInd()
 self.healthbar.sprite = self.healthbar.spritemap[self.hp
 ]
-self.healthbar.prev_h = self.hp","loop":"camX, camY = camera_x(), camera_y()
+self.healthbar.prev_h = self.hp
+
+self.inv = list()","loop":"camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
@@ -176,6 +183,13 @@ self.cxext, self.cyext = deter(self.cxext, 0.96), deter(self.cyext, 0.94)
 # final movement values in x and y
 a, b = (self.xv+self.boostx+self.xext+self.cxext), (self.yv+self.boosty+self.yext+self.cyext)
 
+if game.water_height is not None:
+    if self.y > game.water_height:
+        self.fall_vel -= 0.5
+        b += self.fall_vel
+    else:
+        self.fall_vel = min(0, self.fall_vel+0.5)
+
 self.x += a
 self.y += b
 
@@ -229,7 +243,10 @@ if game.npcs:
         if not n.e_popup:
             create_e(n)
         if key_was_pressed('e'):
-            create_msg(n)
+            if isinstance(n, Pedestal):
+                place_gem(n)
+            else:
+                create_msg(n)
     else:
         if game.e:
             destroy(game.e)
@@ -273,6 +290,9 @@ if self.hp < 1:
 #Place any non-zero Z values here for reference, so we don't end up 
 #setting objects to z-403285245 to place objects on top.
 #BACKGROUND: -10
+#pedestals: -8
+#gems (on pedestal): -7
+#waves: -6
 #Dark area (black tiles): -5
 #Spikes: 8
 #Tiles: 9
@@ -281,6 +301,7 @@ if self.hp < 1:
 #Dark gradients: 24
 #Text boxes: 25
 #Health indicator: 26
+#Gem (in inventory): 26
 #If you come across an undocumented Z-value, add it here.","loop":""
 }
 },
@@ -615,7 +636,7 @@ self.scaleY = 0.5
 
 self.deathtime = game.c + 40","loop":"self.x += self.xvel\r
 self.y += self.yvel\r
-self.scaleX += 0.08\r
+self.scaleX += 0.09\r
 self.scaleY += 0.06\r
 \r
 if game.dark:\r
@@ -873,7 +894,7 @@ if self.idle and game.t > self.wait:
 if not self.idle:
     self.x += self.xv
     self.y += self.yv
-   
+
 
 pl = get_collision(self, \"Player\")
 if pl:
@@ -925,30 +946,61 @@ self.fading = False","loop":"if game.dark:\r
 }
 },
 {"Particle":{
-"type":"object script","start":"if game.dark:
-    self.alpha = 0
-self.fading = False
-self.scaleX = 1.3
+"type":"object script","start":"self.scaleX = 1.3
 self.scaleY = 1.3","loop":"#Particle loop
 if not (self.nb>=self.y>=self.sb) or not (self.wb<=self.x<=self.eb):
     destroy(self)
 
 self.x += self.xv
-self.y += self.yv
-
-if game.dark:
-    if get_collision(self, 'Echolocation'):
-        self.alpha = 1
-        self.fading = True
-    if self.fading:
-        self.alpha -= 0.01
-        if self.alpha <= 0:
-            self.alpha = 0
-            self.fading = False"
+self.y += self.yv"
 }
 },
 {"Slate":{
 "type":"object script","start":"#A blank object that can be used in any way by any other object.","loop":""
+}
+},
+{"Pedestal":{
+"type":"object script","start":"self.sprite = sprite('pedestal.png')
+self.e_popup = False
+self.e_offset = 250
+self.z = -8
+self.has_gem = False","loop":"#Pedestal loop
+
+"
+}
+},
+{"Gem":{
+"type":"object script","start":"self.in_inv = False
+self.placed = False
+self.persistent = True
+
+filterConfig = {
+    \"threshold\": 0.8,
+    \"bloomScale\" : 5,
+    \"brightness\" : 0.7,
+    \"blur\" : 2,
+    \"quality\" : 10,
+
+}
+
+self.bloom_filter = new_adv_bloom_filter(filterConfig)
+self.filterid = add_filter(self, self.bloom_filter)","loop":"if get_collision(self, 'Player') and not self.placed:
+    self.in_inv = True
+    self.z = 26
+    game.p.inv.append(self)
+    remove_filter(self, self.filterid)
+    self.filterid = None
+    game.prog.gem1_pick = True
+
+if self.in_inv:
+    self.x = camera_x() - 460
+    self.y = camera_y() + 300
+
+if self.placed:
+    if self.persistent:
+        self.persistent = False
+        if self.filterid is None: # just placed, make filter again
+            self.filterid = add_filter(self, self.bloom_filter)"
 }
 },
 {"HealthInd":{
@@ -997,17 +1049,19 @@ if game.dark == self.visible:
 ]
 },
 {"Whale":{
-"type":"object script","start":"sprite_sheet = sprite('whalesheet_gap.png', 1, 4)
+"type":"object script","start":"sprite_sheet = sprite('whalesheet.png', 1, 4)
 self.anim = animation(sprite_sheet, 4, 0, 3)
 set_animation(self, self.anim)
 
-self.scaleX = self.scaleY = 2
 self.e_offset = 100
 
 self.x, self.y = 1500, -420
 self.visible = True
 
-self.msg = 'Hi! I\\'m a whale!'","loop":"try:
+self.msg = 'Hi! I\\'m a whale!'
+self.msg_duration = 1200
+
+self.parent = None","loop":"try:
     # Exit the loop early if far from player
     pdist = get_dist(self.x, self.y, game.p.x, game.p.y)
     if pdist > 1700:
@@ -1028,8 +1082,8 @@ if self.visible:
     if 50 <= d < 100:
         self.y -= 0.5
 
-pX, pY = game.p.x, game.p.y
-"
+if self.parent is not None:
+    self.parent.update_loop()"
 }
 },
 {"SoundManager":{
@@ -1144,11 +1198,6 @@ make_dark_gradient(2000, -450, 500, 400, 20)
 
 self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Hub_Room')
 
-make_simple_npc(500, -500, 'Whale', 'Howdy stranger, I\\'m William the whale!\
-I was supposed to tell you how to move, but you had to move\
-to get to me, huh? No tutorial for you!\
-Proceed to the bottom right.')
-
 play_track(game.music, 2)","loop":"#Starting_Room loop
 
 "
@@ -1159,6 +1208,7 @@ play_track(game.music, 2)","loop":"#Starting_Room loop
 
 game.npcs.clear()
 game.dark = False
+game.water_height = None
 
 game.cam_limit_x = (10, 1810)
 game.cam_limit_y = (-110, -1090)
@@ -1169,16 +1219,18 @@ elif game.travelid == '1-0':
     smooth_tp(1700, -1300)
 elif game.travelid == '0-2':
     smooth_tp(2200, -750)
+elif game.travelid == '2-0':
+    smooth_tp(1550, -50)
 else:
     smooth_tp(0, 0)
 
 lvlmap = [
     '     7CCCCCCCCCCC6             ',
-    'CCCCC3...........R             ',
-    '......X..........R             ',
-    '.................R             ',
-    'NVBBV1...........R             ',
-    '     L...........2CCCCCCC6     ',
+    'CCCCC3...........R  L..R       ',
+    '......X..........R  L..R       ',
+    '.................R  L..R       ',
+    'NVBBV1...........R  L..R       ',
+    '     L...........2CC3..2C6     ',
     '     5NNNNNNNN1..........R     ',
     '     7CCCCCCCC3..........R     ',
     '     L...................2CCCCC',
@@ -1204,8 +1256,10 @@ colliders = [
     (-350, -700, 595, 1095),
     (500, 200, 1300, 95),
     (300, -1300, 895, 695),
-    (1500, -50, 895, 595),
     (400, -450, 900, 200),
+    (1250, -50, 395, 595),
+    (1800, -50, 295, 595),
+    (1550, 200, 400, 100)
 
 ]
 blockgroup(0, 0, colliders)
@@ -1219,9 +1273,7 @@ colliders = [
 ]
 blockgroup(900, -300, colliders)
 
-make_simple_npc(1500, -800, 'Whale', 'Hi, I\\'m Winona the Whale!\
-You completed this challenge! More to come soon...')
-
+Winona(1500, -800)
 
 make_dark_gradient(-350, -50, 600, 400, 20, direction=False)
 TravelGate(-560, -50, 60, 400, self.roomid, 'Starting_Room')
@@ -1231,6 +1283,9 @@ TravelGate(1700, -1400, 500, 60, self.roomid, 'R1_0')
 
 make_dark_gradient(2150, -750, 600, 400, 20)
 TravelGate(2400, -750, 60, 400, self.roomid, 'R0_2')
+
+make_dark_gradient(1550, -100, 400, 500, 20, vert=True, direction=False)
+TravelGate(1550, 100, 400, 60, self.roomid, 'R2_0')
 
 stop_track(game.music)
 play_track(game.music, 6)
@@ -1728,6 +1783,8 @@ game.bg.x, game.bg.y = 300, 500
 game.bg.scaleX = 2
 game.bg.scaleY = 2
 
+Wilhelm(200, -200)
+
 # gradients over exits/entrances
 make_dark_gradient(-150, -800, 400, 500, 20, vert=True)
 self.gate = TravelGate(-150, -1000, 400, 60, self.roomid, 'R1_5')
@@ -1804,8 +1861,10 @@ colliders = [
 # from top left
 blockgroup(-200, 200, colliders)
 
+make_light_gradient(750, 500, 200, 300, 25, vert=True, direction=False)
 TravelGate(750, 600, 400, 60, self.roomid, 'R1_4')
 
+make_light_gradient(-500, -250, 300, 200, 25, direction=False)
 TravelGate(-600, -250, 60, 400, self.roomid, 'R1_6')
 
 # set room music
@@ -1888,9 +1947,10 @@ for x in range(2):
 make_current(500, 200, 700, 300, 0, -8)
 make_jelly(500, 100, 0)
 
-
+make_light_gradient(2100, 50, 300, 200, 25)
 TravelGate(2200, 50, 60, 400, self.roomid, 'R1_5')
 
+make_light_gradient(-100, -700, 300, 300, 25, vert=True)
 TravelGate(-100, -800, 500, 60, self.roomid, 'R1_7')
 
 
@@ -1968,7 +2028,10 @@ make_current(0, -400, 400, 400, -12, -7)
 make_bumper(-100, -400)
 make_anglerf(-600, -800)
 
+make_light_gradient(0, 400, 300, 300, 25, vert=True, direction=False)
 TravelGate(0, 500, 500, 60, self.roomid, 'R1_6')
+
+make_light_gradient(-1300, 650, 300, 200, 25, direction=False)
 TravelGate(-1400, -650, 60, 400, self.roomid, 'R1_8')
 
 # set room music
@@ -2174,7 +2237,12 @@ make_anglerf(150, 1750)
 make_anglerf(-150, 1750)
 make_anglerf(0, 1650)
 
+make_gem(0, 1750, 'gem_blue.png')
+
+make_light_gradient(-50, -500, 200, 300, 25, vert=True)
 TravelGate(-50, -600, 400, 60, self.roomid, 'R1_8')
+
+make_light_gradient(0, 2200, 300, 300, 25, vert=True, direction=False)
 TravelGate(0, 2300, 500, 60, self.roomid, 'R1_10')
 
 
@@ -2273,17 +2341,116 @@ play_track(game.music, 6)
 },
 {"Stage2":[
 {"R2_0":{
-"type":"room script","start":"#R2_0 start
+"type":"room script","start":"self.roomid = '2-0'
 
-","loop":"#R2_0 loop
+game.npcs.clear()
+game.dark = False
 
-"
+self.placed = game.prog.gem1_place
+self.water_rising = False
+if not self.placed:
+    game.water_height = -370
+
+game.cam_limit_x = (290, 1010)
+game.cam_limit_y = (-110, -690)
+
+# Insert room IDs and spawn locations for rooms that lead to this room
+if game.travelid == '2-1':
+    smooth_tp(2000, 50)
+elif game.travelid == '0-0':
+    smooth_tp(-100, -600)
+else:
+    smooth_tp(0, 0)
+
+# X is (0, 0)
+lvlmap = [
+    '7CCCCCCCCCCCCCCCCCCC',
+    'L...................',
+    'L..X................',
+    'L..............0VNNB',
+    'L..............R',
+    'L..............R',
+    'L..............R',
+    'L..............R',
+    'L..0BNNNVNBBVBN4',
+    'L..R                 ',
+    'L..R                 ',
+    'L..R                 ',
+    'L..R                 ',
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    (750, 200, 2200, 95),
+    (600, -800, 1295, 495), 
+    (-300, -400, 95, 1300),
+    (1400, -350, 495, 595),
+
+
+]
+blockgroup(0, 0, colliders)
+
+
+# background manipulation
+game.bg.sprite = new_sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = 1300, -1400
+game.bg.scaleX = 2
+game.bg.scaleY = 2
+
+if not self.placed:
+    self.water = list()
+    spritesheet = sprite('wavesheet.png', 4, 1)
+    anim = animation(spritesheet, 5, 0, 3)
+    for i in range(4):
+        s = Slate()
+        s.x = 600*i
+        s.y = -400
+        s.z = -6
+        set_animation(s, anim)
+        self.water.append(s)
+
+ped = make_pedestal(600, -420, 0.5, self.placed)
+if self.placed:
+    g = make_gem(ped.x, ped.y + (270 * ped.scaleY), 'gem_blue.png')
+    g.placed = True
+    g.z = -7
+
+# gradients over exits/entrances
+make_dark_gradient(1400, 50, 500, 400, 20)
+if game.prog.gem1_place:
+    TravelGate(1600, 50, 60, 400, self.roomid, 'R2_1')
+else:
+    self.exitblock = createblock(1600, 50, 60, 400)
+
+make_dark_gradient(-150, -800, 400, 500, 20, vert=True)
+TravelGate(-150, -1000, 400, 60, self.roomid, 'Hub_Room')
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
+
+","loop":"if game.prog.gem1_place and not self.placed:
+    self.placed = True
+    self.water_rising = True
+    destroy(self.exitblock)
+    TravelGate(1600, 50, 60, 400, self.roomid, 'R2_1')
+
+if self.water_rising:
+    if self.water[0
+].y < 270:
+        game.water_height += 4
+        for w in self.water:
+            w.y += 4"
 }
 },
 {"R2_1":{
-"type":"room script","start":"#R2_1 start
-
-","loop":"#R2_1 loop
+"type":"room script","start":"game.water_height = None","loop":"#R2_1 loop
 
 "
 }
@@ -2652,6 +2819,10 @@ play_track(game.music, 6)
 ]
 },
 {"Background2":[
+{"ocean_bg.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616651496.ocean_bg.png"
+}
+},
 {"waterBG.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615667719.waterBG.png"
 }
@@ -2667,6 +2838,10 @@ play_track(game.music, 6)
 },
 {"bouncesheet.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616545187.bouncesheet.png"
+}
+},
+{"wavesheet.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616715939.wavesheet.png"
 }
 },
 {"sonar_beam.png":{
@@ -2688,12 +2863,20 @@ play_track(game.music, 6)
 ]
 },
 {"Misc":[
+{"pedestal.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616719495.pedestal.png"
+}
+},
 {"text_box.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616039356.text_box.png"
 }
 },
 {"black40x40.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616018445.black40x40.png"
+}
+},
+{"white40x40.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616711624.white40x40.png"
 }
 },
 {"debug.png":{
@@ -2710,6 +2893,10 @@ play_track(game.music, 6)
 },
 {"current_particle.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616545915.current_particle.png"
+}
+},
+{"exclaim_mark.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616656281.exclaim_mark.png"
 }
 }
 ]
@@ -2748,10 +2935,6 @@ play_track(game.music, 6)
 {"Tutorial":[
 {"newE.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616348829.newE.png"
-}
-},
-{"pressE.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616288773.pressE.png"
 }
 }
 ]
@@ -2825,6 +3008,22 @@ play_track(game.music, 6)
 }
 }
 ]
+},
+{"whalesheet.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616698467.whalesheet.png"
+}
+},
+{"gem_blue.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716515.gem_blue.png"
+}
+},
+{"gem_red.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716522.gem_red.png"
+}
+},
+{"gem_rainbow.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716536.gem_rainbow.png"
+}
 }
 ],
 "sound":[
@@ -2866,6 +3065,7 @@ play_track(game.music, 6)
 "type":"function script","head":"#File for imports to run before everything
 import math
 import time
+import datetime
 import random"
 }
 },
@@ -2988,12 +3188,15 @@ def create_e(obj):
     obj.e_popup = True
 
 def create_msg(obj):
-    try:
-        destroy(game.e)
-    # no text box currently up
-    except AttributeError:
-        pass
     TextBox(obj.msg, obj.msg_duration)
+    if obj.parent is None:
+        try:
+            destroy(game.e)
+        except AttributeError: # no e currently up
+            pass
+    else:
+        obj.parent.msg_ind += 1
+        obj.parent.update_msg()
 
 def play_track(s_obj, s_id):
     s_obj.song = new_sound(\"Mood\" + str(s_id) + \".mp3\")
@@ -3004,6 +3207,28 @@ def stop_track(s_obj):
     if s_obj.song != None:
         stop_sound(s_obj.song)
         s_obj.song = None
+
+def place_gem(ped):
+    if len(game.p.inv) and not ped.has_gem:
+        g = game.p.inv[0
+]
+        g.x = ped.x
+        g.y = ped.y + (270 * ped.scaleY)
+        g.placed = True
+        g.z = -7
+        g.in_inv = False
+        game.npcs.remove(ped)
+        destroy(game.e)
+
+        if not game.prog.gem1_place:
+            game.prog.gem1_place = True
+        elif not game.prog.gem2_place:
+            game.prog.gem2_place = True
+        elif not game.prog.gem3_place:
+            game.prog.gem3_place = True
+            # TRIGGER GAME END
+        
+        ped.has_gem = True
 
 "
 }
@@ -3257,10 +3482,32 @@ def make_echo(x, y, angle):
     e.xvel = math.cos(math.radians(angle+90))*14
     e.yvel = math.sin(math.radians(angle+90))*14
 
+def make_gem(x, y, sprname, scale=0.2):
+    g = Gem()
+    g.x = x
+    g.y = y 
+    g.sprite = sprite(sprname)
+    g.scaleX = g.scaleY = scale
+    return g
+
+def make_pedestal(x, y, scale=1, placed=False):
+    p = Pedestal()
+    p.x = x
+    p.y = y
+    p.scaleX = p.scaleY = scale
+    p.e_offset *= scale
+    
+    if not placed:
+        game.npcs.append(p)
+    
+    return p
+
+
+
 "
 }
 },
-{"make_dark_gradient.py":{
+{"make_gradient.py":{
 "type":"function script","head":"def make_dark_gradient(x, y, w, h, levels, direction=True, vert=False, over=True):
     \"\"\"Make a fade to black gradient centered around x, y of width
     w and height h.
@@ -3289,7 +3536,40 @@ def make_echo(x, y, angle):
 
         t.alpha = (1/(levels-1)) * i if direction else 1 - ((1/(levels-1)) * i)
 
-        if over: t.z = 24"
+        if over: t.z = 24
+
+def make_light_gradient(x, y, w, h, levels, direction=True, vert=False, over=True):
+    \"\"\"Make a fade to white gradient centered around x, y of width
+    w and height h.
+    
+    Arg \"levels\" specifies the number of steps to divide the gradient into
+    Arg \"direction\" is True if top/left should be the lightest part
+    Arg \"vert\" is True if gradient should be vertical
+    Arg \"over\" decides if the gradient should go over the player
+    \"\"\"
+    
+    width = w/levels if not vert else w
+    height = h/levels if vert else h
+
+    for i in range(levels):
+        t = Slate()
+        t.sprite = sprite('debug.png') if game.debug else sprite('white40x40.png')
+        t.scaleX = (width/40)
+        t.scaleY = (height/40)
+        
+        if vert:
+            t.x = x 
+            t.y = ((y + (h/2)) - (height/2)) - (height * i)
+        else:
+            t.x = (x - (w/2) + (width/2)) + (width * i)
+            t.y = y
+
+        t.alpha = (1/(levels-1)) * i if direction else 1 - ((1/(levels-1)) * i)
+        t.alpha /= 3
+
+        if over: t.z = 24
+
+"
 }
 },
 {"Nautilusfuncs.py":{
@@ -3414,7 +3694,7 @@ def update_bar(bar, val, boss):
         try: # clear possible current text box
             game.text_box.destroy()
         except Exception as e: # no text box currently up
-            print('Exception caught:', e)
+            pass
 
         self.inst = textbox_inst()
         self.inst.parent = self
@@ -3422,7 +3702,7 @@ def update_bar(bar, val, boss):
         self.inst.y = camera_y() - 200
         game.text_box = self
         
-        self.text = text(msg, self.inst.x - 450, self.inst.y + 40)
+        self.text = text(msg, self.inst.x - 450, self.inst.y + 56)
         self.text.color = '#ffffff'
         self.text.fontsize = 70
         self.text.fontFamily = 'courier new'
@@ -3444,7 +3724,7 @@ def update_bar(bar, val, boss):
         
         if self.textexists:
             self.text.x = self.inst.x - 450
-            self.text.y = self.inst.y + 40
+            self.text.y = self.inst.y + 56
         
 
         if game.t > self.close_time:
@@ -3472,7 +3752,7 @@ def update_bar(bar, val, boss):
 },
 {"NPC.py":{
 "type":"function script","head":"
-def make_simple_npc(x, y, type_, msg, scale=1):
+def make_simple_npc(x, y, type_, msg, scale=1, facingr=True):
     \"\"\"Create a simple npc with only one line.\"\"\"
 
     type_map = {
@@ -3484,57 +3764,199 @@ def make_simple_npc(x, y, type_, msg, scale=1):
 ]()
     n.x = x
     n.y = y
+    if not facingr:
+        n.skewY = -180
     n.scaleX *= scale
     n.scaleY *= scale
     n.e_offset *= scale
     n.msg = msg
-    n.msg_duration = 1200
     
     # flag for if \"e to interact\" popup is up
     n.e_popup = False
 
     game.npcs.append(n)
-    return n"
-}
-},
-{"Rect.py":{
-"type":"function script","head":"class Rect:
-    def __init__(x, y, w, h, dark=False):
-        self.x = x
-        self.y = y
-        self.x0 = x-(w/2)
-        self.x1 = x+(w/2)
-        self.y0 = y-(h/2)
-        self.y1 = y+(h/2)
-        self.colour = 0x18ae5f if dark else 0xffffff
-        self.drawid = None
-    
-    def move(self, dx, dy):
-        self.x += dx
-        self.x0 += dx
-        self.x1 += dx
-        self.y += dy
-        self.y0 += dy
-        self.y1 += dy
-        self.draw()
+    return n
 
-    def draw(self):
-        if self.drawid is not None:
-            destroyGraphic(self.drawid)
-        self.drawid = drawRect(self.x0, self.x1, self.y0, self.y1, 0, 0, self.colour)
+class ComplexNPC:
+    def __init__(self, x, y):
+        self.inst = Whale()
+        self.inst.x = x
+        self.inst.y = y
+        self.inst.e_popup = False
+        self.inst.parent = self
+        game.npcs.append(self.inst)
+
+        self.msg_ind = 0
+        self.mark = None
     
-    def destroy(self):
-        if self.drawid is not None:
-            destroyGraphic(self.drawid)"
+    def update_loop(self):
+        if self.mark is not None:
+            self.mark.y = self.inst.y + self.inst.e_offset
+
+    def make_exclaim(self):
+        self.mark = Slate()
+        self.mark.sprite = sprite('exclaim_mark.png')
+        self.mark.scaleX = self.mark.scaleY = 0.8
+
+        # offset to left or right depending on facing
+        if self.inst.skewY != 0:
+            x_off = 110 * (self.inst.skewY/abs(self.inst.skewY))
+        else:
+            x_off = 110
+        self.mark.x = self.inst.x + (x_off * self.inst.scaleX)
+        self.mark.y = self.inst.y + self.inst.e_offset
+    
+    def destroy_exclaim(self):
+        if self.mark is not None:
+            destroy(self.mark)
+            self.mark = None
+
+
+
+WINONA_MSGS = [
+[
+\"\"\"Hi, I'm Winona the Whale! Glad you made it.
+If you haven't been keeping up with current events,
+the three gems that maintain the oceans were stolen, and
+the water levels have fallen.\"\"\",
+
+\"\"\"Most of the whales made it down here safely, but we're
+too big to go in the caves where the gems were hidden.\"\"\",
+
+\"\"\"If you want to help out, try talking to Watson the Whale. 
+Cavern to the right, and just look for the biggest whale 
+there.\"\"\"
+
+],
+
+[
+\"\"\"Woah, you actually got the gem! Uh, I mean, I beleived
+in you the whole time. Quick, go put it on the pedestal
+in the room above to raise the water level!\"\"\",
+
+],
+
+[
+\"\"\"Hey! Nice to see you again — Winona the Whale here.
+Thanks so much for raising the water level. If you did it again,
+all my friends could return home too.\"\"\",
+
+],
+
+
+]
+class Winona(ComplexNPC):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.inst.skewY = -180
+        self.update_msg()
+        
+    def update_msg(self):
+        if not game.prog.gem1_pick:
+            self.msgs = WINONA_MSGS[0
+]
+
+            if not game.prog.winona_e1 and self.mark is None:
+                self.make_exclaim()
+
+            if self.msg_ind >= len(self.msgs):
+                game.prog.winona_e1 = True
+                self.destroy_exclaim()
+        
+        elif game.prog.gem1_pick:
+            self.msgs = WINONA_MSGS[1
+]
+
+            if self.mark is not None:
+                self.destroy_exclaim()
+                game.prog.winona_e2 = True
+
+            if not game.prog.winona_e2 and self.mark is None:
+                self.make_exclaim()
+
+        self.msg = self.msgs[self.msg_ind%len(self.msgs)
+]
+        self.inst.msg = self.msg
+        
+        if not self.msg_ind%len(self.msgs):
+            try:
+                destroy(game.e)
+            except AttributeError:
+                pass
+
+WILHELM_MSGS = [
+[
+\"\"\"Hey there mate! Didn't expect to see anybody
+else crazy enough to come down here. You'll be questing
+for the gems, I expect.                 
+                                        (1/3)\"\"\",
+
+\"\"\"The caves up ahead got too narrow for my big head,
+but you should be able to make it. You will need a
+way to see in the dark though... Aha! I know just
+the thing! I'll teach you Echolocation!   (2/3)
+\"\"\",
+
+\"\"\"So what you're going to want to do is press \"F\" when
+you're in a dark cave, and everything hit by the
+echolocation will light up. Good luck out there mate!
+                                        (3/3)\"\"\",
+
+],
+
+
+]
+
+class Wilhelm(ComplexNPC):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.update_msg()
+    
+    def update_msg(self):
+        self.msgs = WILHELM_MSGS[0
+]
+        if not game.prog.echo:
+            self.make_exclaim()
+
+            if self.msg_ind >= len(self.msgs):
+                self.destroy_exclaim()
+                game.prog.echo = True
+        
+        self.msg = self.msgs[self.msg_ind%len(self.msgs)
+]
+        self.inst.msg = self.msg
+
+        if not self.msg_ind%len(self.msgs):
+            try:
+                destroy(game.e)
+            except AttributeError:
+                pass
+
+
+
+
+
+
+
+"
 }
 },
 {"ProgTracker.py":{
 "type":"function script","head":"class ProgTracker:
     def __init__(self):
         
-        self.move = False # Movement tutorial
-        self.interact = False # Interaction tutorial
-        self.echo = True # CHANGE THIS"
+        self.echo = False
+        self.gem1_pick = False
+        self.gem1_place = False
+        self.gem2_pick = False
+        self.gem2_place = False
+        self.gem3_pick = False
+        self.gem3_place = False
+
+        # exclamation marks for npcs - has player seen message
+        self.winona_e1 = False
+        self.winona_e2 = False
+"
 }
 }
 ]
