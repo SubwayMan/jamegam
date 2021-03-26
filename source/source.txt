@@ -3059,14 +3059,22 @@ if self.placed:
     g.placed = True
     g.z = -7
 
-msg = (\"Greetings Traveller! Wulfric here. If you wish to find the\
+if game.prog.gem3_pick:
+    msg = (\"After all these years! The three gems have\
 \"
-\"third and final gem, you will have to face the mighty\
+            \"been recovered! It looks like that nautilus fight\
 \"
-\"nautilus in the caverns to my left. Many of our strongest warriors\
+            \"went swimmingly!\")
+else:
+    msg = (\"Greetings Traveller! Wulfric here. If you wish to find the\
 \"
-\"have fallen to it. Try finding a weak spot with your dash!\
-\")e
+    \"third and final gem, you will have to face the mighty\
+\"
+    \"nautilus in the caverns to my left. Many of our strongest warriors\
+\"
+    \"have fallen to it. Try finding a weak spot with your dash!\
+\")
+    
 make_simple_npc(0, -200, 'Whale', msg , facingr=True)
 
 # gradients over exits/entrances
