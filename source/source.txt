@@ -5,6 +5,7 @@
 self.t = time_ms()\r
 # general purpose frame counter\r
 self.c = 0\r
+self.deaths = 0\r
 \r
 self.debug = False\r
 self.showgrid = False\r
@@ -43,7 +44,7 @@ self.bossdead = False\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('R2_5')","loop":"self.t = time_ms()\r
+set_room('Starting_Room')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -301,6 +302,7 @@ if self.hp < 1:
     self.xv = self.yv = self.boostx = self.boosty
     self.xext = self.yext = self.xMOD = self.yMOD = self.cxext = self.cyext = 0
     self.cxMOD = self.cyMOD = 0
+    game.deaths += 1
 
 
 # Empty lines because I don't like it when code 
@@ -3267,6 +3269,34 @@ play_track(game.music, 6)
 
 "
 }
+},
+{"Victory_Room":{
+"type":"room script","start":"#R3_W start
+
+self.ws = Slate()
+self.ws.sprite = new_sprite(\"Win_Screen.png\")
+self.ws.scaleX = 1.7
+self.ws.scaleY = 1.8
+game.p.spr_obj.visible = False
+game.cam_limit_x = (0, 0)
+game.cam_limit_y = (0, 0)
+game.p.healthbar.visible = False
+
+completiontime = datetime.datetime.now() - game.start_time
+timetxt = new_text(\"Time: \" + str(completiontime), -600, -300)
+timetxt.scaleX = 1.2
+timetxt.scaleY = 1.2
+timetxt.z = 50
+timetxt.color = \"#fff\"
+
+dtxt = new_text(\"Deaths: \" + str(game.deaths), 450, -300)
+dtxt.scaleX = 1.2
+dtxt.scaleY = 1.2
+dtxt.z = 50
+dtxt.color = \"#fff\"","loop":"#R3_W loop
+
+"
+}
 }
 ]
 },
@@ -3693,6 +3723,10 @@ play_track(game.music, 6)
 },
 {"Test_BG.jpg":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616739315.Test_BG.jpg"
+}
+},
+{"Win_Screen.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616750108.Win_Screen.png"
 }
 }
 ],
