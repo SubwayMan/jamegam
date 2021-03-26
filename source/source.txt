@@ -43,7 +43,7 @@ self.start_time = datetime.datetime.now()\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('R3_B')","loop":"self.t = time_ms()\r
+set_room('R2_6')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -674,7 +674,7 @@ self.scaleX = -2
 self.scaleY = 2
 self.alpha = 1
 self.hurtbox.visible = False
-self.hp = 1
+self.hp = 15
 self.vulnerable = True
 
 self.gate = make_current(1800, -500, 500, 1100, -25, 0)
@@ -683,7 +683,7 @@ self.idleAnim = new_animation(new_sprite(\"N_Idle.png\", 3, 2), 8, 0, 5)
 self.spikeAnim = new_animation(new_sprite(\"N_Spike_Shoot.png\", 5, 4), 8, 0, 16)
 self.summonAnim = new_animation(new_sprite(\"N_Summon.png\", 4, 4), 8, 0, 15)
 self.shockwaveAnim = new_animation(new_sprite(\"N_Shockwave.png\", 4, 4), 8, 0, 13)
-self.dashAnim = new_animation(new_sprite(\"N_Spike.png\", 4, 4), 8, 0, 15)
+self.dashAnim = new_animation(new_sprite(\"N_Spike.png\", 4, 4), 4, 0, 14)
 self.hurtAnim = new_animation(new_sprite(\"N_Hit.png\", 3, 2), 8, 0, 5)
 self.deathAnim = new_sprite(\"N_Death.png\", 4, 4)
 
@@ -787,6 +787,7 @@ if self.hp <= 0:
     self.dead = True
     destroy(self.barobj)
     destroy(self.gate)
+    destroy(self.hurtbox)
     self.time0 = int(time.time())
 #move healthbar
 self.barobj.x = camera_x()
@@ -918,8 +919,8 @@ if self.fading and (not self.alert) and self.active:
 "type":"object script","start":"self.wait = game.t + 800
 self.idle = True
 self.sprite = new_sprite(\"Boss_Spike.png\")
-self.scaleX = 2
-self.scaleY = 2","loop":"#boss_spike loop
+self.scaleX = 1
+self.scaleY = 1","loop":"#boss_spike loop
 if self.idle and game.t > self.wait:
     self.idle = False
     Dx, Dy = game.p.x - self.x, game.p.y - self.y
@@ -2525,7 +2526,84 @@ if self.water_rising:
 }
 },
 {"R2_6":{
-"type":"room script","start":"#R2_6 start
+"type":"room script","start":"self.roomid = '2-0'
+
+game.npcs.clear()
+game.dark = False
+
+
+self.water_rising = False
+
+
+game.cam_limit_x = (290, 1790)
+game.cam_limit_y = (-110, -1390)
+
+# Insert room IDs and spawn locations for rooms that lead to this room
+
+smooth_tp(2000, -300)
+
+# X is (0, 0)
+lvlmap = [
+    '7CCCCCCCCCCCCCCCCCCC6    ',
+    'L.......R L.........R    ',
+    'L..X....R L.........R    ',
+    'L.......R L.........RCCCC',
+    'L.......R L...RCL........',
+    'L.......R L...R L........',
+    'L.......R L...RVC........',
+    'L.......R L...RVCVNVBN0VB',
+    'L.......R L...R          ',
+    'L.......R L...RCCCC6.....',
+    'L.......R L        R     ',
+    'L.......R L        R     ',
+    'LCCCCCCCR L        R     ',
+    '........R 6VNBVN...R......',
+    '........R L....R...R.....',
+    '........R LCCCCC...R.....',
+    'LVBNL..............R.....',
+    'L...L..............R.....',
+    'L...L..............R.....',
+    'BBBNBVBNVBBVNBVBNBVN.....'
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    
+
+
+]
+blockgroup(0, 0, colliders)
+
+
+# background manipulation
+game.bg.sprite = new_sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = 1300, -1400
+game.bg.scaleX = 2
+game.bg.scaleY = 2
+
+
+# make stuff
+make_booster(1500, -300, 0)
+make_booster(1500,  0, 90)
+make_booster(900, -900, -90)
+make_booster(1400, -900, 180)
+make_booster(900, -1500, 90)
+make_booster(600, -1500, 90)
+make_sfish(200, -1200, -90)
+make_sfish(400, -1200, -90)
+make_sfish(800, -500, 90)
+make_sfish(1000, -500, 90)
+make_sfish(800, -1400, 0)
+make_sfish(800, -1600, 0)
+# set room music
+stop_track(game.music)
+play_track(game.music, 6)
+# Empty lines for scroll glitch
+
+
+
 
 ","loop":"#R2_6 loop
 
@@ -2989,8 +3067,16 @@ play_track(game.music, 6)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616714754.N_Hit.png"
 }
 },
+{"N_Spike_Shoot.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616729211.N_Spike_Shoot.png"
+}
+},
 {"N_Shockwave.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616714811.N_Shockwave.png"
+}
+},
+{"N_Spike.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616729202.N_Spike.png"
 }
 },
 {"N_Idle.png":{
@@ -3002,7 +3088,7 @@ play_track(game.music, 6)
 }
 },
 {"Boss_Spike.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616560041.Boss_Spike.png"
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616732075.Boss_Spike.png"
 }
 },
 {"BossBar.png":{
@@ -3052,14 +3138,6 @@ play_track(game.music, 6)
 },
 {"gem_rainbow.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716536.gem_rainbow.png"
-}
-},
-{"N_Spike_Shoot.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616729211.N_Spike_Shoot.png"
-}
-},
-{"N_Spike.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616729202.N_Spike.png"
 }
 }
 ],
