@@ -2879,6 +2879,8 @@ self.placed = game.prog.gem2_place
 self.water_rising = False
 if not self.placed:
     game.water_height = -170
+else:
+    game.water_height = None
 
 game.cam_limit_x = (290, 1410)
 game.cam_limit_y = (490, -290)
@@ -3042,9 +3044,9 @@ if not self.placed:
     self.water = list()
     spritesheet = sprite('wavesheet.png', 4, 1)
     anim = animation(spritesheet, 5, 0, 3)
-    for i in range(4):
+    for i in range(5):
         s = Slate()
-        s.x = 600*i
+        s.x = -400 + (600*i)
         s.y = -200
         s.z = -6
         set_animation(s, anim)
@@ -3055,6 +3057,16 @@ if self.placed:
     g = make_gem(ped.x, ped.y + (270 * ped.scaleY), 'gem_rainbow.png')
     g.placed = True
     g.z = -7
+
+msg = (\"Greetings Traveller! Wulfric here. If you wish to find the\
+\"
+\"third and final gem, you will have to face the mighty\
+\"
+\"nautilus in the caverns to my left. Many of our strongest warriors\
+\"
+\"have fallen to it. Try finding a weak spot with your dash!\
+\")e
+make_simple_npc(0, -200, 'Whale', msg , facingr=True)
 
 # gradients over exits/entrances
 make_dark_gradient(-500, -250, 500, 400, 25, direction=False)
@@ -3103,7 +3115,7 @@ game.cam_limit_y = (-110, -290)
 if game.travelid == '3-1':
     smooth_tp(1700, -200)
 elif game.travelid == '3-B':
-    smooth_p(-100, -200)
+    smooth_tp(-100, -200)
 else:
     smooth_tp(0, 0)
 
@@ -4594,7 +4606,7 @@ class Winona(ComplexNPC):
 WILHELM_MSGS = [
 [
 \"\"\"Hey there mate! I'm Wilhelm the whale.
-Didn't expect to see anybod else crazy enough to 
+Didn't expect to see anybody else crazy enough to e
 come down here. You'll be questin for the gems, I expect.                 
                                         (1/3)\"\"\",
 
@@ -4638,7 +4650,7 @@ class Wilhelm(ComplexNPC):
             except AttributeError:
                 pass
 
-        if game.prog.echo or not self.msg_ind>=elen(self.msgs):
+        if game.prog.echo or self.msg_ind>=len(self.msgs):
             try:
                 self.destroy_exclaim()
             except Exception:
@@ -4716,7 +4728,7 @@ class Watson(ComplexNPC):
 "type":"function script","head":"class ProgTracker:
     def __init__(self):
         
-        self.echo = True
+        self.echo = False
         self.gem1_pick = False
         self.gem1_place = False
         self.gem2_pick = False
