@@ -3091,6 +3091,7 @@ game.npcs.clear()
 
 # whether room is dark
 game.dark = False
+game.water_height = None
 
 # ROOM ID - used for determining location when going to other rooms
 self.roomid = '3-2'
@@ -3271,7 +3272,9 @@ game.cam_limit_y = (0, 0)
 game.p.healthbar.visible = False
 
 completiontime = datetime.datetime.now() - game.start_time
-timetxt = new_text(\"Time: \" + str(completiontime), -600, -300)
+timetxt = new_text(\"Time: \" + str(completiontime)[:-4
+],
+ -600, -300)
 timetxt.scaleX = 1.2
 timetxt.scaleY = 1.2
 timetxt.z = 50
