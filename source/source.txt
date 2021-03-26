@@ -6,7 +6,7 @@ self.t = time_ms()\r
 # general purpose frame counter\r
 self.c = 0\r
 \r
-self.debug = True\r
+self.debug = False\r
 self.showgrid = False\r
 # create grid guides\r
 if self.showgrid:\r
@@ -15,7 +15,7 @@ if self.showgrid:\r
             temp = Slate()\r
             temp.x = i*100\r
             temp.y = j*100\r
-            temp.sprite = new_sprite(\"Guide.png\")\r
+            temp.sprite = new_sprite(\"Guide.png\") \r
             temp.persistent = True\r
             temp.scaleX = 0.6\r
             temp.scaleY = 0.6\r
@@ -39,7 +39,7 @@ self.deaths = 0\r
 self.start_time = datetime.datetime.now()\r
 \r
 \r
-\r
+self.bossdead = False\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
@@ -58,6 +58,7 @@ if ntime > self.fpslog:\r
 },
 {"Player":{
 "type":"object script","start":"# initialise pos, sprite
+
 self.x = 0
 self.y = 0
 self.z = 11
@@ -118,6 +119,7 @@ self.healthbar.sprite = self.healthbar.spritemap[self.hp
 self.healthbar.prev_h = self.hp
 
 self.inv = list()","loop":"#Death animation
+
 if self.dead:
     if self.dead_c >= 60:
         set_room(get_room().__name__)
@@ -129,7 +131,6 @@ if self.dead:
 
     self.dead_c += 1
     ind = self.dead_c // 15
-    print(ind)
     set_animation(self.spr_obj, new_animation(self.death_anim, 0, ind, ind))
     return
     
@@ -202,7 +203,6 @@ self.boostx, self.boosty = deter(self.boostx, 0.94), deter(self.boosty, 0.94)
 #deteriorate external modif & current
 self.xext, self.yext = deter(self.xext, 0.96), deter(self.yext, 0.96)
 self.cxext, self.cyext = deter(self.cxext, 0.96), deter(self.cyext, 0.94)
-
 # final movement values in x and y
 a, b = (self.xv+self.boostx+self.xext+self.cxext), (self.yv+self.boosty+self.yext+self.cyext)
 
@@ -298,9 +298,9 @@ if self.hp < 1:
     # stop movement
     self.angle = 0
     update_spr(self.spr_obj, self.x, self.y, self.angle)
-    self.xv = self.yv = self.boostx = self.boosty = 0
-    self.xext = self.yext = self.xMOD = self.yMOD = 0
-
+    self.xv = self.yv = self.boostx = self.boosty
+    self.xext = self.yext = self.xMOD = self.yMOD = self.cxext = self.cyext = 0
+    self.cxMOD = self.cyMOD = 0
 
 
 # Empty lines because I don't like it when code 
@@ -461,7 +461,7 @@ if not (game.c - self.count_offset)%40:
         make_particle(fx, fy, self.xa, self.ya, spr, self)
 
 k = get_collision(self, \"Player\")
-if k:
+if k and not k.dead:
     k.cxMOD += self.xa
     k.cyMOD += self.ya
 
@@ -519,7 +519,7 @@ if game.debug:
     self.alpha = 0.8","loop":"#Hurtbox loop
 k = get_collision(self, \"Player\")
 
-if k and k.dmgF:
+if k and k.dmgF and not (k.dead):
     damage(self.dmg)
     self.func(self, k)
 
@@ -741,6 +741,7 @@ self.weights = [
 ]
 
 ]
+
 self.attackdict = {
     0: summon_spike,
     1: dash,
@@ -788,6 +789,8 @@ if self.dead:
         return
     self.death_t += 1
     k = self.death_t//8
+    self.scaleX = -2
+    self.scaleY = 2
     set_animation(self, new_animation(self.deathAnim, 0, k, k))
     return
     
@@ -813,9 +816,11 @@ if self.hp <= 0:
     destroy(self.gate)
     destroy(self.hurtbox)
     self.time0 = int(time.time())
+    game.bossdead = True
 #move healthbar
 self.barobj.x = camera_x()
 self.barobj.y = camera_y()+300
+
 #Attacking
 if self.clock >= 80:
     if self.wlevel == 3 or random.randint(0, 1):
@@ -842,11 +847,11 @@ if self.clock == 0:
 #Timing for attack events
 self.clock += 1
 if self.ispending:
-    self.vulnerable = False
     self.clock = -1 * self.timedict[self.pending
 ]
     self.attdelay -= 1
     if not self.attdelay:
+        self.vulnerable = False
         self.attackdict[self.pending
 ](self)
         self.ispending = False
@@ -1091,7 +1096,7 @@ self.scaleX = self.scaleY = 0.2
 self.prev_h = None
 
 self.z = 26","loop":"if game.p.hp != self.prev_h:
-    self.sprite = self.spritemap[game.p.hp
+    self.sprite = self.spritemap[max(0, game.p.hp)
 ]
 self.prev_h = game.p.hp
 
@@ -1265,7 +1270,12 @@ make_dark_gradient(2000, -450, 500, 400, 20)
 
 self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Hub_Room')
 
-play_track(game.music, 2)","loop":"#Starting_Room loop
+play_track(game.music, 1)
+
+
+
+
+","loop":"#Starting_Room loop
 
 "
 }
@@ -1354,8 +1364,8 @@ TravelGate(2400, -750, 60, 400, self.roomid, 'R0_2')
 make_dark_gradient(1550, -100, 400, 500, 20, vert=True, direction=False)
 TravelGate(1550, 100, 400, 60, self.roomid, 'R2_0')
 
-stop_track(game.music)
-play_track(game.music, 6)
+
+play_track(game.music, 1)
 # Empty lines for scroll glitch
 
 
@@ -1419,8 +1429,8 @@ make_dark_gradient(-500, -50, 500, 400, 20, direction=False)
 TravelGate(-700, -50, 60, 400, self.roomid, 'Hub_Room')
 
 
-stop_track(game.music)
-play_track(game.music, 2)","loop":"#R0_2 loop
+
+play_track(game.music, 1)","loop":"#R0_2 loop
 
 "
 }
@@ -1499,8 +1509,8 @@ make_dark_gradient(-400, -250, 500, 400, 20, direction=False)
 TravelGate(-600, -250, 60, 400, self.roomid, 'R1_10')
 
 # set room music
-stop_track(game.music)
-play_track(game.music, 6)
+
+play_track(game.music, 1)
 # Empty lines for scroll glitch
 
 
@@ -1594,7 +1604,7 @@ make_dark_gradient(-500, 50, 500, 400, 20, direction=False)
 TravelGate(-700, 50, 60, 400, self.roomid, 'R1_0')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 1)
 # Empty lines for scroll glitch
 
@@ -1687,7 +1697,7 @@ TravelGate(-700, 0, 60, 500, self.roomid, 'R1_1')
 
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 1)
 # Empty lines for scroll glitch
 
@@ -1775,7 +1785,7 @@ make_dark_gradient(1650, -600, 400, 500, 20, vert=True)
 TravelGate(1650, -800, 400, 60, self.roomid, 'R1_4')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 1)
 # Empty lines for scroll glitch
 
@@ -1860,7 +1870,7 @@ self.gate = TravelGate(750, 600, 400, 60, self.roomid, 'R1_3')
 
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 6)
 # Empty lines for scroll glitch
 
@@ -1934,7 +1944,7 @@ make_light_gradient(-500, -250, 300, 200, 25, direction=False)
 TravelGate(-600, -250, 60, 400, self.roomid, 'R1_6')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 6)
 # Empty lines for scroll glitch
 
@@ -2021,7 +2031,7 @@ TravelGate(-100, -800, 500, 60, self.roomid, 'R1_7')
 
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 1)
 # Empty lines for scroll glitch
 
@@ -2101,7 +2111,7 @@ make_light_gradient(-1300, 650, 300, 200, 25, direction=False)
 TravelGate(-1400, -650, 60, 400, self.roomid, 'R1_8')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 6)
 # Empty lines for scroll glitch
 
@@ -2186,7 +2196,7 @@ TravelGate(-150, 800, 500, 60, self.roomid, 'R1_10')
 
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 1)
 # Empty lines for scroll glitch
 
@@ -2264,7 +2274,7 @@ make_dark_gradient(0, -700, 500, 500, 20, vert=True)
 TravelGate(0, -900, 500, 60, self.roomid, 'R1_9')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 6)
 # Empty lines for scroll glitch
 
@@ -2367,7 +2377,7 @@ make_dark_gradient(-150, -800, 400, 500, 20, vert=True)
 TravelGate(-150, -1000, 400, 60, self.roomid, 'Hub_Room')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 6)
 # Empty lines for scroll glitch
 
@@ -2450,7 +2460,7 @@ make_dark_gradient(-500, 50, 500, 400, 20, direction=False)\r
 TravelGate(-700, 50, 60, 400, self.roomid, 'R2_0')\r
 \r
 # set room music\r
-stop_track(game.music)\r
+\r
 play_track(game.music, 1)\r
 # Empty lines for scroll glitch\r
 \r
@@ -2537,7 +2547,7 @@ make_dark_gradient(-500, 50, 500, 400, 20, direction=False)
 TravelGate(-700, 50, 60, 400, self.roomid, 'R2_1')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 1)
 # Empty lines for scroll glitch
 
@@ -2636,7 +2646,7 @@ make_dark_gradient(-500, 50, 500, 400, 20, direction=False)
 TravelGate(-700, 50, 60, 400, self.roomid, 'R2_2')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 1)
 # Empty lines for scroll glitch
 
@@ -2726,7 +2736,7 @@ make_dark_gradient(-1000, 50, 500, 400, 20, direction=False)
 TravelGate(-1200, 50, 60, 400, self.roomid, 'R2_6')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 6)
 
 
@@ -2836,7 +2846,7 @@ if not game.prog.gem2_pick:
     make_gem(50, -1250, 'gem_red.png')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 6)
 # Empty lines for scroll glitch
 
@@ -2943,7 +2953,7 @@ make_dark_gradient(-150, 600, 400, 500, 20, vert=True, direction=False)
 TravelGate(-150, 800, 500, 60, self.roomid, 'R3_1')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 6)
 # Empty lines for scroll glitch
 
@@ -3071,6 +3081,98 @@ if self.water_rising:
             w.y += 4"
 }
 },
+{"R3_2":{
+"type":"room script","start":"# npc list for player to check
+game.npcs.clear()
+
+# whether room is dark
+game.dark = False
+
+# ROOM ID - used for determining location when going to other rooms
+self.roomid = '69-69'
+
+# lowest(left) x + 640, highest(right) x - 640
+game.cam_limit_x = (290, 1210)
+# highest y - 360, lowest y + 360
+game.cam_limit_y = (-110, -290)
+
+# Insert room IDs and spawn locations for rooms that lead to this room
+if game.travelid == '1-0':
+    smooth_tp(-350, -50)
+else:
+    smooth_tp(0, 0)
+
+
+# X is (0, 0)
+lvlmap = [
+    '7CCCCCCCCCCCCCCCCCCCC6',
+    'L....................R',
+    'L..X.................R',
+    '......................',
+    '......................',
+    '......................',
+    'L....................R',
+    'L....................R',
+    '5VBNVBNNVNBBNVNVNBNBNR'
+
+]
+make_map(lvlmap)
+
+# make colliders
+colliders = [
+    (-300, 100, 100, 300),
+    (-300, -500, 100, 300),
+    (1800, 100, 100, 300),  
+    (1800, -500, 100, 300), 
+    (850, -600, 2200, 100),
+    (850, 200, 2200, 100),
+
+]
+
+# from top left
+blockgroup(0, 0, colliders)
+
+
+# background manipulation
+game.bg.sprite = new_sprite(\"purple_bg.png\")
+game.bg.x, game.bg.y = -100, -300
+game.bg.scaleX = 2
+game.bg.scaleY = 1.5
+
+# make objects here
+# JELLY - x, y, angle, scale=1
+# CURRENT - x, y, w, h, xa, ya
+# BOOSTER - x, y, angle, force=30
+# SFISH - x, y, angle, AI=True
+# BOUNCER/(bumper) - x, y, force=30
+# ANGLERF - x, y, AI=True
+# SPIKE - x, y, point_d, scale=1
+
+# make gradients over exits/entrances
+# x, y, w, h, levels, direction=True, vert=False
+# levels is number of different opacity rects to divide into
+# direction True means top/left is lightest part (for exits going right/down)
+# vert decides vertical or horizontal gradient
+
+self.gate = TravelGate(-390, -200, 100, 300, self.roomid, 'R3_B')
+self.gate2 = TravelGate(1800, -200, 100, 300, self.roomid, 'R3_1')
+
+if game.bossdead:
+    make_current(-250, -200, 200, 300, 40, 0)
+    
+# set room music
+
+play_track(game.music, 5)
+# Empty lines for scroll glitch
+
+
+
+
+","loop":"#R3_1 loop
+
+"
+}
+},
 {"R3_B":{
 "type":"room script","start":"# npc list for player to check
 game.npcs.clear()
@@ -3151,10 +3253,10 @@ n.y = -500
 # vert decides vertical or horizontal gradient
 
 #self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Room1')
-
+TravelGate(2100, -500, 100, 300, self.roomid, 'R3_2')
 
 # set room music
-stop_track(game.music)
+
 play_track(game.music, 6)
 # Empty lines for scroll glitch
 
@@ -3696,6 +3798,8 @@ def time_ms():
     return round(time.time() * 1000)
 
 def boost(pl, force, angle):
+    if pl.dead:
+        return
     pl.xv = 0
     pl.yv = 0
     pl.boostx = 0
@@ -3767,14 +3871,21 @@ def create_msg(obj):
         obj.parent.update_msg()
 
 def play_track(s_obj, s_id):
+    if s_obj.cplaying == s_id:
+        return
+    else:
+        stop_track(s_obj)
     s_obj.song = new_sound(\"Mood\" + str(s_id) + \".mp3\")
+    s_obj.cplaying = s_id
     set_volume(s_obj.song, 0.3)
     loop_sound(s_obj.song)
 
 def stop_track(s_obj):
+
     if s_obj.song != None:
         stop_sound(s_obj.song)
         s_obj.song = None
+        game.c_playing = None
 
 def place_gem(ped):
     if len(game.p.inv) and not ped.has_gem:
