@@ -43,7 +43,7 @@ self.start_time = datetime.datetime.now()\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('R2_1')","loop":"self.t = time_ms()\r
+set_room('R1_1')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -88,6 +88,11 @@ self.moving = False
 # for debug mode
 self.visible = game.debug
 
+#store death spritesheet
+self.death_anim = new_sprite(\"Player_Death.png\", 3, 3)
+self.dead = False
+self.dead_c = 0
+
 self.xMOD = 0
 self.yMOD = 0
 self.cxMOD = 0
@@ -112,7 +117,25 @@ self.healthbar.sprite = self.healthbar.spritemap[self.hp
 ]
 self.healthbar.prev_h = self.hp
 
-self.inv = list()","loop":"camX, camY = camera_x(), camera_y()
+self.inv = list()","loop":"#Death animation
+if self.dead:
+    if self.dead_c >= 60:
+        set_room(get_room().__name__)
+        self.hp = 5
+        self.dead = False
+        self.dead_c = 0
+        set_animation(self.spr_obj, self.spr_obj.anim)
+        return
+
+    self.dead_c += 1
+    ind = self.dead_c // 15
+    print(ind)
+    set_animation(self.spr_obj, new_animation(self.death_anim, 0, ind, ind))
+    return
+    
+
+
+camX, camY = camera_x(), camera_y()
 xdist = (mouse_x()+camX) - self.x
 ydist = (mouse_y()+camY) - self.y
 
@@ -271,9 +294,10 @@ if self.damage_cool < game.t and not self.dmgF:
    
 # death check
 if self.hp < 1:
-    set_room(get_room().__name__)
-    self.hp = 5
+    self.dead = True
     # stop movement
+    self.angle = 0
+    update_spr(self.spr_obj, self.x, self.y, self.angle)
     self.xv = self.yv = self.boostx = self.boosty = 0
     self.xext = self.yext = self.xMOD = self.yMOD = 0
 
@@ -1384,10 +1408,37 @@ blockgroup(-300, 200, colliders)
 make_dark_gradient(-500, -50, 500, 400, 20, direction=False)
 TravelGate(-700, -50, 60, 400, self.roomid, 'Hub_Room')
 
-make_simple_npc(500, -500, 'Whale', 'Howdy stranger, I\\'m William the whale!\
-I was supposed to tell you how to move, but you had to move\
-to get to me, huh? No tutorial for you!\
-Proceed to the bottom right.')
+dialogue1 = (
+    \"Howdy stranger! It's rare to see travellers nowadays...\
+\"
+    \"I'm Watson the Whale. Not much changes around these parts.\
+\"
+    \"We'd make cave paintings of the Sun to tell tales of the past,\
+\"
+    \"but we don't know how to paint.\")
+
+dialogue2 = (
+    \"Winona sent you, huh?\
+\",
+    \"So you want to hear about how we got stuck down here, eh?\"
+)
+
+dialogue3 = (
+    \"We used to live up at the surface of the water,\
+\"
+    \"but one day, some scary creatures used 3 magic stones,\"
+    \"and sealed all the water away.\
+\"
+    \"Man, of only there was a convenient hero that could get the stones and save us...\"
+)
+
+dialogue4 = (
+    \"Oh hey! Do you want to go on a quest to save the world?\
+\"
+    \"You look like you can handle it!\"
+)
+
+make_simple_npc(500, -500, 'Whale', dialogue1)
 
 play_track(game.music, 2)","loop":"#R0_2 loop
 
@@ -2152,7 +2203,7 @@ make_dark_gradient(1800, -450, 500, 400, 20)
 TravelGate(2000, -450, 60, 400, self.roomid, 'R1_7')
 
 make_dark_gradient(-150, 600, 400, 500, 20, vert=True, direction=False)
-TravelGate(-150, 800, 500, 60, self.roomid, 'R1_9')
+TravelGate(-150, 800, 500, 60, self.roomid, 'R1_10')
 
 
 # set room music
@@ -3373,6 +3424,10 @@ play_track(game.music, 6)
 },
 {"gem_rainbow.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716536.gem_rainbow.png"
+}
+},
+{"Player_Death.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616737689.Player_Death.png"
 }
 }
 ],
