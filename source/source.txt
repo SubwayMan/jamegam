@@ -43,7 +43,7 @@ self.start_time = datetime.datetime.now()\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('R2_8')","loop":"self.t = time_ms()\r
+set_room('R2_5')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -1046,13 +1046,18 @@ filterConfig = {
 }
 
 self.bloom_filter = new_adv_bloom_filter(filterConfig)
-self.filterid = add_filter(self, self.bloom_filter)","loop":"if get_collision(self, 'Player') and not self.placed:
+self.filterid = add_filter(self, self.bloom_filter)","loop":"if get_collision(self, 'Player') and not self.placed and not self.in_inv:
     self.in_inv = True
     self.z = 26
     game.p.inv.append(self)
     remove_filter(self, self.filterid)
     self.filterid = None
-    game.prog.gem1_pick = True
+    if not game.prog.gem1_pick:
+        game.prog.gem1_pick = True
+    elif not game.prog.gem2_pick:
+        game.prog.gem2_pick = True
+    elif not game.prog.gem3_pick:
+        game.prog.gem3_pick = True
 
 if self.in_inv:
     self.x = camera_x() - 460
@@ -1404,10 +1409,15 @@ colliders = [
 # From top left
 blockgroup(-300, 200, colliders)
 
+Watson(500, -500)
+make_simple_npc(800, -100, 'Whale', 'I wonder what the surface looks like...', facingr=False)
+msg = 'My friend Wilhelm left to find the gems. I haven\\'t seen \
+him in a while...'
+make_simple_npc(30, -750, 'Whale', msg , facingr=True)
+
 make_dark_gradient(-500, -50, 500, 400, 20, direction=False)
 TravelGate(-700, -50, 60, 400, self.roomid, 'Hub_Room')
 
-# Watson(500, -500)
 
 stop_track(game.music)
 play_track(game.music, 2)","loop":"#R0_2 loop
@@ -2054,7 +2064,7 @@ lvlmap = [
     '            L.......R',
     '            L.......R',
     '    LCCCCCCCL.......R',
-    'CCCCAf...............R',
+    'CCCCA...............R',
     '..............NVBNVVR',
     '..............R      ',
     'NVBBA.........R      ',
@@ -2381,6 +2391,7 @@ if self.water_rising:
 {"R2_1":{
 "type":"room script","start":"game.npcs.clear()\r
 game.dark = False\r
+game.water_height = None\r
 \r
 self.roomid = '2-1'\r
 \r
@@ -2695,6 +2706,17 @@ game.bg.x, game.bg.y = 0, -1400
 game.bg.scaleX = 1.5
 game.bg.scaleY = 1.5
 
+for i in range(4):
+    make_spike(-400 - (100*i), -980, 'N')
+for i in range(4):
+    make_spike(-400 - (100*i), -20, 'S', 1.2 + 0.1*i)
+
+for i in range(3):
+    make_spike(0, -400 * i, 'E', 1.7)
+for i in range(2):
+    make_spike(-210, -200 - 400*i, 'W', 1.7)
+
+make_current(-100, -450, 300, 700, 0, 7)
 
 # gradients over exits/entrances
 make_dark_gradient(-1000, -1050, 500, 400, 20, direction=False)
@@ -2721,14 +2743,12 @@ play_track(game.music, 6)
 }
 },
 {"R2_6":{
-"type":"room script","start":"self.roomid = '2-0'
+"type":"room script","start":"self.roomid = '2-6'
 
 game.npcs.clear()
 game.dark = False
 
-
-self.water_rising = False
-
+game.water_height = None
 
 game.cam_limit_x = (290, 1510)
 game.cam_limit_y = (-110, -1390)
@@ -2838,12 +2858,12 @@ TravelGate(-250, -1250, 60, 500, self.roomid, 'R2_8')
 }
 },
 {"R2_8":{
-"type":"room script","start":"self.roomid = '2-0'
+"type":"room script","start":"self.roomid = '2-8'
 
 game.npcs.clear()
 game.dark = False
 
-self.placed = game.prog.gem1_place
+self.placed = game.prog.gem2_place
 self.water_rising = False
 if not self.placed:
     game.water_height = -170
@@ -2910,9 +2930,9 @@ if not self.placed:
         set_animation(s, anim)
         self.water.append(s)
 
-ped = make_pedestal(500, -120, 0.5, self.placed)
+ped = make_pedestal(500, -223, 0.5, self.placed)
 if self.placed:
-    g = make_gem(ped.x, ped.y + (270 * ped.scaleY), 'gem_blue.png')
+    g = make_gem(ped.x, ped.y + (270 * ped.scaleY), 'gem_red.png')
     g.placed = True
     g.z = -7
 
@@ -2934,17 +2954,121 @@ play_track(game.music, 6)
 
 
 
-","loop":"#R2_8 loop
+","loop":"if game.prog.gem2_place and not self.placed:
+    self.placed = True
+    self.water_rising = True
 
-"
+if self.water_rising:
+    if self.water[0
+].y < 800:
+        game.water_height += 4
+        for w in self.water:
+            w.y += 4"
 }
 },
 {"R3_1":{
-"type":"room script","start":"#R3_1 start
+"type":"room script","start":"game.npcs.clear()
+game.dark = False
 
-","loop":"#R3_1 loop
+# ROOM ID - used for determining location when going to other rooms
+self.roomid = '3-1'
 
-"
+self.placed = game.prog.gem3_place
+self.water_rising = False
+if not self.placed:
+    game.water_height = -170
+
+game.cam_limit_x = (-110, 910)
+game.cam_limit_y = (90, -490)
+
+# room IDs and spawn locations for rooms that lead to this room
+if game.travelid == '3-2':
+    smooth_tp(-450, -250)
+elif game.travelid == '2-8':
+    smooth_tp(1650, -650)
+else:
+    smooth_tp(0, 0)
+
+
+
+# X is (0, 0)
+lvlmap = [
+    '    L.................R',
+    '    L.................R',
+    '    L.................R',
+    '    L.................R',
+    '    L..X..............R',
+    'CCCC7.................R',
+    '......................R',
+    '......................R',
+    'NNBVVVBNVBNNVNBBNNB1..R',
+    '                   L..R',
+    '                   L..R',
+    '                   L..R',
+    '                   L..R',
+
+]
+make_map(lvlmap)
+
+
+# make colliders
+colliders = [
+    (-500, 150, 495, 595),
+    (200, -600, 2095, 495),
+    (1500, -200, 95, 1500)
+
+]
+blockgroup(0, 0, colliders)
+
+# background configuration
+game.bg.sprite = new_sprite(\"ocean_bg.png\")
+game.bg.x, game.bg.y = 400, 1200
+game.bg.scaleX = 1.5
+game.bg.scaleY = 1.5
+
+if not self.placed:
+    self.water = list()
+    spritesheet = sprite('wavesheet.png', 4, 1)
+    anim = animation(spritesheet, 5, 0, 3)
+    for i in range(4):
+        s = Slate()
+        s.x = 600*i
+        s.y = -200
+        s.z = -6
+        set_animation(s, anim)
+        self.water.append(s)
+
+ped = make_pedestal(500, -260, 1.2, self.placed)
+if self.placed:
+    g = make_gem(ped.x, ped.y + (270 * ped.scaleY), 'gem_rainbow.png')
+    g.placed = True
+    g.z = -7
+
+# gradients over exits/entrances
+make_dark_gradient(-500, -250, 500, 400, 25, direction=False)
+TravelGate(-700, -250, 60, 400, self.roomid, 'R3_2')
+
+make_dark_gradient(1350, -600, 400, 500, 25, vert=True)
+TravelGate(1350, -800, 400, 60, self.roomid, 'R2_8')
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 1)
+# Empty lines for scroll glitch
+
+
+
+
+","loop":"if game.prog.gem3_place and not self.placed:
+    self.placed = True
+    self.water_rising = True
+
+if self.water_rising:
+    if self.water[0
+].y < 800:
+        game.water_height += 4
+        for w in self.water:
+            w.y += 4"
 }
 },
 {"R3_B":{
@@ -3626,7 +3750,7 @@ def create_e(obj):
         pass
     game.e = Slate()
     game.e.sprite = sprite('newE.png')
-    game.e.scaleX = game.e.scaleY = 0.3
+    game.e.scaleX = game.e.scaleY = 0.4
     game.e.x = obj.x
     game.e.y = obj.y + obj.e_offset
     obj.e_popup = True
@@ -3662,7 +3786,10 @@ def place_gem(ped):
         g.z = -7
         g.in_inv = False
         game.npcs.remove(ped)
-        destroy(game.e)
+        try:
+            destroy(game.e)
+        except AttributeError:
+            pass
 
         if not game.prog.gem1_place:
             game.prog.gem1_place = True
@@ -3671,8 +3798,9 @@ def place_gem(ped):
         elif not game.prog.gem3_place:
             game.prog.gem3_place = True
             # TRIGGER GAME END
-        
         ped.has_gem = True
+        game.p.inv.clear()
+    
 
 "
 }
@@ -4329,9 +4457,9 @@ class Winona(ComplexNPC):
 
 WILHELM_MSGS = [
 [
-\"\"\"Hey there mate! Didn't expect to see anybody
-else crazy enough to come down here. You'll be questing
-for the gems, I expect.                 
+\"\"\"Hey there mate! I'm Wilhelm the whale.
+Didn't expect to see anybod else crazy enough to 
+come down here. You'll be questin for the gems, I expect.                 
                                         (1/3)\"\"\",
 
 \"\"\"The caves up ahead got too narrow for my big head,
@@ -4362,7 +4490,6 @@ class Wilhelm(ComplexNPC):
             self.make_exclaim()
 
             if self.msg_ind >= len(self.msgs):
-                self.destroy_exclaim()
                 game.prog.echo = True
         
         self.msg = self.msgs[self.msg_ind%len(self.msgs)
@@ -4375,24 +4502,34 @@ class Wilhelm(ComplexNPC):
             except AttributeError:
                 pass
 
+        if game.prog.echo:
+            try:
+                self.destroy_exclaim()
+            except Exception:
+                pass
+
 
 WATSON_MSGS = [
 [
 \"\"\"Howdy stranger! It's rare to see travellers nowadays...
 I'm Watson the Whale. Not much changes around these parts.
-We'd make cave paintings of the Sun to tell tales of the past,
-but we don't know how to paint.\"\"\",
+We'd make cave paintings of the Sun to tell tales of thee
+past, but we don't know how to paint.\"\"\",
 
 \"\"\"Winona sent you, huh?
 So you want to hear about how we got stuck down here, eh?\"\"\",
 
 \"\"\"We used to live up at the surface of the water,
 but one day, some scary creatures used 3 magic stones,
-and sealed all the water away.
-Man, of only there was a convenient hero that could get the stones and save us...\"\"\",
+and sealed all the water away.\"\"\",
+
+\"\"\"Man, if only there was a convenient hero that could
+get the stones and save us...\"\"\",
 
 \"\"\"Oh hey! Do you want to go on a quest to save the world?
-You look like you can handle it!\"\"\"
+You look like you can handle it! Collect the three gems and
+return them to their pedestals - the nearest gem is through
+the passage under Winona, and the pedestal is above her.\"\"\"
 
 ],
 
@@ -4403,14 +4540,15 @@ You look like you can handle it!\"\"\"
 
 ]
 
-## TODO
 class Watson(ComplexNPC):
     def __init__(self, x, y):
         super().__init__(x, y)
+        self.inst.scaleX = self.inst.scaleY = 2
+        self.inst.e_offset *= self.inst.scaleY
         self.update_msg()
     
     def update_msg(self):
-        if not game.prog.wilson_e1 and self.mark is None:
+        if not game.prog.watson_e1 and self.mark is None:
             self.make_exclaim()
         
         if not game.prog.gem1_pick:
@@ -4423,6 +4561,10 @@ class Watson(ComplexNPC):
         self.msg = self.msgs[self.msg_ind%len(self.msgs)
 ]
         self.inst.msg = self.msg
+
+        if self.msg_ind >= len(self.msgs):
+            game.prog.watson_e1 = True
+            self.destroy_exclaim()
 
         if not self.msg_ind%len(self.msgs):
             try:
@@ -4438,7 +4580,7 @@ class Watson(ComplexNPC):
 "type":"function script","head":"class ProgTracker:
     def __init__(self):
         
-        self.echo = False
+        self.echo = True
         self.gem1_pick = False
         self.gem1_place = False
         self.gem2_pick = False
