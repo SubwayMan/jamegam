@@ -43,7 +43,7 @@ self.start_time = datetime.datetime.now()\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('Hub_Room')","loop":"self.t = time_ms()\r
+set_room('R2_1')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -1631,10 +1631,7 @@ play_track(game.music, 1)
 }
 },
 {"R1_3":{
-"type":"room script","start":"# npc list for player to check
-game.npcs.clear()
-
-# whether room is dark
+"type":"room script","start":"game.npcs.clear()
 game.dark = False
 
 # ROOM ID - used for determining location when going to other rooms
@@ -2351,14 +2348,14 @@ self.water_rising = False
 if not self.placed:
     game.water_height = -370
 
-game.cam_limit_x = (290, 1010)
+game.cam_limit_x = (291, 1009)
 game.cam_limit_y = (-110, -690)
 
 # Insert room IDs and spawn locations for rooms that lead to this room
 if game.travelid == '2-1':
-    smooth_tp(2000, 50)
+    smooth_tp(1500, 50)
 elif game.travelid == '0-0':
-    smooth_tp(-100, -600)
+    smooth_tp(-100, -800)
 else:
     smooth_tp(0, 0)
 
@@ -2450,13 +2447,160 @@ if self.water_rising:
 }
 },
 {"R2_1":{
-"type":"room script","start":"game.water_height = None","loop":"#R2_1 loop
+"type":"room script","start":"game.npcs.clear()\r
+game.dark = False\r
+\r
+self.roomid = '2-1'\r
+\r
+game.cam_limit_x = (-108, 1108)\r
+game.cam_limit_y = (-10, -90)\r
+\r
+# room IDs and spawn locations for rooms that lead to this room\r
+if game.travelid == '2-0':\r
+    smooth_tp(-450, 50)\r
+elif game.travelid == '2-2':\r
+    smooth_tp(1500, 50)\r
+else:\r
+    smooth_tp(0, 0)\r
+\r
+\r
+# X is (0, 0)\r
+lvlmap = [\r
+    '    7CCCCCCCCCCCCCCC6    ',\r
+    'CCCC3...............2CCCC',\r
+    '.........................',\r
+    '.......X.................',\r
+    'NVBV1...............0NVBB',\r
+    '    L...............R    ',\r
+    '    L...............R    ',\r
+    '    5VBNVBNNVNBBNVNB4    '\r
+
+]\r
+make_map(lvlmap)\r
+\r
+\r
+# make colliders\r
+colliders = [\r
+    (750, 300, 2200, 95),\r
+    (950, -400, 2600, 95), \r
+    (-500, 300, 495, 295),\r
+    (-500, -250, 495, 395),\r
+    (1500, 300, 495, 295),\r
+    (1500, -250, 495, 395),\r
+
+]\r
+\r
+blockgroup(0, 0, colliders)\r
+\r
+# background configuration\r
+game.bg.sprite = sprite(\"ocean_bg.png\")\r
+game.bg.x, game.bg.y = -150, 1700\r
+game.bg.scaleX = game.bg.scaleY = 1.5\r
+\r
+\r
+\r
+# make gradients over exits/entrances\r
+make_dark_gradient(1500, 0, 500, 500, 20)\r
+TravelGate(1700, 0, 60, 500, self.roomid, 'R2_2')\r
+\r
+make_dark_gradient(-500, 50, 500, 400, 20, direction=False)\r
+TravelGate(-700, 50, 60, 400, self.roomid, 'R2_0')\r
+\r
+# set room music\r
+stop_track(game.music)\r
+play_track(game.music, 1)\r
+# Empty lines for scroll glitch\r
+\r
+\r
+\r
+\r
+\r
+","loop":"#R2_1 loop
 
 "
 }
 },
 {"R2_2":{
-"type":"room script","start":"#R2_2 start
+"type":"room script","start":"game.npcs.clear()
+game.dark = False
+
+self.roomid = '2-2'
+
+game.cam_limit_x = (-108, 1508)
+game.cam_limit_y = (90, -90)
+
+# room IDs and spawn locations for rooms that lead to this room
+if game.travelid == '2-1':
+    smooth_tp(-500, 50)
+elif game.travelid == '2-3':
+    smooth_tp(2000, 0)
+else:
+    smooth_tp(0, 0)
+
+
+# X is (0, 0)
+lvlmap = [
+    '    7CCCCCCCCCCCCCCCCCCC6    ',
+    '    L...................R    ',
+    'CCCC3...................2CCCC',
+    '.............................',
+    '.......X.....................',
+    'NVBV1........................',
+    '    L...................0VNBB',
+    '    L...................R    ',
+    '    5VBNVBNNVNBBNVNVNBNB4    '
+
+]
+make_map(lvlmap)
+
+
+# make colliders
+colliders = [
+    (750, 400, 2200, 95),
+    (950, -400, 2600, 95), 
+    (-500, 300, 495, 295),
+    (-500, -250, 495, 395),
+    (1900, 300, 495, 295),
+    (1900, -300, 495, 295),
+
+]
+
+blockgroup(0, 0, colliders)
+
+# background configuration
+game.bg.sprite = sprite(\"ocean_bg.png\")
+game.bg.x, game.bg.y = 50, 1300
+game.bg.scaleX = game.bg.scaleY = 1.5
+
+# make objects here
+# JELLY - x, y, angle, scale=1
+# CURRENT - x, y, w, h, xa, ya
+# BOOSTER - x, y, angle, force=30
+# SFISH - x, y, angle, AI=True
+# BOUNCER/(bumper) - x, y, force=30
+# ANGLERF - x, y, AI=True
+# SPIKE - x, y, point_d, scale=1
+
+for x in range(2):
+    for i in range(9):
+        make_sfish(-100 + (200*i) + (100*x), 300 - (600*x), -85 + (180*x))
+
+
+# make gradients over exits/entrances
+make_dark_gradient(1900, 0, 500, 500, 20)
+TravelGate(2120, 0, 60, 500, self.roomid, 'R2_3')
+
+make_dark_gradient(-500, 50, 500, 400, 20, direction=False)
+TravelGate(-700, 50, 60, 400, self.roomid, 'R2_1')
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 1)
+# Empty lines for scroll glitch
+
+
+
+
 
 ","loop":"#R2_2 loop
 
@@ -2464,7 +2608,98 @@ if self.water_rising:
 }
 },
 {"R2_3":{
-"type":"room script","start":"#R2_3 start
+"type":"room script","start":"game.npcs.clear()
+game.dark = False
+
+self.roomid = '2-3'
+
+game.cam_limit_x = (-108, 1208)
+game.cam_limit_y = (90, -190)
+
+# room IDs and spawn locations for rooms that lead to this room
+if game.travelid == '2-2':
+    smooth_tp(-500, 50)
+elif game.travelid == '2-4':
+    smooth_tp(1500, 50)
+else:
+    smooth_tp(0, 0)
+
+
+# X is (0, 0)
+lvlmap = [
+    '    7CCCCCCCCCCCCCCCC6    ',
+    '    L................R    ',
+    'CCCC3................2CCCC',
+    '..........................',
+    '.......X..................',
+    'NVBV1................0NNVB',
+    '    L................R    ',
+    '    L................R    ',
+    '    L................R    ',
+    '    5VBNVBNNVNBBNVNVN4    '
+
+]
+make_map(lvlmap)
+
+
+# make colliders
+colliders = [
+    (-500, 302, 495, 295),
+    (-500, -300, 495, 495),
+    (750, 400, 2200, 95),
+    (750, -500, 2200, 95),
+    (1600, 302, 495, 295),
+    (1600, -300, 495, 495),
+
+]
+blockgroup(0, 0, colliders)
+
+# background configuration
+game.bg.sprite = sprite(\"ocean_bg.png\")
+game.bg.x, game.bg.y = 30, 1000
+game.bg.scaleX = game.bg.scaleY = 1.5
+
+# make objects here
+# JELLY - x, y, angle, scale=1
+# CURRENT - x, y, w, h, xa, ya
+# BOOSTER - x, y, angle, force=30
+# SFISH - x, y, angle, AI=True
+# BOUNCER/(bumper) - x, y, force=30
+# ANGLERF - x, y, AI=True
+# SPIKE - x, y, point_d, scale=1
+
+make_current(550, -50, 1100, 800, 7, 0)
+
+make_jelly(0, 0, -90)
+make_jelly(200, 100, -90)
+make_jelly(250, -300, -90)
+make_jelly(475, 220, -90)
+make_jelly(475, 320, -90)
+make_jelly(420, -100, -90)
+make_jelly(500, -400, -90)
+make_jelly(600, -200, -90)
+make_jelly(680,  60, -90)
+make_jelly(900, -100, -90)
+make_jelly(920, -300, -90)
+make_jelly(950, 300, -90)
+make_jelly(1150, 0, -90)
+
+
+# make gradients over exits/entrances
+make_dark_gradient(1600, 50, 500, 400, 20)
+TravelGate(1800, 50, 60, 500, self.roomid, 'R2_4')
+
+make_dark_gradient(-500, 50, 500, 400, 20, direction=False)
+TravelGate(-700, 50, 60, 400, self.roomid, 'R2_2')
+
+# set room music
+stop_track(game.music)
+play_track(game.music, 1)
+# Empty lines for scroll glitch
+
+
+
+
 
 ","loop":"#R2_3 loop
 
@@ -2892,7 +3127,7 @@ play_track(game.music, 6)
 }
 },
 {"current_particle.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616545915.current_particle.png"
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616733563.current_particle.png"
 }
 },
 {"exclaim_mark.png":{
