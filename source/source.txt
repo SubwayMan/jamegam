@@ -654,6 +654,7 @@ self.scaleY = 2
 self.alpha = 1
 self.hurtbox.visible = False
 self.hp = 15
+self.vulnerable = True
 
 #Store animations
 self.idleAnim = new_animation(new_sprite(\"N_Idle.png\", 3, 2), 8, 0, 5)
@@ -704,6 +705,10 @@ self.ispending = False
 self.pending = 0
 self.attdelay = 0
 
+#health bar
+self.bossbar = new_sprite(\"BossBar.png\", 16, 1)
+self.barobj = Slate()
+update_bar(self.barobj, self.hp, self)
 
 
 
@@ -713,9 +718,12 @@ self.attdelay = 0
 
 
 ","loop":"
+#distance check
+if abs(self.x - game.p.x) > 1800:
+    return None
 #damaged by player
 pl = get_collision(self.hurtbox, \"Player\")
-if pl:
+if self.vulnerable and pl:
     #Player must be boosting
     if pl.boostx or pl.boosty:
         #Extra damage if hit while dashing
@@ -727,12 +735,16 @@ if pl:
             self.yv = 0
             self.inDash = False
         
+        update_bar(self.barobj, self.hp, self)
         wander(self, 4)
         boost(pl, 35, -90)
         
     else:
         boost(pl, 10, -90)
 
+#move healthbar
+self.barobj.x = camera_x()
+self.barobj.y = camera_y()+300
 #Attacking
 if self.clock >= 70:
     if self.wlevel == 3 or random.randint(0, 1):
@@ -845,7 +857,7 @@ if self.fading and (not self.alert) and self.active:
 }
 },
 {"boss_spike":{
-"type":"object script","start":"self.wait = game.t + 600
+"type":"object script","start":"self.wait = game.t + 800
 self.idle = True
 self.sprite = new_sprite(\"Boss_Spike.png\")
 self.scaleX = 2
@@ -2780,6 +2792,10 @@ play_track(game.music, 6)
 {"Boss_Spike.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616560041.Boss_Spike.png"
 }
+},
+{"BossBar.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616724553.BossBar.png"
+}
 }
 ]
 },
@@ -3277,7 +3293,9 @@ def make_echo(x, y, angle):
 }
 },
 {"Nautilusfuncs.py":{
-"type":"function script","head":"def summon_spike(boss):
+"type":"function script","head":"
+
+def summon_spike(boss):
     \"\"\"Summons spikes around the boss, which
     then home towards the player.\"\"\"
     x0, y0 = boss.x, boss.y
@@ -3304,8 +3322,8 @@ def summon_sfish(boss):
         sy = -1000
         sa = 90
 
-    for i in range(1, 5):
-        k = make_sfish(origin + (i*180), sy, sa)
+    for i in range(1, 7):
+        k = make_sfish(origin + (i*160), sy, sa)
         k.fading = True
 
 def shockwave(boss):
@@ -3346,6 +3364,12 @@ def gen_att(weights):
 ]
         if base>=seed:
             return i
+
+def update_bar(bar, val, boss):
+    if not 0<=val<=15:
+        return None
+    anim = new_animation(boss.bossbar, 0, val, val)
+    set_animation(boss.barobj, anim)
 
     
 
