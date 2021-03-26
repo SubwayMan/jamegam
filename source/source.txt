@@ -816,6 +816,7 @@ if self.hp <= 0:
     destroy(self.barobj)
     destroy(self.gate)
     destroy(self.hurtbox)
+    destroy(self.hitbox)
     self.time0 = int(time.time())
     game.bossdead = True
     make_gem(self.x, self.y, 'gem_rainbow.png', scale=0.6)
@@ -1873,7 +1874,7 @@ self.gate = TravelGate(750, 600, 400, 60, self.roomid, 'R1_3')
 
 # set room music
 
-play_track(game.music, 6)
+play_track(game.music, 2)
 # Empty lines for scroll glitch
 
 
@@ -1947,7 +1948,7 @@ TravelGate(-600, -250, 60, 400, self.roomid, 'R1_6')
 
 # set room music
 
-play_track(game.music, 6)
+play_track(game.music, 2)
 # Empty lines for scroll glitch
 
 
@@ -2034,7 +2035,7 @@ TravelGate(-100, -800, 500, 60, self.roomid, 'R1_7')
 
 # set room music
 
-play_track(game.music, 1)
+play_track(game.music, 2)
 # Empty lines for scroll glitch
 
 
@@ -2114,7 +2115,7 @@ TravelGate(-1400, -650, 60, 400, self.roomid, 'R1_8')
 
 # set room music
 
-play_track(game.music, 6)
+play_track(game.music, 3)
 # Empty lines for scroll glitch
 
 
@@ -2199,7 +2200,7 @@ TravelGate(-150, 800, 500, 60, self.roomid, 'R1_10')
 
 # set room music
 
-play_track(game.music, 1)
+play_track(game.music, 3)
 # Empty lines for scroll glitch
 
 
@@ -2277,7 +2278,7 @@ TravelGate(0, -900, 500, 60, self.roomid, 'R1_9')
 
 # set room music
 
-play_track(game.music, 6)
+play_track(game.music, 2)
 # Empty lines for scroll glitch
 
 
@@ -2380,7 +2381,7 @@ TravelGate(-150, -1000, 400, 60, self.roomid, 'Hub_Room')
 
 # set room music
 
-play_track(game.music, 6)
+play_track(game.music, 1)
 # Empty lines for scroll glitch
 
 
@@ -2649,7 +2650,7 @@ TravelGate(-700, 50, 60, 400, self.roomid, 'R2_2')
 
 # set room music
 
-play_track(game.music, 1)
+play_track(game.music, 2)
 # Empty lines for scroll glitch
 
 
@@ -2739,7 +2740,7 @@ TravelGate(-1200, 50, 60, 400, self.roomid, 'R2_6')
 
 # set room music
 
-play_track(game.music, 6)
+play_track(game.music, 2)
 
 
 # Empty lines for scroll glitch
@@ -2849,7 +2850,7 @@ if not game.prog.gem2_pick:
 
 # set room music
 
-play_track(game.music, 6)
+play_track(game.music, 3)
 # Empty lines for scroll glitch
 
 make_dark_gradient(1900, -300, 500, 500, 25)
@@ -2956,7 +2957,7 @@ TravelGate(-150, 800, 500, 60, self.roomid, 'R3_1')
 
 # set room music
 
-play_track(game.music, 6)
+play_track(game.music, 3)
 # Empty lines for scroll glitch
 
 
@@ -3067,7 +3068,7 @@ TravelGate(600, 400, 1900, 60, self.roomid, 'Victory_Room')
 
 # set room music
 stop_track(game.music)
-play_track(game.music, 1)
+play_track(game.music, 5)
 # Empty lines for scroll glitch
 
 
@@ -3284,7 +3285,8 @@ dtxt = new_text(\"Deaths: \" + str(game.deaths), 450, -300)
 dtxt.scaleX = 1.2
 dtxt.scaleY = 1.2
 dtxt.z = 50
-dtxt.color = \"#fff\"","loop":"#R3_W loop
+dtxt.color = \"#fff\"
+play_track(game.music, 8)","loop":"#R3_W loop
 
 "
 }
