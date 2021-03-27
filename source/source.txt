@@ -43,7 +43,7 @@ self.bossdead = False\r
 self.music = SoundManager()\r
 self.music.persistent = True\r
 self.music.visible = False\r
-set_room('Victory_Room')","loop":"self.t = time_ms()\r
+set_room('Starting_Room')","loop":"self.t = time_ms()\r
 self.c += 1\r
 \r
 self.fpscount += 1\r
@@ -318,6 +318,7 @@ if self.hp < 1:
 #pedestals: -8
 #gems (on pedestal): -7
 #waves: -6
+#plants: -6
 #Dark area (black tiles): -5
 #Spikes: 8
 #Tiles: 9
@@ -1277,6 +1278,12 @@ blockgroup(-300, 200, colliders)
 
 make_dark_gradient(2000, -450, 500, 400, 20)
 
+make_plant(500, -500, scale=1.3)
+make_plant(380, -500, scale=-1.3)
+
+move_tut(0, 100)
+dash_tut(1450, 100)
+
 self.gate = TravelGate(2220, -450, 60, 400, self.roomid, 'Hub_Room')
 
 play_track(game.music, 1)
@@ -1366,6 +1373,8 @@ blockgroup(900, -300, colliders)
 
 Winona(1500, -800)
 
+make_plant(800, -840, scale=0.8)
+
 make_dark_gradient(-350, -50, 600, 400, 20, direction=False)
 TravelGate(-560, -50, 60, 400, self.roomid, 'Starting_Room')
 
@@ -1442,7 +1451,12 @@ Watson(500, -500)
 make_simple_npc(800, -100, 'Whale', 'I wonder what the surface looks like...', facingr=False)
 msg = 'My friend Wilhelm left to find the gems. I haven\\'t seen \
 him in a while...'
-make_simple_npc(30, -750, 'Whale', msg , facingr=True)
+make_simple_npc(30, -700, 'Whale', msg , facingr=True)
+msg = '*WHALE NOISES*\
+...\
+Oh wait, you don\\'t speak that language, do you. I\\'m\
+Winifred the whale.'
+make_simple_npc(1350, -300, 'Whale', msg, facingr=False, scale=1.3)
 
 make_dark_gradient(-500, -50, 500, 400, 20, direction=False)
 TravelGate(-700, -50, 60, 400, self.roomid, 'Hub_Room')
@@ -1554,6 +1568,11 @@ play_track(game.music, 1)
 game.dark = False
 
 self.roomid = '1-1'
+
+try: # clear possible current text box
+    game.text_box.destroy()
+except Exception as e: # no text box currently up
+    pass
 
 game.cam_limit_x = (-110, 1610)
 game.cam_limit_y = (90, -90)
@@ -1806,6 +1825,7 @@ game.bg.scaleY = 2
 make_anglerf(600, 0)
 make_anglerf(1200, 0)
 
+make_plant(1500, 300, scale=0.8, angle=-180)
 
 # gradients over exits/entrances
 make_dark_gradient(-500, 50, 500, 400, 20, direction=False)
@@ -2485,7 +2505,16 @@ game.bg.sprite = sprite(\"ocean_bg.png\")\r
 game.bg.x, game.bg.y = -150, 1700\r
 game.bg.scaleX = game.bg.scaleY = 1.5\r
 \r
+msg = (\"Hey there. I'm Waldo, and I'm the fastest whale in the\
+\"\r
+        \"world. That's how I got up here before you, when you only\
+\"\r
+        \"just raised the water level. You'll find the other two gems\
+\"\r
+        \"if you keep going through these tunnels. Good luck!\")\r
+make_simple_npc(400, -100, 'Whale', msg, scale=1.2)\r
 \r
+make_plant(900, -300)\r
 \r
 # make gradients over exits/entrances\r
 make_dark_gradient(1500, 0, 500, 500, 20)\r
@@ -3025,7 +3054,7 @@ self.water_rising = False
 if not self.placed:
     game.water_height = -170
 
-game.cam_limit_x = (-110, 910)
+game.cam_limit_x = (-106, 910)
 game.cam_limit_y = (90, -490)
 
 # room IDs and spawn locations for rooms that lead to this room
@@ -3534,6 +3563,10 @@ play_track(game.music, 6)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615957753.dynamic_squid.png"
 }
 },
+{"Player_Death.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616737689.Player_Death.png"
+}
+},
 {"player_still.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616453331.player_still.png"
 }
@@ -3598,6 +3631,18 @@ play_track(game.music, 6)
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616456779.Spike1_dark.png"
 }
 },
+{"gem_blue.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716515.gem_blue.png"
+}
+},
+{"gem_red.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716522.gem_red.png"
+}
+},
+{"gem_rainbow.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716536.gem_rainbow.png"
+}
+},
 {"Spike2.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616188331.Spike2.png"
 }
@@ -3631,6 +3676,10 @@ play_track(game.music, 6)
 },
 {"current_particle_dark.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616627807.current_particle_dark.png"
+}
+},
+{"plant1.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616805058.plant1.png"
 }
 },
 {"current_particle.png":{
@@ -3675,6 +3724,14 @@ play_track(game.music, 6)
 ]
 },
 {"Tutorial":[
+{"move_tutorial.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616806084.move_tutorial.png"
+}
+},
+{"dash_tutorial.png":{
+"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616806093.dash_tutorial.png"
+}
+},
 {"newE.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616348829.newE.png"
 }
@@ -3753,26 +3810,6 @@ play_track(game.music, 6)
 },
 {"whalesheet.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616698467.whalesheet.png"
-}
-},
-{"gem_blue.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716515.gem_blue.png"
-}
-},
-{"gem_red.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716522.gem_red.png"
-}
-},
-{"gem_rainbow.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616716536.gem_rainbow.png"
-}
-},
-{"Player_Death.png":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616737689.Player_Death.png"
-}
-},
-{"Test_BG.jpg":{
-"type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616739315.Test_BG.jpg"
 }
 },
 {"winscreen.png":{
@@ -4269,7 +4306,36 @@ def make_pedestal(x, y, scale=1, placed=False):
     
     return p
 
+def make_plant(x, y, scale=1, angle=0):
+    s = Slate()
+    s.sprite = sprite('plant1.png')
+    s.x = x
+    s.y = y 
+    s.z = -6
+    s.angle = angle
+    s.scaleX = s.scaleY = 1
 
+def move_tut(x, y):
+    movesheet = sprite('move_tutorial.png', 11, 1)
+    anim = animation(movesheet, 12, 0, 10)
+    game.move = Slate()
+    game.move.x = x
+    game.move.y = y
+    set_animation(game.move, anim)
+    t = text('HOLD LEFT CLICK TO MOVE', x-93, y-50)
+    t.fontFamily = \"monospace\"
+    t.color = '#ffffff'
+
+def dash_tut(x, y):
+    dashsheet = sprite('dash_tutorial.png', 8, 1)
+    anim = animation(dashsheet, 12, 0, 7)
+    game.dash = Slate()
+    game.dash.x = x
+    game.dash.y = y
+    set_animation(game.dash, anim)
+    t = text('PRESS RIGHT CLICK TO DASH', x-120, y-50)
+    t.fontFamily = \"monospace\"
+    t.color = '#ffffff'
 
 "
 }
@@ -4591,7 +4657,7 @@ too big to go in the caves where the gems were hidden.
 
                                         (2/3)\"\"\",
 
-\"\"\"If you want to help out, try talking to Watson the Whale. 
+\"\"\"If you want to help out, go talk  to Watson the Whale. 
 Cavern to the right, and just look for the biggest whale 
 there.
                                         (3/3)\"\"\"
@@ -4606,9 +4672,10 @@ in the cave above to raise the water level!\"\"\",
 ],
 
 [
-\"\"\"Hey! Nice to see you again — Winona the Whale here.
-Thanks so much for raising the water level. If you did it again,
-all my friends could return home too.\"\"\",
+\"\"\"Great! Now that you have raised the water level, some
+whales can start moving back. There are still two gems to
+go, so head through the passage you just unlocked above
+and try to find them!\"\"\",
 
 ],
 
@@ -4642,7 +4709,11 @@ class Winona(ComplexNPC):
 
             if not game.prog.winona_e2 and self.mark is None:
                 self.make_exclaim()
-
+        
+        elif game.prog.gem1_place:
+            self.msgs = WINONA_MSGS[2
+]
+    
         self.msg = self.msgs[self.msg_ind%len(self.msgs)
 ]
         self.inst.msg = self.msg
@@ -4724,22 +4795,27 @@ WATSON_MSGS = [
 \"\"\"Howdy stranger! It's rare to see travellers nowadays...
 I'm Watson the Whale. Not much changes around these parts.
 We'd make cave paintings of the Sun to tell tales of thee
-past, but we don't know how to paint.\"\"\",
+past, but we don't know how to paint.              (1/5)\"\"\",
 
 \"\"\"Winona sent you, huh?
-So you want to hear about how we got stuck down here, eh?\"\"\",
+So you want to hear about how we got stuck down here, eh?
+
+                                                    (2/5)\"\"\",
 
 \"\"\"We used to live up at the surface of the water,
 but one day, some scary creatures stole 3 magic stones,
-which took all the water away.\"\"\",
+which took all the water away.
+                                                   (3/5)\"\"\",
 
 \"\"\"Man, if only there was a convenient hero that could
-get the stones and save us...\"\"\",
+get the stones and save us...
+
+                                                    (4/5)\"\"\",
 
 \"\"\"Oh hey! Do you want to go on a quest to save the world?
 You look like you can handle it! Collect the three gems and
 return them to their pedestals - the nearest gem is through
-the passage under Winona, and the pedestal is above her.\"\"\"
+the passage under Winona, and the pedestal is above her.(5/5)\"\"\"
 
 ],
 
