@@ -3,8 +3,8 @@ import os
 orig = os.path.join(os.getcwd(), "..", "source", sys.argv[1])
 out = sys.argv[2]
 
-a1 = [":{\n", ":[\n", "},\n", "],\n", "\n}", "\n]", "\n"]
-a2 = [":{", ":[", "},", "],", "}", "]", "\\n"]
+a1 = [":{\n", ":[\n", "},\n", "],\n", "\n}", "\n"]
+a2 = [":{", ":[", "},", "],", "}", "\\n"]
 
 dat = open(orig, "r").read()
 for i in range(len(a1)):

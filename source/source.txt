@@ -30,8 +30,7 @@ self.dark = False\r
 self.water_height = None\r
 \r
 self.prog = ProgTracker()\r
-self.npcs = [
-]\r
+self.npcs = []\r
 self.e = False\r
 self.p = Player()\r
 self.bg = Background()\r
@@ -114,8 +113,7 @@ self.echo_cool = game.t
 
 self.hp = 5
 self.healthbar = HealthInd()
-self.healthbar.sprite = self.healthbar.spritemap[self.hp
-]
+self.healthbar.sprite = self.healthbar.spritemap[self.hp]
 self.healthbar.prev_h = self.hp
 
 self.inv = list()","loop":"#Death animation
@@ -144,8 +142,7 @@ ydist = (mouse_y()+camY) - self.y
 keys = [key_is_pressed('arrowRight'), 
         key_is_pressed('arrowLeft'), 
         key_is_pressed('arrowUp'),
-        key_is_pressed('arrowDown')
-]
+        key_is_pressed('arrowDown')]
 
 # store previous position for movement rotation
 self.x0, self.y0 = self.x, self.y
@@ -166,14 +163,10 @@ if mouse_is_pressed('left') and not magn < 25:
 # allow for arrow-key movement
 elif any(keys):
     xdist=ydist=0
-    if keys[0
-]: xdist = 1
-    if keys[1
-]: xdist = -1
-    if keys[2
-]: ydist = 1
-    if keys[3
-]: ydist = -1
+    if keys[0]: xdist = 1
+    if keys[1]: xdist = -1
+    if keys[2]: ydist = 1
+    if keys[3]: ydist = -1
     magn = hyp(xdist, ydist)
     xdist, ydist = xdist/magn, ydist/magn
 
@@ -236,14 +229,10 @@ distY = self.y - camY
 # update camera position either moves camera with delay
 # following player or caps at set limits
 new_camX = camX + (distX - distX/1.1) + self.x_off
-new_camX = min(max(new_camX, game.cam_limit_x[0
-]), game.cam_limit_x[1
-])
+new_camX = min(max(new_camX, game.cam_limit_x[0]), game.cam_limit_x[1])
 
 new_camY = camY + (distY - distY/1.1) + self.y_off
-new_camY = max(min(new_camY, game.cam_limit_y[0
-]), game.cam_limit_y[1
-])
+new_camY = max(min(new_camY, game.cam_limit_y[0]), game.cam_limit_y[1])
 
 set_camera(new_camX, new_camY)
 
@@ -257,12 +246,10 @@ if k0 != -361:
 update_spr(self.spr_obj, self.x, self.y, self.angle)
 
 if game.npcs:
-    npc_dists = [get_dist(o.x, o.y, self.x, self.y) for o in game.npcs
-]
+    npc_dists = [get_dist(o.x, o.y, self.x, self.y) for o in game.npcs]
     near = min(npc_dists)
     if near < 150:
-        n = game.npcs[npc_dists.index(near)
-]
+        n = game.npcs[npc_dists.index(near)]
         if not n.e_popup:
             create_e(n)
         if key_was_pressed('e'):
@@ -727,21 +714,15 @@ self.z = 5
 self.counter = 0
 
 #order: spikes, dash, summon, shockwave
-self.timedict = [60, 120, 90, 120
-]
+self.timedict = [60, 120, 90, 120]
 self.weights = [
-    [60, 10, 30, 0
-],
+    [60, 10, 30, 0],
 
-    [30, 15, 30, 25
-],
+    [30, 15, 30, 25],
 
-    [5, 40, 25, 30
-],
+    [5, 40, 25, 30],
 
-    [0, 50, 0, 50
-]
-
+    [0, 50, 0, 50]
 ]
 
 self.attackdict = {
@@ -828,16 +809,14 @@ self.barobj.y = camera_y()+300
 #Attacking
 if self.clock >= 80:
     if self.wlevel == 3 or random.randint(0, 1):
-        self.pending = gen_att(self.weights[self.wlevel
-])
+        self.pending = gen_att(self.weights[self.wlevel])
         self.ispending = True
         self.attdelay = 60
         self.wlevel = 0
         if self.pending < 2:
             self.scaleX = -3
             self.scaleY = 3
-        set_animation(self, self.animdict[self.pending
-])
+        set_animation(self, self.animdict[self.pending])
     else:
         self.clock = 1
         self.wlevel += 1
@@ -851,13 +830,11 @@ if self.clock == 0:
 #Timing for attack events
 self.clock += 1
 if self.ispending:
-    self.clock = -1 * self.timedict[self.pending
-]
+    self.clock = -1 * self.timedict[self.pending]
     self.attdelay -= 1
     if not self.attdelay:
         self.vulnerable = False
-        self.attackdict[self.pending
-](self)
+        self.attackdict[self.pending](self)
         self.ispending = False
         
 
@@ -977,8 +954,7 @@ if game.t - self.wait > 3000:
     destroy(self)
 "
 }
-}
-]
+}]
 },
 {"Art":[
 {"Psprite":{
@@ -1101,8 +1077,7 @@ self.scaleX = self.scaleY = 0.2
 self.prev_h = None
 
 self.z = 26","loop":"if game.p.hp != self.prev_h:
-    self.sprite = self.spritemap[max(0, game.p.hp)
-]
+    self.sprite = self.spritemap[max(0, game.p.hp)]
 self.prev_h = game.p.hp
 
 self.x = camera_x() - 540
@@ -1122,8 +1097,7 @@ self.persistent = True","loop":"#Background loop
 if game.dark == self.visible:
     self.visible = not self.visible"
 }
-}
-]
+}]
 },
 {"Whale":{
 "type":"object script","start":"sprite_sheet = sprite('whalesheet.png', 1, 4)
@@ -1167,16 +1141,14 @@ if self.parent is not None:
 "type":"object script","start":"#SONG CREDIT: Terminus by meganeko
 
 #SoundManager start
-self.queue = [
-]
+self.queue = []
 
 #Uses time in seconds
 self.orig = game.t // 1000
 self.cplaying = None
 #Maps songs to their length for scheduling
 #Key: mood no. -1
-self.sl = [40, 36, 33, 36, 16, 29, 29, 30
-]
+self.sl = [40, 36, 33, 36, 16, 29, 29, 30]
 
 #Store current song.
 self.song = None
@@ -1185,15 +1157,13 @@ self.song = None
 
 self.orig = game.t // 1000"
 }
-}
-],
+}],
 "room":[
 {"Demo_Room":{
 "type":"room script","start":"#Demo_Room start
 
 game.bg = Background()
-level = ['...CCC...','..BL.RB..','...L.R...','...L.R...', '...L.R...','...L.R...', '...LXR...', '...L.R...','.VCC.CCV.', '.L.....R.', '.VBNBNNV.'
-]
+level = ['...CCC...','..BL.RB..','...L.R...','...L.R...', '...L.R...','...L.R...', '...LXR...', '...L.R...','.VCC.CCV.', '.L.....R.', '.VBNBNNV.']
         
 make_map(level)
 
@@ -1257,7 +1227,6 @@ lvlmap = [
     'L.........................',
     'L.........................',
     '5VBNVBNNVNBBNVNVNBNBNVBNVN'
-
 ]
 make_map(lvlmap)
 
@@ -1270,7 +1239,6 @@ colliders = [
     (1050, 0, 2200, 95),
     (1250, -800, 2600, 95), 
     (2300, -250, 495, 595),
-
 ]
 
 # From top left
@@ -1340,7 +1308,6 @@ lvlmap = [
     '                     L...R     ',
     '                     L...R     ',
     '                     L...R     ',
-
 ]
 make_map(lvlmap)
 game.bg.sprite = new_sprite(\"purple_bg.png\")
@@ -1358,7 +1325,6 @@ colliders = [
     (1250, -50, 395, 595),
     (1800, -50, 295, 595),
     (1550, 200, 400, 100)
-
 ]
 blockgroup(0, 0, colliders)
 
@@ -1367,7 +1333,6 @@ colliders = [
     (1250, -150, 595, 395),
     (200, -900, 895, 495),
     (1250, -850, 595, 595)
-
 ]
 blockgroup(900, -300, colliders)
 
@@ -1428,7 +1393,6 @@ lvlmap = [
     '    L...................R',
     '    L...................R',
     '    5VBNVBNNVVBVVNNBNBNB4',
-
 ]
 make_map(lvlmap)
 
@@ -1441,7 +1405,6 @@ colliders = [
     (1000, 0, 2100, 95),
     (2000, -500, 95, 1100),
     (1000, -1000, 2100, 95)
-
 ]
 
 # From top left
@@ -1508,7 +1471,6 @@ lvlmap = [
     '.............................',
     'NVBB1...................0VBNN',
     '    5BNVBNNVNBBNVNVNBNBN4'
-
 ]
 make_map(lvlmap)
 
@@ -1526,7 +1488,6 @@ colliders = [
     (1000, -700, 2100, 95),
     (2200, -150, 495, 395),
     (2200, -650, 495, 195)
-
 ]
 
 # from top left
@@ -1597,7 +1558,6 @@ lvlmap = [
     '    L....................0VNBB',
     '    L....................R    ',
     '    5VBNVBNNVNBBNVNVNBNBN4    '
-
 ]
 make_map(lvlmap)
 
@@ -1612,7 +1572,6 @@ colliders = [
     (-500, -250, 495, 395),
     (2000, 300, 495, 295),
     (2000, -300, 495, 295),
-
 ]
 
 blockgroup(0, 0, colliders)
@@ -1698,7 +1657,6 @@ lvlmap = [
     'NNBV1....................R',
     '    L....................R',
     '    5VBNVBNNVNBBNVNVNBNBN4'
-
 ]
 make_map(lvlmap)
 
@@ -1712,7 +1670,6 @@ colliders = [
     (-500, -300, 495, 295),
     (2000, 300, 495, 295),
     (2000, -250, 495, 395),
-
 ]
 blockgroup(0, 0, colliders)
 
@@ -1795,7 +1752,6 @@ lvlmap = [
     '                      L..R',
     '                      L..R',
     '                      L..R',
-
 ]
 make_map(lvlmap)
 
@@ -1811,7 +1767,6 @@ colliders = [
     (1150, 200, 195, 295),
     (1150, -200, 195, 295),
     (1800, -200, 95, 1300),
-
 ]
 blockgroup(0, 0, colliders)
 
@@ -1886,7 +1841,6 @@ lvlmap = [
     'L..R          ',
     'L..R          ',
     'L..R          ',
-
 ]
 make_map(lvlmap)
 
@@ -1896,7 +1850,6 @@ colliders = [
     (1200, -200, 95, 1300),
     (750, -1000, 995, 495),
     (0, -600, 95, 1300)
-
 
 ]
 # from top left
@@ -1971,7 +1924,6 @@ lvlmap = [
     'NVBBA...R..............R',
     '    L...R..............R',
     '    5BNVBNNVNBBNVNVNBNB4',
-
 ]
 make_map(lvlmap)
 
@@ -1987,7 +1939,6 @@ colliders = [
     (800, -200, 95, 495),
     (1050, -400, 795, 95),
     (400, -650, 95, 395)
-
 ]
 # from top left
 blockgroup(-200, 200, colliders)
@@ -2047,7 +1998,6 @@ lvlmap = [
     'L...R                 ',
     'L...R                 ',
     'L...R                 ',
-
 ]
 make_map(lvlmap)
 
@@ -2061,7 +2011,6 @@ colliders = [
     (1300, 50, 495, 395),
     (800, -150, 95, 395),
     (500, -200, 695, 495)
-
 ]
 blockgroup(0, 0, colliders)
 
@@ -2136,7 +2085,6 @@ lvlmap = [
     '    L.........R      ',
     '    L.........R      ',
     '    5BNVBNNVNBB      ',
-
 ]
 make_map(lvlmap)
 
@@ -2149,7 +2097,6 @@ colliders = [
     (-500, -1100, 1100, 95),
     (-1200, -950, 495, 395),
     (-1200, -450, 495, 195)
-
 
 ]
 blockgroup(0, 0, colliders)
@@ -2212,7 +2159,6 @@ lvlmap = [
     '5NVBBBNNVNBBNVNVNN1.....',
     '                  L.....',
     '                  5VNBBB',
-
 ]
 make_map(lvlmap)
 
@@ -2223,7 +2169,6 @@ colliders = [
     (1900, 50, 295, 795),
     (600, -500, 1895, 295),
     (1750, -600, 600, 95),
-
 ]
 blockgroup(0, 0, colliders)
 
@@ -2297,7 +2242,6 @@ lvlmap = [
     'L...R              ',
     'L...R              ',
     'L...R              ',
-
 ]
 make_map(lvlmap)
 
@@ -2314,7 +2258,6 @@ colliders = [
     (1100, -1000, 1495, 495),
     (2000, -750, 495, 195),
     (2000, -200, 495, 495),
-
 
 ]
 # from top left
@@ -2340,8 +2283,7 @@ play_track(game.music, 2)
 
 "
 }
-}
-]
+}]
 },
 {"Stage2":[
 {"R2_0":{
@@ -2381,7 +2323,6 @@ lvlmap = [
     'L..R                 ',
     'L..R                 ',
     'L..R                 ',
-
 ]
 make_map(lvlmap)
 
@@ -2391,7 +2332,6 @@ colliders = [
     (600, -800, 1295, 495), 
     (-300, -400, 95, 1300),
     (1400, -350, 495, 595),
-
 
 ]
 blockgroup(0, 0, colliders)
@@ -2446,8 +2386,7 @@ play_track(game.music, 1)
     TravelGate(1600, 50, 60, 400, self.roomid, 'R2_1')
 
 if self.water_rising:
-    if self.water[0
-].y < 270:
+    if self.water[0].y < 270:
         game.water_height += 4
         for w in self.water:
             w.y += 4"
@@ -2482,7 +2421,6 @@ lvlmap = [\r
     '    L...............R    ',\r
     '    L...............R    ',\r
     '    5VBNVBNNVNBBNVNB4    '\r
-
 ]\r
 make_map(lvlmap)\r
 \r
@@ -2495,7 +2433,6 @@ colliders = [\r
     (-500, -252, 495, 395),\r
     (1500, 300, 495, 295),\r
     (1500, -252, 495, 395),\r
-
 ]\r
 \r
 blockgroup(0, 0, colliders)\r
@@ -2566,7 +2503,6 @@ lvlmap = [
     '    L...................0VNBB',
     '    L...................R    ',
     '    5VBNVBNNVNBBNVNVNBNB4    '
-
 ]
 make_map(lvlmap)
 
@@ -2579,7 +2515,6 @@ colliders = [
     (-500, -252, 495, 395),
     (1900, 300, 495, 295),
     (1900, -302, 495, 295),
-
 ]
 
 blockgroup(0, 0, colliders)
@@ -2646,7 +2581,6 @@ lvlmap = [
     '    L................R    ',
     '    L................R    ',
     '    5VBNVBNNVNBBNVNVN4    '
-
 ]
 make_map(lvlmap)
 
@@ -2659,7 +2593,6 @@ colliders = [
     (750, -500, 2200, 95),
     (1601, 302, 495, 295),
     (1601, -302, 495, 495),
-
 ]
 blockgroup(0, 0, colliders)
 
@@ -2751,7 +2684,6 @@ lvlmap = [
     '.............R',
     '.............R',
     'NBVBNNNBNBVBN4',
-
 ]
 make_map(lvlmap)
 
@@ -2761,7 +2693,6 @@ colliders = [
     (100, -500, 95, 1500),
     (-750, -500, 995, 895),
     (-550, -1201, 1400, 95)
-
 ]
 blockgroup(0, 0, colliders)
 
@@ -2850,7 +2781,6 @@ lvlmap = [
     '    L..............R     ',
     '    L..............R     ',
     '    5VBNVBBVNBVBNBV4     '
-
 ]
 make_map(lvlmap)
 
@@ -2863,7 +2793,6 @@ colliders = [
     (900, -800, 1095, 295),
     (150, -1400, 796, 295),
     (900, -1500, 95, 1100)
-
 ]
 blockgroup(700, 200, colliders)
 
@@ -2875,7 +2804,6 @@ colliders = [
     (2200, -150, 505, 1205),
     
     (900, -50, 200, 200)
-
 
 ]
 blockgroup(-300, -1000, colliders)
@@ -2972,7 +2900,6 @@ lvlmap = [
     '5NVBBBNNVNBBNVNVNN1.....',
     '                  L.....',
     '                  5VNBBB',
-
 ]
 make_map(lvlmap)
 
@@ -2983,7 +2910,6 @@ colliders = [
     (1900, 50, 295, 795),
     (600, -500, 1895, 295),
     (1750, -600, 600, 95),
-
 ]
 blockgroup(0, 0, colliders)
 
@@ -3035,8 +2961,7 @@ play_track(game.music, 3)
     self.water_rising = True
 
 if self.water_rising:
-    if self.water[0
-].y < 800:
+    if self.water[0].y < 800:
         game.water_height += 4
         for w in self.water:
             w.y += 4"
@@ -3082,7 +3007,6 @@ lvlmap = [
     '                   L..R',
     '                   L..R',
     '                   L..R',
-
 ]
 make_map(lvlmap)
 
@@ -3092,7 +3016,6 @@ colliders = [
     (-500, 150, 495, 595),
     (200, -600, 2095, 495),
     (1500, -200, 95, 1500)
-
 ]
 blockgroup(0, 0, colliders)
 
@@ -3160,8 +3083,7 @@ play_track(game.music, 5)
     self.water_rising = True
 
 if self.water_rising:
-    if self.water[0
-].y < 800:
+    if self.water[0].y < 800:
         game.water_height += 4
         for w in self.water:
             w.y += 4"
@@ -3206,7 +3128,6 @@ lvlmap = [
     'L....................R',
     'L....................R',
     '5VBNVBNNVNBBNVNVNBNBNR'
-
 ]
 make_map(lvlmap)
 
@@ -3218,7 +3139,6 @@ colliders = [
     (1800, -500, 100, 300), 
     (850, -600, 2200, 100),
     (850, 200, 2200, 100),
-
 ]
 
 # from top left
@@ -3287,7 +3207,6 @@ lvlmap = [
     'L.....................R',
     'L.....................R',
     '5VBNVBNNVNBBNVNVNBNBNN4'
-
 ]
 make_map(lvlmap)
 
@@ -3304,7 +3223,6 @@ colliders = [
     (-100, -500, 100, 1300),
     (2100, -100, 100, 500),
     (2100, -900, 100, 500)
-
 ]
 
 # from top left
@@ -3359,8 +3277,7 @@ game.cam_limit_y = (0, 0)
 game.p.healthbar.visible = False
 
 completiontime = datetime.datetime.now() - game.start_time
-timetxt = new_text(\"Time: \" + str(completiontime)[:-4
-],
+timetxt = new_text(\"Time: \" + str(completiontime)[:-4],
  -600, -300)
 timetxt.scaleX = 1.2
 timetxt.scaleY = 1.2
@@ -3376,8 +3293,7 @@ play_track(game.music, 8)","loop":"#R3_W loop
 
 "
 }
-}
-]
+}]
 },
 {"Room_Template":{
 "type":"room script","start":"# npc list for player to check
@@ -3412,7 +3328,6 @@ lvlmap = [
     'L.........................',
     'L.........................',
     '5VBNVBNNVNBBNVNVNBNBNVBNVN'
-
 ]
 make_map(lvlmap)
 
@@ -3422,7 +3337,6 @@ colliders = [
     (1050, 0, 2200, 95),
     (1250, -800, 2600, 95), 
     (2300, -250, 495, 595),
-
 ]
 
 # from top left
@@ -3465,8 +3379,7 @@ play_track(game.music, 6)
 
 "
 }
-}
-],
+}],
 "texture":[
 {"tiles":[
 {"ground1.png":{
@@ -3548,15 +3461,13 @@ play_track(game.music, 6)
 {"arrowE.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616622543.arrowE.png"
 }
-}
-]
+}]
 },
 {"NPCs":[
 {"whalesheet_gap.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1615951543.whalesheet_gap.png"
 }
-}
-]
+}]
 },
 {"Player":[
 {"dynamic_squid.png":{
@@ -3570,8 +3481,7 @@ play_track(game.music, 6)
 {"player_still.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616453331.player_still.png"
 }
-}
-]
+}]
 },
 {"Stage1":[
 {"gradient1.png":{
@@ -3585,12 +3495,10 @@ play_track(game.music, 6)
 {"purple_bg.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616546270.purple_bg.png"
 }
-}
-]
+}]
 },
 {"Stage2":[
 {"Tiles2":[
-
 ]
 },
 {"Background2":[
@@ -3601,10 +3509,8 @@ play_track(game.music, 6)
 {"waterBG.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.225782.1615667719.waterBG.png"
 }
-}
-]
-}
-]
+}]
+}]
 },
 {"Gameplay_elements":[
 {"boostersheet.png":{
@@ -3646,8 +3552,7 @@ play_track(game.music, 6)
 {"Spike2.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225969.1616188331.Spike2.png"
 }
-}
-]
+}]
 },
 {"Misc":[
 {"pedestal.png":{
@@ -3689,8 +3594,7 @@ play_track(game.music, 6)
 {"exclaim_mark.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616656281.exclaim_mark.png"
 }
-}
-]
+}]
 },
 {"Enemies":[
 {"Swordfish.png":{
@@ -3720,8 +3624,7 @@ play_track(game.music, 6)
 {"Anglerfish_dark.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616454910.Anglerfish_dark.png"
 }
-}
-]
+}]
 },
 {"Tutorial":[
 {"move_tutorial.png":{
@@ -3735,8 +3638,7 @@ play_track(game.music, 6)
 {"newE.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616348829.newE.png"
 }
-}
-]
+}]
 },
 {"Boss":[
 {"N_Cannon.png":{
@@ -3778,8 +3680,7 @@ play_track(game.music, 6)
 {"BossBar.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616724553.BossBar.png"
 }
-}
-]
+}]
 },
 {"Health":[
 {"health_0.png":{
@@ -3805,8 +3706,7 @@ play_track(game.music, 6)
 {"health_5.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616393438.health_5.png"
 }
-}
-]
+}]
 },
 {"whalesheet.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616698467.whalesheet.png"
@@ -3815,8 +3715,7 @@ play_track(game.music, 6)
 {"winscreen.png":{
 "type":"image","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19203.226349.1616800742.winscreen.png"
 }
-}
-],
+}],
 "sound":[
 {"Mood1.mp3":{
 "type":"audio","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616368556.Mood1.mp3"
@@ -3849,8 +3748,7 @@ play_track(game.music, 6)
 {"Mood8.mp3":{
 "type":"audio","uri":"https://s3.us-west-1.amazonaws.com/media.pixelpad.io/__ASSET__.19216.225456.1616368629.Mood8.mp3"
 }
-}
-],
+}],
 "function":[
 {"imports.py":{
 "type":"function script","head":"#File for imports to run before everything
@@ -3938,12 +3836,8 @@ def smooth_tp(x, y):
 
     new_camX = x + offset_x
     new_camY = y + offset_y
-    new_camX = min(max(new_camX, game.cam_limit_x[0
-]), game.cam_limit_x[1
-])
-    new_camY = max(min(new_camY, game.cam_limit_y[0
-]), game.cam_limit_y[1
-])
+    new_camX = min(max(new_camX, game.cam_limit_x[0]), game.cam_limit_x[1])
+    new_camY = max(min(new_camY, game.cam_limit_y[0]), game.cam_limit_y[1])
     set_camera(new_camX, new_camY)
 
 def damage(st):
@@ -4010,8 +3904,7 @@ def stop_track(s_obj):
 
 def place_gem(ped):
     if len(game.p.inv) and not ped.has_gem:
-        g = game.p.inv[0
-]
+        g = game.p.inv[0]
         g.x = ped.x
         g.y = ped.y + (270 * ped.scaleY)
         g.placed = True
@@ -4065,46 +3958,31 @@ DARK_TILE = sprite('dark_tile.png')
 
 def make_map(layout):
     for i in range(len(layout)):
-        if 'X' in layout[i
-]:
-            origin = (layout[i
-].index('X'), i)
+        if 'X' in layout[i]:
+            origin = (layout[i].index('X'), i)
     
     for i in range(len(layout)):
-        for j in range(len(layout[i
-])):
-            key = layout[i
-][j
-]
+        for j in range(len(layout[i])):
+            key = layout[i][j]
             if key in '. X':
                 continue
             elif key not in tile_map.keys():
-                print(f'Unrecognised \"{layout[i
-][j
-]
+                print(f'Unrecognised \"{layout[i][j]
 } in level map.')
                 continue
 
             t = Tile()
 
-            t.x = 100 * (j - origin[0
-])
-            t.y = 100 * (origin[1
-] - i)
+            t.x = 100 * (j - origin[0])
+            t.y = 100 * (origin[1] - i)
             t.z = 9
-            if len(tile_map[key
-]) == 1:
+            if len(tile_map[key]) == 1:
                 if key in 'WASD':
-                    t.sprite = tile_map[key
-][0
-]
+                    t.sprite = tile_map[key][0]
                 else:
-                    t.sprite = DARK_TILE if game.dark else tile_map[key
-][0
-]
+                    t.sprite = DARK_TILE if game.dark else tile_map[key][0]
             else:
-                spr, scX, scY, x_off, y_off, z = tile_map[key
-]
+                spr, scX, scY, x_off, y_off, z = tile_map[key]
                 t.sprite = spr
                 t.scaleX = scX
                 t.scaleY = scY
@@ -4222,8 +4100,7 @@ def make_spike(x, y, point_d, scale=1):
     inst = Spike()
     inst.x = x
     inst.y = y
-    inst.angle = d_to_angle[point_d
-]
+    inst.angle = d_to_angle[point_d]
     inst.scaleX *= scale
     inst.scaleY *= scale
 
@@ -4425,8 +4302,7 @@ def summon_spike(boss):
 def summon_sfish(boss):
     \"\"\"Summons swordfish.\"\"\"
     origin = boss.x
-    t = random.choice([\"T\", \"B\"
-])
+    t = random.choice([\"T\", \"B\"])
     if t == \"T\":
         sy = 0
         sa = -90
@@ -4472,8 +4348,7 @@ def gen_att(weights):
     seed = random.randrange(1, 101)
     base = 0
     for i in range(4):
-        base += weights[i
-]
+        base += weights[i]
         if base>=seed:
             return i
 
@@ -4592,8 +4467,7 @@ def make_simple_npc(x, y, type_, msg, scale=1, facingr=True):
     
 }
 
-    n = type_map[type_
-]()
+    n = type_map[type_]()
     n.x = x
     n.y = y
     if not facingr:
@@ -4661,14 +4535,12 @@ too big to go in the caves where the gems were hidden.
 Cavern to the right, and just look for the biggest whale 
 there.
                                         (3/3)\"\"\"
-
 ],
 
 [
 \"\"\"Woah, you actually got the gem! Uh, I mean, I beleived
 in you the whole time. Quick, go put it on the pedestal
 in the cave above to raise the water level!\"\"\",
-
 ],
 
 [
@@ -4676,9 +4548,7 @@ in the cave above to raise the water level!\"\"\",
 whales can start moving back. There are still two gems to
 go, so head through the passage you just unlocked above
 and try to find them!\"\"\",
-
 ],
-
 
 ]
 class Winona(ComplexNPC):
@@ -4689,8 +4559,7 @@ class Winona(ComplexNPC):
         
     def update_msg(self):
         if not game.prog.gem1_pick:
-            self.msgs = WINONA_MSGS[0
-]
+            self.msgs = WINONA_MSGS[0]
 
             if not game.prog.winona_e1 and self.mark is None:
                 self.make_exclaim()
@@ -4700,8 +4569,7 @@ class Winona(ComplexNPC):
                 self.destroy_exclaim()
         
         elif game.prog.gem1_pick:
-            self.msgs = WINONA_MSGS[1
-]
+            self.msgs = WINONA_MSGS[1]
 
             if self.mark is not None:
                 self.destroy_exclaim()
@@ -4711,11 +4579,9 @@ class Winona(ComplexNPC):
                 self.make_exclaim()
         
         elif game.prog.gem1_place:
-            self.msgs = WINONA_MSGS[2
-]
+            self.msgs = WINONA_MSGS[2]
     
-        self.msg = self.msgs[self.msg_ind%len(self.msgs)
-]
+        self.msg = self.msgs[self.msg_ind%len(self.msgs)]
         self.inst.msg = self.msg
         
         if not self.msg_ind%len(self.msgs):
@@ -4741,16 +4607,13 @@ the thing! I'll teach you Echolocation!   (2/3)
 you're in a dark cave, and everything hit by the
 echolocation will light up. Good luck out there mate!
                                         (3/3)\"\"\",
-
 ],
 
 [
 \"\"\"You made it back! It's me, Wilhelm. Head on back to the
 the cavern above where Winona will tell you how to use the
 gem, and then you'll be one step closer to saving the oceans!\"\"\",
-
 ]
-
 ]
 
 class Wilhelm(ComplexNPC):
@@ -4760,8 +4623,7 @@ class Wilhelm(ComplexNPC):
     
     def update_msg(self):
         if not game.prog.gem1_pick:
-            self.msgs = WILHELM_MSGS[0
-]
+            self.msgs = WILHELM_MSGS[0]
 
             if not game.prog.wilhelm_e1 and self.mark is None:
                 self.make_exclaim()
@@ -4771,16 +4633,14 @@ class Wilhelm(ComplexNPC):
                 self.destroy_exclaim()
         
         else:
-            self.msgs = WILHELM_MSGS[1
-]
+            self.msgs = WILHELM_MSGS[1]
             if not game.prog.wilhelm_e2 and self.mark is None:
                 self.make_exclaim()
             if self.msg_ind >= len(self.msgs):
                 game.prog.wilhelm_e2 = True
                 self.destroy_exclaim()
             
-        self.msg = self.msgs[self.msg_ind%len(self.msgs)
-]
+        self.msg = self.msgs[self.msg_ind%len(self.msgs)]
         self.inst.msg = self.msg
 
         if not self.msg_ind%len(self.msgs):
@@ -4816,14 +4676,11 @@ get the stones and save us...
 You look like you can handle it! Collect the three gems and
 return them to their pedestals - the nearest gem is through
 the passage under Winona, and the pedestal is above her.(5/5)\"\"\"
-
 ],
 
 [
 \"\"\"I knew you had it in you! Good job, little guy!\"\"\"
-
 ]
-
 ]
 
 class Watson(ComplexNPC):
@@ -4838,14 +4695,11 @@ class Watson(ComplexNPC):
             self.make_exclaim()
         
         if not game.prog.gem1_pick:
-            self.msgs = WATSON_MSGS[0
-]
+            self.msgs = WATSON_MSGS[0]
         else:
-            self.msgs = WATSON_MSGS[1
-]
+            self.msgs = WATSON_MSGS[1]
         
-        self.msg = self.msgs[self.msg_ind%len(self.msgs)
-]
+        self.msg = self.msgs[self.msg_ind%len(self.msgs)]
         self.inst.msg = self.msg
 
         if self.msg_ind >= len(self.msgs):
@@ -4883,9 +4737,7 @@ class Watson(ComplexNPC):
         self.wilhelm_e1 = False
         self.wilhelm_e2 = False"
 }
-}
-]
-}
-]
+}]
+}]
 }
 }
