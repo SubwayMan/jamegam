@@ -16,3 +16,7 @@ To chance the source files into a useable .pp2d file, run the following:
 This will place a .pp2d file in the `dataparse` directory that you can now upload to the web to modify.
 - In the commands, `pixelpadfile` must have the extension `.pp2d`.
 - `outputfile` and `sourcefile` will almost always be named `source.txt`.
+
+
+### Conditions
+- No liability or warranty is provided with distribution of this software. We in no way claim ownership of PixelPad engine or any of its affiliates.
